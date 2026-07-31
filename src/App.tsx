@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship, 
+import {
+  Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship,
   Trophy, Play, Settings, ChevronLeft, Zap, Volume2, VolumeX, Eye, Maximize, Minimize,
-  Radar, CloudFog, ShieldAlert, Crosshair, Target
+  Radar, CloudFog, ShieldAlert, Crosshair, Target,
+  TrainFront, MapPin, Route
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -717,6 +718,379 @@ const Checkpoint = ({ config, onComplete }: { config: GameConfig; onComplete: (s
   );
 };
 
+// Metro line colors inspired by classic metro map design
+const METRO_COLORS = ['#22c55e', '#eab308', '#ef4444', '#3b82f6'];
+
+// A winding metro line with wide horizontal sweeps to encourage
+// full left-right eye excursions (smooth pursuit into abduction)
+const METRO_PATH = 'M 6 15 L 50 15 L 70 30 L 20 45 L 80 60 L 30 75 L 60 85 L 94 85';
+const STATION_FRACTIONS = [0, 0.14, 0.28, 0.42, 0.56, 0.7, 0.85, 1];
+
+const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(config.duration);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [trainPos, setTrainPos] = useState({ x: 6, y: 15 });
+  const [trainDist, setTrainDist] = useState(0);
+  const [stations, setStations] = useState<{ x: number; y: number; dist: number }[]>([]);
+  const [shake, setShake] = useState(false);
+  const pathRef = useRef<SVGPathElement | null>(null);
+  const distRef = useRef(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    const path = pathRef.current;
+    if (!path) return;
+    const total = path.getTotalLength();
+    setStations(STATION_FRACTIONS.map(f => {
+      const p = path.getPointAtLength(f * total);
+      return { x: p.x, y: p.y, dist: f * total };
+    }));
+  }, []);
+
+  useEffect(() => {
+    if (isPlaying && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => Math.max(0, prev - 0.016));
+        const path = pathRef.current;
+        if (!path) return;
+        const total = path.getTotalLength();
+        let unitsPerTick = config.speed * 0.4;
+        // Hard mode: erratic speed shifts, like a train braking and accelerating
+        if (config.difficulty === 'hard') {
+          unitsPerTick *= (1 + Math.sin(Date.now() / 500) * 0.4);
+        }
+        distRef.current += unitsPerTick;
+        // Ping-pong along the line so the train sweeps back and forth
+        const cycle = distRef.current % (total * 2);
+        const dist = cycle < total ? cycle : total * 2 - cycle;
+        const p = path.getPointAtLength(dist);
+        setTrainPos({ x: p.x, y: p.y });
+        setTrainDist(dist);
+      }, 16);
+    } else if (timeLeft <= 0 && isPlaying) {
+      setIsPlaying(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+      playSound('complete', config.soundEnabled);
+      onComplete({ score, timeSpent: config.duration, accuracy: score / config.duration, date: new Date().toISOString() });
+      confetti({ particleCount: 250, spread: 160, origin: { y: 0.5 }, colors: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444'] });
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [isPlaying, timeLeft]);
+
+  const handleHit = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    if (!isPlaying) return;
+    playSound('hit', config.soundEnabled);
+    setScore((s) => s + 1);
+  };
+
+  const handleMiss = () => {
+    if (!isPlaying) return;
+    playSound('miss', config.soundEnabled);
+    setShake(true);
+    setTimeout(() => setShake(false), 400);
+    setScore(s => Math.max(0, s - 1));
+  };
+
+  const lineColor = config.anaglyphMode ? '#00FFFF' : '#eab308';
+
+  return (
+    <motion.div
+      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
+      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+      transition={{ duration: 0.4 }}
+      onPointerDown={handleMiss}
+    >
+      {!isPlaying && Math.ceil(timeLeft) === config.duration && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50" onPointerDown={(e) => e.stopPropagation()}>
+          <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
+            <Play className="mr-2 h-6 w-6" /> Depart Station
+          </Button>
+        </div>
+      )}
+
+      <div className="absolute top-4 left-4 flex gap-4 z-20">
+        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
+        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
+      </div>
+
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <path ref={pathRef} d={METRO_PATH} fill="none" stroke={lineColor} strokeOpacity={0.35} strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" />
+      </svg>
+
+      {stations.map((st, i) => {
+        const active = Math.abs(trainDist - st.dist) < 6;
+        return (
+          <div
+            key={i}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 pointer-events-none transition-all duration-200"
+            style={{
+              left: `${st.x}%`, top: `${st.y}%`,
+              width: active ? 20 : 14, height: active ? 20 : 14,
+              borderColor: lineColor,
+              backgroundColor: active ? lineColor : '#0f172a',
+              boxShadow: active ? `0 0 12px ${lineColor}` : 'none'
+            }}
+          />
+        );
+      })}
+
+      {isPlaying && (
+        <div
+          className="absolute -translate-x-1/2 -translate-y-1/2 z-10"
+          style={{ left: `${trainPos.x}%`, top: `${trainPos.y}%`, width: config.size, height: config.size }}
+          onPointerDown={handleHit}
+        >
+          <TrainFront className={`w-full h-full ${config.anaglyphMode ? 'text-[#FF0000] fill-[#FF0000]' : 'text-red-400 fill-red-400'} drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]`} />
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+// Groups of visually similar letters make the search harder,
+// training fine acuity under crowding conditions
+const LETTER_GROUPS = [
+  ['E', 'F', 'H', 'L', 'T', 'I'],
+  ['O', 'Q', 'C', 'G', 'D'],
+  ['M', 'N', 'W', 'V', 'K'],
+  ['B', 'R', 'P', 'S', 'E'],
+];
+
+const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(config.duration);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [grid, setGrid] = useState<{ letter: string; color: string; isTarget: boolean }[]>([]);
+  const [targetLetter, setTargetLetter] = useState('E');
+  const [shake, setShake] = useState(false);
+
+  const generateGrid = () => {
+    const group = LETTER_GROUPS[Math.floor(Math.random() * LETTER_GROUPS.length)];
+    const target = group[Math.floor(Math.random() * group.length)];
+    const distractors = group.filter(l => l !== target);
+    const size = config.difficulty === 'hard' ? 25 : 16;
+    const newGrid = Array(size).fill(null).map(() => ({
+      letter: distractors[Math.floor(Math.random() * distractors.length)],
+      color: METRO_COLORS[Math.floor(Math.random() * METRO_COLORS.length)],
+      isTarget: false
+    }));
+    const targetIndex = Math.floor(Math.random() * size);
+    newGrid[targetIndex] = { letter: target, color: METRO_COLORS[Math.floor(Math.random() * METRO_COLORS.length)], isTarget: true };
+    setTargetLetter(target);
+    setGrid(newGrid);
+  };
+
+  useEffect(() => {
+    if (isPlaying && timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+      if (grid.length === 0) generateGrid();
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0 && isPlaying) {
+      setIsPlaying(false);
+      playSound('complete', config.soundEnabled);
+      onComplete({ score, timeSpent: config.duration, accuracy: score / 10, date: new Date().toISOString() });
+      confetti({ particleCount: 250, spread: 160, origin: { y: 0.5 }, colors: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444'] });
+    }
+  }, [isPlaying, timeLeft, grid]);
+
+  const handleChoice = (isTarget: boolean) => {
+    if (isTarget) {
+      playSound('hit', config.soundEnabled);
+      setScore(s => s + 1);
+      generateGrid();
+    } else {
+      playSound('miss', config.soundEnabled);
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+      setScore(s => Math.max(0, s - 1));
+    }
+  };
+
+  const letterSize = config.difficulty === 'hard' ? 'text-xs md:text-sm' : (config.difficulty === 'medium' ? 'text-base md:text-lg' : 'text-xl md:text-2xl');
+  const cellSize = config.difficulty === 'hard' ? 'w-12 h-12 md:w-16 md:h-16' : 'w-14 h-14 md:w-20 md:h-20';
+
+  return (
+    <div className="relative w-full h-[75vh] min-h-[500px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex flex-col items-center justify-center">
+      {!isPlaying && timeLeft === config.duration && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
+          <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
+            <Play className="mr-2 h-6 w-6" /> Start Station Hunt
+          </Button>
+        </div>
+      )}
+
+      <div className="absolute top-4 left-4 flex gap-4 z-20">
+        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
+        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
+      </div>
+
+      {isPlaying && (
+        <div className="flex items-center gap-3 mb-6 bg-slate-800 px-6 py-3 rounded-full border border-slate-700">
+          <span className="text-sm text-slate-400 uppercase tracking-wider font-bold">Find station</span>
+          <div className="w-10 h-10 rounded-full bg-slate-50 border-4 flex items-center justify-center font-bold text-slate-900 text-lg" style={{ borderColor: config.anaglyphMode ? '#FF0000' : '#3b82f6' }}>
+            {targetLetter}
+          </div>
+        </div>
+      )}
+
+      <motion.div
+        className={`grid ${config.difficulty === 'hard' ? 'grid-cols-5' : 'grid-cols-4'} gap-3 md:gap-4 p-4`}
+        animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+        transition={{ duration: 0.4 }}
+      >
+        {grid.map((item, i) => (
+          <motion.button
+            key={`${i}-${score}-${targetLetter}`}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={() => handleChoice(item.isTarget)}
+            className={`${cellSize} rounded-full flex items-center justify-center font-bold border-4 transition-colors ${config.anaglyphMode ? 'bg-black text-[#FF0000]' : 'bg-slate-50 text-slate-900'}`}
+            style={{ borderColor: config.anaglyphMode ? '#00FFFF' : item.color }}
+          >
+            <span className={letterSize}>{item.letter}</span>
+          </motion.button>
+        ))}
+      </motion.div>
+    </div>
+  );
+};
+
+interface NavigatorPuzzle {
+  lines: { color: string; path: string; label: string }[];
+  endOrder: number[]; // endOrder[lineIndex] = terminal slot index
+  targetLine: number;
+  terminals: { x: number; y: number; label: string }[];
+}
+
+const TERMINAL_LABELS = ['A', 'B', 'C', 'D'];
+
+const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(config.duration);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [puzzle, setPuzzle] = useState<NavigatorPuzzle | null>(null);
+  const [shake, setShake] = useState(false);
+
+  const generatePuzzle = () => {
+    const numLines = config.difficulty === 'hard' ? 4 : 3;
+    const startYs = Array(numLines).fill(0).map((_, i) => 20 + (60 / (numLines - 1)) * i);
+    const endYs = [...startYs];
+    // Shuffle terminals until at least one line crosses another
+    let order = startYs.map((_, i) => i);
+    do {
+      order = order.sort(() => Math.random() - 0.5).slice();
+    } while (order.every((v, i) => v === i));
+
+    const lines = startYs.map((sy, i) => {
+      const ey = endYs[order[i]];
+      const c1y = 10 + Math.random() * 80;
+      const c2y = 10 + Math.random() * 80;
+      return {
+        color: METRO_COLORS[i],
+        label: `M${i + 1}`,
+        path: `M 8 ${sy} C 35 ${c1y}, 65 ${c2y}, 90 ${ey}`
+      };
+    });
+
+    setPuzzle({
+      lines,
+      endOrder: order,
+      targetLine: Math.floor(Math.random() * numLines),
+      terminals: endYs.map((y, i) => ({ x: 90, y, label: TERMINAL_LABELS[i] }))
+    });
+  };
+
+  useEffect(() => {
+    if (isPlaying && timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+      if (!puzzle) generatePuzzle();
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0 && isPlaying) {
+      setIsPlaying(false);
+      playSound('complete', config.soundEnabled);
+      onComplete({ score, timeSpent: config.duration, accuracy: score / 10, date: new Date().toISOString() });
+      confetti({ particleCount: 250, spread: 160, origin: { y: 0.5 }, colors: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444'] });
+    }
+  }, [isPlaying, timeLeft, puzzle]);
+
+  const handleChoice = (terminalIndex: number) => {
+    if (!puzzle || !isPlaying) return;
+    if (puzzle.endOrder[puzzle.targetLine] === terminalIndex) {
+      playSound('hit', config.soundEnabled);
+      setScore(s => s + 1);
+      generatePuzzle();
+    } else {
+      playSound('miss', config.soundEnabled);
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+      setScore(s => Math.max(0, s - 1));
+    }
+  };
+
+  const target = puzzle?.lines[puzzle.targetLine];
+
+  return (
+    <motion.div
+      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
+      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+      transition={{ duration: 0.4 }}
+    >
+      {!isPlaying && timeLeft === config.duration && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
+          <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
+            <Play className="mr-2 h-6 w-6" /> Open the Map
+          </Button>
+        </div>
+      )}
+
+      <div className="absolute top-4 left-4 flex gap-4 z-20">
+        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
+        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
+      </div>
+
+      {isPlaying && puzzle && target && (
+        <>
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
+            <span className="text-sm text-slate-400 font-bold whitespace-nowrap">Follow line</span>
+            <span className="px-3 py-1 rounded-md font-bold text-white" style={{ backgroundColor: config.anaglyphMode ? '#FF0000' : target.color }}>{target.label}</span>
+            <span className="text-sm text-slate-400 font-bold whitespace-nowrap">with your eyes only!</span>
+          </div>
+
+          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+            {puzzle.lines.map((line, i) => (
+              <path key={i} d={line.path} fill="none" stroke={config.anaglyphMode ? (i === puzzle.targetLine ? '#FF0000' : '#00FFFF') : line.color} strokeWidth={1.2} strokeLinecap="round" />
+            ))}
+          </svg>
+
+          {puzzle.lines.map((line, i) => {
+            const sy = 20 + (60 / (puzzle.lines.length - 1)) * i;
+            return (
+              <div key={line.label} className="absolute -translate-y-1/2 px-2 py-0.5 rounded font-bold text-white text-sm md:text-base" style={{ left: '1%', top: `${sy}%`, backgroundColor: config.anaglyphMode ? '#FF0000' : line.color }}>
+                {line.label}
+              </div>
+            );
+          })}
+
+          {puzzle.terminals.map((t, i) => (
+            <motion.button
+              key={t.label}
+              whileHover={{ scale: 1.15 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => handleChoice(i)}
+              className="absolute -translate-x-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 rounded-full bg-slate-50 border-4 border-slate-400 flex items-center justify-center font-bold text-slate-900 text-lg md:text-xl z-10"
+              style={{ left: `${t.x}%`, top: `${t.y}%` }}
+            >
+              {t.label}
+            </motion.button>
+          ))}
+        </>
+      )}
+    </motion.div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -738,7 +1112,10 @@ export default function App() {
         saccades: parsed?.stats?.saccades || [],
         peripheral: parsed?.stats?.peripheral || [],
         spotter: parsed?.stats?.spotter || [],
-        checkpoint: parsed?.stats?.checkpoint || []
+        checkpoint: parsed?.stats?.checkpoint || [],
+        metro: parsed?.stats?.metro || [],
+        station: parsed?.stats?.station || [],
+        navigator: parsed?.stats?.navigator || []
       }
     };
   });
@@ -886,7 +1263,7 @@ export default function App() {
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
               </Card>
 
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-cyan-500/50 transition-all cursor-pointer group overflow-hidden md:col-span-2" onClick={() => { setSelectedMode('checkpoint'); setScreen('game'); }}>
+              <Card className="relative bg-slate-900 border-slate-800 hover:border-cyan-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('checkpoint'); setScreen('game'); }}>
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     <ShieldAlert className="h-6 w-6 text-cyan-500" />
@@ -895,6 +1272,39 @@ export default function App() {
                   <CardDescription className="text-slate-400">Improve visual discrimination and reaction time.</CardDescription>
                 </CardHeader>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-cyan-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
+              </Card>
+
+              <Card className="relative bg-slate-900 border-slate-800 hover:border-rose-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('metro'); setScreen('game'); }}>
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-rose-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <TrainFront className="h-6 w-6 text-rose-500" />
+                  </div>
+                  <CardTitle className="text-slate-50">Metro Tracker</CardTitle>
+                  <CardDescription className="text-slate-400">Follow the metro train along its winding line with your eyes.</CardDescription>
+                </CardHeader>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-rose-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
+              </Card>
+
+              <Card className="relative bg-slate-900 border-slate-800 hover:border-emerald-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('station'); setScreen('game'); }}>
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <MapPin className="h-6 w-6 text-emerald-500" />
+                  </div>
+                  <CardTitle className="text-slate-50">Station Hunt</CardTitle>
+                  <CardDescription className="text-slate-400">Find the right station letter among look-alikes to sharpen fine detail vision.</CardDescription>
+                </CardHeader>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
+              </Card>
+
+              <Card className="relative bg-slate-900 border-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group overflow-hidden md:col-span-2" onClick={() => { setSelectedMode('navigator'); setScreen('game'); }}>
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <Route className="h-6 w-6 text-indigo-500" />
+                  </div>
+                  <CardTitle className="text-slate-50">Line Navigator</CardTitle>
+                  <CardDescription className="text-slate-400">Trace tangled metro lines with your eyes to find the right terminal station.</CardDescription>
+                </CardHeader>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
               </Card>
 
             </motion.div>
@@ -919,6 +1329,9 @@ export default function App() {
                   {selectedMode === 'peripheral' && 'Peripheral Awareness'}
                   {selectedMode === 'spotter' && 'Contrast Sensitivity'}
                   {selectedMode === 'checkpoint' && 'Visual Discrimination'}
+                  {selectedMode === 'metro' && 'Smooth Pursuit'}
+                  {selectedMode === 'station' && 'Acuity & Crowding'}
+                  {selectedMode === 'navigator' && 'Visual Tracing'}
                 </Badge>
               </div>
 
@@ -929,6 +1342,9 @@ export default function App() {
               {selectedMode === 'peripheral' && <PeripheralPatrol config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'spotter' && <FoggySpotter config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'checkpoint' && <Checkpoint config={config} onComplete={handleGameComplete} />}
+              {selectedMode === 'metro' && <MetroTracker config={config} onComplete={handleGameComplete} />}
+              {selectedMode === 'station' && <StationHunt config={config} onComplete={handleGameComplete} />}
+              {selectedMode === 'navigator' && <LineNavigator config={config} onComplete={handleGameComplete} />}
               
               <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex gap-4 items-start">
                 <div className="p-2 bg-blue-500/20 rounded-full">
