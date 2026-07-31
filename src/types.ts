@@ -1,4 +1,4 @@
-export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint';
+export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameStats {
