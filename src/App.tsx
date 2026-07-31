@@ -131,7 +131,7 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
 
   return (
     <motion.div 
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
+      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
       onPointerDown={handleMiss}
@@ -226,7 +226,7 @@ const FoggyFlight = ({ config, onComplete }: { config: GameConfig; onComplete: (
 
   return (
     <motion.div 
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-400 rounded-xl overflow-hidden border-4 border-slate-800"
+      className="relative w-full h-full min-h-[420px] bg-slate-400 rounded-xl overflow-hidden border-4 border-slate-800"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
       onClick={handleMiss}
@@ -309,7 +309,7 @@ const TrafficJam = ({ config, onComplete }: { config: GameConfig; onComplete: (s
   };
 
   return (
-    <div className="relative w-full h-[75vh] min-h-[500px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex items-center justify-center">
+    <div className="relative w-full h-full min-h-[420px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex items-center justify-center">
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
@@ -386,7 +386,7 @@ const SpeedwaySaccades = ({ config, onComplete }: { config: GameConfig; onComple
 
   return (
     <motion.div 
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800"
+      className="relative w-full h-full min-h-[420px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
       onClick={handleMiss}
@@ -468,7 +468,7 @@ const PeripheralPatrol = ({ config, onComplete }: { config: GameConfig; onComple
 
   return (
     <motion.div 
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
+      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
       onClick={handleMiss}
@@ -548,7 +548,7 @@ const FoggySpotter = ({ config, onComplete }: { config: GameConfig; onComplete: 
   const targetOpacity = config.difficulty === 'hard' ? 'opacity-70' : (config.difficulty === 'medium' ? 'opacity-50' : 'opacity-30');
 
   return (
-    <div className="relative w-full h-[75vh] min-h-[500px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex items-center justify-center">
+    <div className="relative w-full h-full min-h-[420px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex items-center justify-center">
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
@@ -674,7 +674,7 @@ const Checkpoint = ({ config, onComplete }: { config: GameConfig; onComplete: (s
 
   return (
     <motion.div 
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex flex-col items-center justify-center"
+      className="relative w-full h-full min-h-[420px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex flex-col items-center justify-center"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
     >
@@ -799,7 +799,7 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
 
   return (
     <motion.div
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
+      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
       onPointerDown={handleMiss}
@@ -914,7 +914,7 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
   const cellSize = config.difficulty === 'hard' ? 'w-12 h-12 md:w-16 md:h-16' : 'w-14 h-14 md:w-20 md:h-20';
 
   return (
-    <div className="relative w-full h-[75vh] min-h-[500px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex flex-col items-center justify-center">
+    <div className="relative w-full h-full min-h-[420px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex flex-col items-center justify-center">
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
@@ -1035,7 +1035,7 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
 
   return (
     <motion.div
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
+      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
     >
@@ -1174,7 +1174,7 @@ const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplet
 
   return (
     <motion.div
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
+      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
     >
@@ -1309,7 +1309,7 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
 
   return (
     <motion.div
-      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
+      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
     >
@@ -1444,10 +1444,14 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30">
-      <div className="max-w-7xl mx-auto p-4 md:p-8">
-        
+    <div className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${screen === 'game' ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}>
+      {/* During a game the layout switches to a full-viewport flex column so the
+          play area gets every pixel the screen has (100dvh tracks resizes and
+          mobile browser chrome automatically) */}
+      <div className={`mx-auto ${screen === 'game' ? 'h-full max-w-none p-2 md:p-3 flex flex-col' : 'max-w-7xl p-4 md:p-8'}`}>
+
         {/* Header */}
+        {screen !== 'game' && (
         <header className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)]">
@@ -1470,6 +1474,7 @@ export default function App() {
             </Button>
           </div>
         </header>
+        )}
 
         <AnimatePresence mode="wait">
           {screen === 'home' && (
@@ -1612,6 +1617,16 @@ export default function App() {
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-fuchsia-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
               </Card>
 
+              <div className="md:col-span-2 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex gap-4 items-start">
+                <div className="p-2 bg-blue-500/20 rounded-full">
+                  <Eye className="h-5 w-5 text-blue-400" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-blue-400">Pro Tip</h4>
+                  <p className="text-sm text-slate-400">Make sure to wear your patch on the strong eye as directed by your doctor for best results!</p>
+                </div>
+              </div>
+
             </motion.div>
           )}
 
@@ -1621,11 +1636,13 @@ export default function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 1.05 }}
+              className="h-full min-h-0 flex flex-col"
             >
-              <div className="mb-6 flex items-center justify-between">
-                <Button variant="ghost" onClick={() => setScreen('home')}>
+              <div className="mb-2 flex items-center justify-between shrink-0">
+                <Button variant="ghost" size="sm" onClick={() => setScreen('home')}>
                   <ChevronLeft className="mr-2 h-4 w-4" /> Back to Base
                 </Button>
+                <div className="flex items-center gap-1">
                 <Badge className="bg-blue-600">
                   {selectedMode === 'tracking' && 'Tracking Exercise'}
                   {selectedMode === 'contrast' && 'Contrast Training'}
@@ -1640,8 +1657,13 @@ export default function App() {
                   {selectedMode === 'crossing' && 'Pursuit & Attention'}
                   {selectedMode === 'memory' && 'Visual Memory'}
                 </Badge>
+                <Button variant="ghost" size="icon" onClick={toggleFullscreen} title="Toggle Fullscreen">
+                  {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
+                </Button>
+                </div>
               </div>
 
+              <div className="flex-1 min-h-0 overflow-y-auto">
               {selectedMode === 'tracking' && <RocketTracker config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'contrast' && <FoggyFlight config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'detail' && <TrafficJam config={config} onComplete={handleGameComplete} />}
@@ -1654,15 +1676,6 @@ export default function App() {
               {selectedMode === 'navigator' && <LineNavigator config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'crossing' && <RailwayCrossing config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'memory' && <MetroMemory config={config} onComplete={handleGameComplete} />}
-              
-              <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex gap-4 items-start">
-                <div className="p-2 bg-blue-500/20 rounded-full">
-                  <Eye className="h-5 w-5 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-blue-400">Pro Tip</h4>
-                  <p className="text-sm text-slate-400">Make sure to wear your patch on the strong eye as directed by your doctor for best results!</p>
-                </div>
               </div>
             </motion.div>
           )}
