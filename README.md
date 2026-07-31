@@ -15,6 +15,16 @@ View your app in AI Studio: https://ai.studio/apps/d41516de-5ce9-467e-8d3f-3c7ac
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
+2. Run the app:
    `npm run dev`
+
+## Deploy to GitHub Pages
+
+Pushes to `main` build the app and publish it via
+[.github/workflows/deploy-pages.yml](.github/workflows/deploy-pages.yml).
+
+One-time setup: in **Settings → Pages**, set **Source** to **GitHub Actions**.
+
+The site is served from `https://<user>.github.io/vision_hero_trainer/`, so
+`vite.config.ts` sets `base` to `/vision_hero_trainer/` for production builds.
+Renaming the repository means updating that value.
