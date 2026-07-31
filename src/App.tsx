@@ -4,7 +4,7 @@ import {
   Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship,
   Trophy, Play, Settings, ChevronLeft, Zap, Volume2, VolumeX, Eye, Maximize, Minimize,
   Radar, CloudFog, ShieldAlert, Crosshair, Target,
-  TrainFront, MapPin, Route
+  TrainFront, MapPin, Route, TramFront, Brain
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -755,7 +755,9 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
         const path = pathRef.current;
         if (!path) return;
         const total = path.getTotalLength();
-        let unitsPerTick = config.speed * 0.4;
+        // Deliberately slow: young children need a target the eye can
+        // comfortably lock onto. Speed 5 ≈ one full sweep in ~12s.
+        let unitsPerTick = config.speed * 0.08;
         // Hard mode: erratic speed shifts, like a train braking and accelerating
         if (config.difficulty === 'hard') {
           unitsPerTick *= (1 + Math.sin(Date.now() / 500) * 0.4);
@@ -1091,6 +1093,285 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
   );
 };
 
+interface Vehicle {
+  id: number;
+  x: number;
+  y: number;
+  dir: 1 | -1;
+  speed: number;
+  isTarget: boolean;
+  icon: any;
+}
+
+const CROSSING_LANES = [16, 33, 50, 67, 84];
+
+const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(config.duration);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [shake, setShake] = useState(false);
+  const idRef = useRef(0);
+  const spawnCooldownRef = useRef(0);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (isPlaying && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => Math.max(0, prev - 0.016));
+
+        setVehicles(prev => {
+          let next = prev
+            .map(v => ({ ...v, x: v.x + v.dir * v.speed }))
+            .filter(v => v.x > -10 && v.x < 110);
+
+          spawnCooldownRef.current -= 16;
+          const maxConcurrent = config.difficulty === 'hard' ? 5 : (config.difficulty === 'medium' ? 4 : 3);
+          if (spawnCooldownRef.current <= 0 && next.length < maxConcurrent) {
+            const dir: 1 | -1 = Math.random() > 0.5 ? 1 : -1;
+            const isTarget = Math.random() < 0.45;
+            const distractors = [Car, Bus, Truck];
+            // Gentle pace so a young child can lock onto each vehicle
+            const baseSpeed = config.speed * 0.02 * (config.difficulty === 'hard' ? 1.4 : 1);
+            next = [...next, {
+              id: idRef.current++,
+              x: dir === 1 ? -8 : 108,
+              y: CROSSING_LANES[Math.floor(Math.random() * CROSSING_LANES.length)],
+              dir,
+              speed: baseSpeed * (0.7 + Math.random() * 0.6),
+              isTarget,
+              icon: isTarget ? TrainFront : distractors[Math.floor(Math.random() * distractors.length)]
+            }];
+            spawnCooldownRef.current = 1000 + Math.random() * 1200;
+          }
+          return next;
+        });
+      }, 16);
+    } else if (timeLeft <= 0 && isPlaying) {
+      setIsPlaying(false);
+      if (timerRef.current) clearInterval(timerRef.current);
+      playSound('complete', config.soundEnabled);
+      onComplete({ score, timeSpent: config.duration, accuracy: score / config.duration, date: new Date().toISOString() });
+      confetti({ particleCount: 250, spread: 160, origin: { y: 0.5 }, colors: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444'] });
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [isPlaying, timeLeft]);
+
+  const handleTap = (v: Vehicle) => (e: React.PointerEvent) => {
+    e.stopPropagation();
+    if (!isPlaying) return;
+    if (v.isTarget) {
+      playSound('hit', config.soundEnabled);
+      setScore(s => s + 1);
+    } else {
+      playSound('miss', config.soundEnabled);
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+      setScore(s => Math.max(0, s - 1));
+    }
+    setVehicles(prev => prev.filter(x => x.id !== v.id));
+  };
+
+  return (
+    <motion.div
+      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
+      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+      transition={{ duration: 0.4 }}
+    >
+      {!isPlaying && Math.ceil(timeLeft) === config.duration && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-lg text-slate-300 font-medium">Tap only the trains — let the cars pass!</p>
+            <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
+              <Play className="mr-2 h-6 w-6" /> Open the Crossing
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="absolute top-4 left-4 flex gap-4 z-20">
+        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
+        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
+      </div>
+
+      {CROSSING_LANES.map(y => (
+        <div key={y} className="absolute left-0 right-0 border-t-2 border-dashed border-slate-800 pointer-events-none" style={{ top: `${y}%` }} />
+      ))}
+
+      {vehicles.map(v => (
+        <div
+          key={v.id}
+          className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer z-10"
+          style={{ left: `${v.x}%`, top: `${v.y}%`, width: config.size * 1.2, height: config.size * 1.2 }}
+          onPointerDown={handleTap(v)}
+        >
+          <v.icon
+            className={`w-full h-full ${config.anaglyphMode
+              ? (v.isTarget ? 'text-[#FF0000]' : 'text-[#00FFFF]')
+              : (v.isTarget ? 'text-red-400' : 'text-slate-500')}`}
+            style={{ transform: v.dir === -1 ? 'scaleX(-1)' : undefined }}
+          />
+        </div>
+      ))}
+    </motion.div>
+  );
+};
+
+const MEMORY_STATIONS = [
+  { x: 18, y: 28, color: '#22c55e' },
+  { x: 50, y: 16, color: '#eab308' },
+  { x: 82, y: 28, color: '#ef4444' },
+  { x: 82, y: 72, color: '#3b82f6' },
+  { x: 50, y: 84, color: '#a855f7' },
+  { x: 18, y: 72, color: '#f97316' },
+];
+
+const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(config.duration);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [phase, setPhase] = useState<'showing' | 'input'>('showing');
+  const [sequence, setSequence] = useState<number[]>([]);
+  const [inputIndex, setInputIndex] = useState(0);
+  const [litStation, setLitStation] = useState<number | null>(null);
+  const [shake, setShake] = useState(false);
+  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
+
+  const baseLength = config.difficulty === 'hard' ? 4 : (config.difficulty === 'medium' ? 3 : 2);
+  const stepMs = config.difficulty === 'hard' ? 550 : 750;
+
+  const clearTimeouts = () => {
+    timeoutsRef.current.forEach(clearTimeout);
+    timeoutsRef.current = [];
+  };
+
+  const startRound = (length: number) => {
+    clearTimeouts();
+    const seq: number[] = [];
+    for (let i = 0; i < length; i++) {
+      let next = Math.floor(Math.random() * MEMORY_STATIONS.length);
+      // Avoid immediate repeats so every step is a visible eye jump
+      while (seq.length > 0 && next === seq[seq.length - 1]) {
+        next = Math.floor(Math.random() * MEMORY_STATIONS.length);
+      }
+      seq.push(next);
+    }
+    setSequence(seq);
+    setInputIndex(0);
+    setPhase('showing');
+    setLitStation(null);
+    seq.forEach((stationIdx, i) => {
+      timeoutsRef.current.push(setTimeout(() => setLitStation(stationIdx), 400 + i * stepMs));
+      timeoutsRef.current.push(setTimeout(() => setLitStation(null), 400 + i * stepMs + stepMs * 0.7));
+    });
+    timeoutsRef.current.push(setTimeout(() => setPhase('input'), 400 + seq.length * stepMs));
+  };
+
+  useEffect(() => {
+    if (isPlaying && timeLeft > 0) {
+      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+      if (sequence.length === 0) startRound(baseLength);
+      return () => clearInterval(timer);
+    } else if (timeLeft === 0 && isPlaying) {
+      setIsPlaying(false);
+      clearTimeouts();
+      playSound('complete', config.soundEnabled);
+      onComplete({ score, timeSpent: config.duration, accuracy: score / 10, date: new Date().toISOString() });
+      confetti({ particleCount: 250, spread: 160, origin: { y: 0.5 }, colors: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444'] });
+    }
+  }, [isPlaying, timeLeft, sequence]);
+
+  useEffect(() => clearTimeouts, []);
+
+  const handleStationTap = (stationIdx: number) => {
+    if (!isPlaying || phase !== 'input') return;
+    if (stationIdx === sequence[inputIndex]) {
+      playSound('hit', config.soundEnabled);
+      setLitStation(stationIdx);
+      timeoutsRef.current.push(setTimeout(() => setLitStation(null), 250));
+      if (inputIndex + 1 >= sequence.length) {
+        setScore(s => s + 1);
+        setPhase('showing');
+        // Sequence grows by one after each success
+        timeoutsRef.current.push(setTimeout(() => startRound(sequence.length + 1), 700));
+      } else {
+        setInputIndex(i => i + 1);
+      }
+    } else {
+      playSound('miss', config.soundEnabled);
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
+      setScore(s => Math.max(0, s - 1));
+      setPhase('showing');
+      timeoutsRef.current.push(setTimeout(() => startRound(baseLength), 700));
+    }
+  };
+
+  return (
+    <motion.div
+      className="relative w-full h-[75vh] min-h-[500px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
+      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+      transition={{ duration: 0.4 }}
+    >
+      {!isPlaying && timeLeft === config.duration && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-lg text-slate-300 font-medium">Watch which stations light up, then tap them in the same order!</p>
+            <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
+              <Play className="mr-2 h-6 w-6" /> Start the Route
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="absolute top-4 left-4 flex gap-4 z-20">
+        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
+        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
+      </div>
+
+      {isPlaying && (
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
+          <span className="text-sm font-bold text-slate-300">
+            {phase === 'showing' ? '👀 Watch the route...' : '✋ Your turn! Repeat the route'}
+          </span>
+        </div>
+      )}
+
+      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon
+          points={MEMORY_STATIONS.map(s => `${s.x},${s.y}`).join(' ')}
+          fill="none"
+          stroke={config.anaglyphMode ? '#00FFFF' : '#334155'}
+          strokeWidth={1}
+          strokeLinejoin="round"
+        />
+      </svg>
+
+      {MEMORY_STATIONS.map((st, i) => {
+        const lit = litStation === i;
+        const color = config.anaglyphMode ? '#FF0000' : st.color;
+        return (
+          <motion.button
+            key={i}
+            whileHover={phase === 'input' ? { scale: 1.1 } : {}}
+            whileTap={phase === 'input' ? { scale: 0.9 } : {}}
+            onClick={() => handleStationTap(i)}
+            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-4 transition-all duration-150"
+            style={{
+              left: `${st.x}%`, top: `${st.y}%`,
+              width: config.size * 1.5, height: config.size * 1.5,
+              borderColor: color,
+              backgroundColor: lit ? color : '#0f172a',
+              boxShadow: lit ? `0 0 30px ${color}` : 'none',
+              cursor: phase === 'input' ? 'pointer' : 'default'
+            }}
+          />
+        );
+      })}
+    </motion.div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
@@ -1115,7 +1396,9 @@ export default function App() {
         checkpoint: parsed?.stats?.checkpoint || [],
         metro: parsed?.stats?.metro || [],
         station: parsed?.stats?.station || [],
-        navigator: parsed?.stats?.navigator || []
+        navigator: parsed?.stats?.navigator || [],
+        crossing: parsed?.stats?.crossing || [],
+        memory: parsed?.stats?.memory || []
       }
     };
   });
@@ -1296,7 +1579,7 @@ export default function App() {
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
               </Card>
 
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group overflow-hidden md:col-span-2" onClick={() => { setSelectedMode('navigator'); setScreen('game'); }}>
+              <Card className="relative bg-slate-900 border-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('navigator'); setScreen('game'); }}>
                 <CardHeader>
                   <div className="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                     <Route className="h-6 w-6 text-indigo-500" />
@@ -1305,6 +1588,28 @@ export default function App() {
                   <CardDescription className="text-slate-400">Trace tangled metro lines with your eyes to find the right terminal station.</CardDescription>
                 </CardHeader>
                 <div className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
+              </Card>
+
+              <Card className="relative bg-slate-900 border-slate-800 hover:border-sky-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('crossing'); setScreen('game'); }}>
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-sky-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <TramFront className="h-6 w-6 text-sky-500" />
+                  </div>
+                  <CardTitle className="text-slate-50">Railway Crossing</CardTitle>
+                  <CardDescription className="text-slate-400">Tap only the passing trains and let the cars go by.</CardDescription>
+                </CardHeader>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-sky-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
+              </Card>
+
+              <Card className="relative bg-slate-900 border-slate-800 hover:border-fuchsia-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('memory'); setScreen('game'); }}>
+                <CardHeader>
+                  <div className="w-12 h-12 rounded-lg bg-fuchsia-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <Brain className="h-6 w-6 text-fuchsia-500" />
+                  </div>
+                  <CardTitle className="text-slate-50">Metro Memory</CardTitle>
+                  <CardDescription className="text-slate-400">Watch stations light up, then repeat the route in order.</CardDescription>
+                </CardHeader>
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-fuchsia-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
               </Card>
 
             </motion.div>
@@ -1332,6 +1637,8 @@ export default function App() {
                   {selectedMode === 'metro' && 'Smooth Pursuit'}
                   {selectedMode === 'station' && 'Acuity & Crowding'}
                   {selectedMode === 'navigator' && 'Visual Tracing'}
+                  {selectedMode === 'crossing' && 'Pursuit & Attention'}
+                  {selectedMode === 'memory' && 'Visual Memory'}
                 </Badge>
               </div>
 
@@ -1345,6 +1652,8 @@ export default function App() {
               {selectedMode === 'metro' && <MetroTracker config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'station' && <StationHunt config={config} onComplete={handleGameComplete} />}
               {selectedMode === 'navigator' && <LineNavigator config={config} onComplete={handleGameComplete} />}
+              {selectedMode === 'crossing' && <RailwayCrossing config={config} onComplete={handleGameComplete} />}
+              {selectedMode === 'memory' && <MetroMemory config={config} onComplete={handleGameComplete} />}
               
               <div className="mt-8 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex gap-4 items-start">
                 <div className="p-2 bg-blue-500/20 rounded-full">
