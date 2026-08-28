@@ -14,6 +14,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   anaglyphTargetLevel: 100,
   anaglyphSceneLevel: 100,
   soundEnabled: true,
+  autoFullscreen: true,
   difficulty: 'medium',
 };
 

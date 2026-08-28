@@ -37,7 +37,14 @@ point rather than ending the game, and every round finishes with confetti.
 - **Twelve exercises**, each training a different visual skill
 - **Three difficulty presets** plus manual control over speed, target size and session length
 - **Red/cyan anaglyph mode** for dichoptic training with 3D glasses
-- **Full-screen play area** that uses every pixel of the display, on desktop or tablet
+- **Animated previews** on every home tile, so a child picks a game by recognising the
+  picture rather than reading the title
+- **Built for touch** — every control clears the 44px minimum tap target, with type and
+  contrast to match
+- **Fits the screen** — the home grid and the play area both size themselves to one
+  viewport height, so nothing scrolls out of a child's reach
+- **Installable** — add it to a tablet's home screen and it launches full screen, with no
+  browser chrome
 - **Progress tracking** — XP, levels and per-exercise history saved locally in the browser
 - **Sound and haptic-style feedback**: rising tones for hits, a buzz and screen shake for misses
 - **No account, no backend, no data collection** — everything stays in the browser
@@ -182,6 +189,7 @@ rather than to the game:
 | **Target size** | 20–100px; larger targets suit deeper amblyopia |
 | **Session duration** | 10–300 seconds per round |
 | **Sound effects** | Feedback tones on and off |
+| **Full screen exercises** | Fill the whole screen when an exercise starts |
 | **Anaglyph mode** | Red/cyan dichoptic rendering, with per-device colour calibration (see below) |
 
 Progress, level and per-exercise history are stored in the browser's `localStorage` under
@@ -229,6 +237,22 @@ colours and brightness levels across.
 
 Ask your ophthalmologist or orthoptist whether dichoptic training is appropriate, and which
 eye should be behind the red filter.
+
+## Running it full screen
+
+The home screen and every exercise lay themselves out inside a single viewport height, so
+the app already uses the whole window without scrolling. To lose the browser chrome as well:
+
+- **Install it (best for daily training).** On a tablet or phone, open the site and choose
+  *Add to Home Screen*; on desktop Chrome or Edge, use the install icon in the address bar.
+  The [web app manifest](public/manifest.webmanifest) requests `display: fullscreen`, so
+  launching from the installed icon opens the app with no browser UI at all.
+- **Or let exercises go full screen.** *Full Screen Exercises* in Parent's Corner (on by
+  default) puts the app into full screen when an exercise starts.
+
+A web page cannot put itself into full screen on load — browsers only grant it in response
+to a tap or click — which is why the app asks at the moment an exercise begins, and why
+installing is the way to have it open full screen every time.
 
 ## Getting started
 

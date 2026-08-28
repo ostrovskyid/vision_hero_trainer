@@ -17,6 +17,36 @@ import {
   DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS,
   ANAGLYPH_PRESETS, ANAGLYPH_TARGET_DEFAULT, ANAGLYPH_SCENE_DEFAULT,
 } from './constants';
+import { GamePreview } from './GamePreview';
+
+/**
+ * The home screen tiles. Colour classes are spelled out in full because
+ * Tailwind compiles class names ahead of time and cannot build them from
+ * variables.
+ */
+const GAME_TILES: {
+  mode: GameMode;
+  title: string;
+  description: string;
+  Icon: React.ComponentType<{ className?: string }>;
+  iconClass: string;
+  chipClass: string;
+  hoverClass: string;
+  barClass: string;
+}[] = [
+  { mode: 'tracking', title: 'Rocket Tracker', description: 'Follow the flying rocket.', Icon: Rocket, iconClass: 'text-blue-400', chipClass: 'bg-blue-500/10', hoverClass: 'hover:border-blue-500/60', barClass: 'bg-blue-500' },
+  { mode: 'contrast', title: 'Foggy Flight', description: 'Find planes in the fog.', Icon: Plane, iconClass: 'text-purple-400', chipClass: 'bg-purple-500/10', hoverClass: 'hover:border-purple-500/60', barClass: 'bg-purple-500' },
+  { mode: 'detail', title: 'Traffic Jam', description: 'Spot the odd one out.', Icon: Car, iconClass: 'text-orange-400', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-500/60', barClass: 'bg-orange-500' },
+  { mode: 'saccades', title: 'Speedway Saccades', description: 'Catch the jumping car.', Icon: Train, iconClass: 'text-red-400', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-500/60', barClass: 'bg-red-500' },
+  { mode: 'peripheral', title: 'Peripheral Patrol', description: 'Catch targets at the edges.', Icon: Radar, iconClass: 'text-green-400', chipClass: 'bg-green-500/10', hoverClass: 'hover:border-green-500/60', barClass: 'bg-green-500' },
+  { mode: 'spotter', title: 'Foggy Spotter', description: 'Find the faded shape.', Icon: CloudFog, iconClass: 'text-yellow-400', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-500/60', barClass: 'bg-yellow-500' },
+  { mode: 'checkpoint', title: 'Checkpoint', description: 'Tap the matching vehicle.', Icon: ShieldAlert, iconClass: 'text-cyan-400', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-500/60', barClass: 'bg-cyan-500' },
+  { mode: 'metro', title: 'Metro Tracker', description: 'Follow the metro train.', Icon: TrainFront, iconClass: 'text-rose-400', chipClass: 'bg-rose-500/10', hoverClass: 'hover:border-rose-500/60', barClass: 'bg-rose-500' },
+  { mode: 'station', title: 'Station Hunt', description: 'Find the right station letter.', Icon: MapPin, iconClass: 'text-emerald-400', chipClass: 'bg-emerald-500/10', hoverClass: 'hover:border-emerald-500/60', barClass: 'bg-emerald-500' },
+  { mode: 'navigator', title: 'Line Navigator', description: 'Trace the line to its stop.', Icon: Route, iconClass: 'text-indigo-400', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-500/60', barClass: 'bg-indigo-500' },
+  { mode: 'crossing', title: 'Railway Crossing', description: 'Tap trains, skip the cars.', Icon: TramFront, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
+  { mode: 'memory', title: 'Metro Memory', description: 'Repeat the lit-up route.', Icon: Brain, iconClass: 'text-fuchsia-400', chipClass: 'bg-fuchsia-500/10', hoverClass: 'hover:border-fuchsia-500/60', barClass: 'bg-fuchsia-500' },
+];
 
 const CONFIG_STORAGE_KEY = 'eyequest_config';
 const DISPLAY_STORAGE_KEY = 'eyequest_display';
@@ -1255,7 +1285,7 @@ const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplet
           <v.icon
             className={`w-full h-full ${config.anaglyphMode
               ? (v.isTarget ? 'text-[var(--ag-target)]' : 'text-[var(--ag-scene)]')
-              : (v.isTarget ? 'text-red-400' : 'text-slate-500')}`}
+              : (v.isTarget ? 'text-red-400' : 'text-slate-400')}`}
             style={{ transform: v.dir === -1 ? 'scaleX(-1)' : undefined }}
           />
         </div>
@@ -1437,14 +1467,14 @@ const ColorField = ({ label, hint, value, onChange }: {
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">{label}</label>
+      <label className="text-base font-medium">{label}</label>
       <div className="flex items-center gap-2">
         <input
           type="color"
           aria-label={`${label} colour picker`}
           value={value}
           onChange={(e) => onChange(e.target.value.toUpperCase())}
-          className="h-10 w-14 shrink-0 cursor-pointer rounded-md border border-slate-700 bg-slate-800 p-1"
+          className="h-12 w-16 shrink-0 cursor-pointer rounded-md border border-slate-700 bg-slate-800 p-1"
         />
         <input
           type="text"
@@ -1454,10 +1484,10 @@ const ColorField = ({ label, hint, value, onChange }: {
           maxLength={7}
           onChange={(e) => { setDraft(e.target.value); commit(e.target.value); }}
           onBlur={() => setDraft(value)}
-          className="h-10 w-full rounded-md border border-slate-700 bg-slate-800 px-3 font-mono text-sm uppercase text-slate-100 focus:border-blue-500 focus:outline-none"
+          className="h-12 w-full rounded-md border border-slate-700 bg-slate-800 px-4 font-mono text-base uppercase text-slate-100 focus:border-blue-500 focus:outline-none"
         />
       </div>
-      <p className="text-xs text-slate-500">{hint}</p>
+      <p className="text-sm text-slate-400">{hint}</p>
     </div>
   );
 };
@@ -1511,6 +1541,10 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [calibrationTest, setCalibrationTest] = useState(false);
 
+  // Home and game both lay themselves out inside one viewport height; settings
+  // and stats stay ordinary scrolling pages.
+  const fillsViewport = screen === 'home' || screen === 'game';
+
   // Brightness is folded in here so the settings screen keeps editing the base
   // colours while games and previews render the calibrated result.
   const renderConfig = useMemo<GameConfig>(() => ({
@@ -1544,6 +1578,23 @@ export default function App() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  /**
+   * Browsers only grant full screen from a user gesture, so this runs on the
+   * tap that opens an exercise. A page cannot go full screen on load — for
+   * that, install the app to the home screen (the manifest asks for full
+   * screen) and it launches without browser chrome.
+   */
+  const startGame = (mode: GameMode) => {
+    setSelectedMode(mode);
+    setScreen('game');
+    if (config.autoFullscreen && !document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {
+        // Refused (unsupported, or iPhone Safari): the in-app layout still
+        // fills the viewport, so this is only a nicety.
+      });
+    }
+  };
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
@@ -1572,7 +1623,7 @@ export default function App() {
 
   return (
     <div
-      className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${screen === 'game' ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
+      className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${fillsViewport ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
       // Tailwind cannot compile colours that are only known at runtime, so the
       // calibrated anaglyph pair is published as inherited CSS variables here.
       style={{
@@ -1607,22 +1658,22 @@ export default function App() {
             <span className="text-xs uppercase tracking-wider">Target</span>
             <button
               onClick={() => setConfig(c => ({ ...c, anaglyphTargetLevel: Math.max(20, c.anaglyphTargetLevel - 5) }))}
-              className="h-9 w-9 rounded-md border border-slate-800 text-lg text-slate-500 hover:text-slate-300"
+              className="h-12 w-12 rounded-md border border-slate-800 text-xl text-slate-500 hover:text-slate-300"
               aria-label="Dimmer target"
             >
               –
             </button>
-            <span className="w-14 text-center font-mono text-sm tabular-nums text-slate-500">{config.anaglyphTargetLevel}%</span>
+            <span className="w-16 text-center font-mono text-base tabular-nums text-slate-500">{config.anaglyphTargetLevel}%</span>
             <button
               onClick={() => setConfig(c => ({ ...c, anaglyphTargetLevel: Math.min(100, c.anaglyphTargetLevel + 5) }))}
-              className="h-9 w-9 rounded-md border border-slate-800 text-lg text-slate-500 hover:text-slate-300"
+              className="h-12 w-12 rounded-md border border-slate-800 text-xl text-slate-500 hover:text-slate-300"
               aria-label="Brighter target"
             >
               +
             </button>
             <button
               onClick={() => setCalibrationTest(false)}
-              className="ml-6 rounded-md border border-slate-800 px-4 py-2 text-sm text-slate-500 hover:text-slate-300"
+              className="ml-6 h-12 rounded-md border border-slate-800 px-6 text-base text-slate-500 hover:text-slate-300"
             >
               Done
             </button>
@@ -1637,19 +1688,19 @@ export default function App() {
       {/* During a game the layout switches to a full-viewport flex column so the
           play area gets every pixel the screen has (100dvh tracks resizes and
           mobile browser chrome automatically) */}
-      <div className={`mx-auto ${screen === 'game' ? 'h-full max-w-none p-2 md:p-3 flex flex-col' : 'max-w-7xl p-4 md:p-8'}`}>
+      <div className={`mx-auto flex flex-col ${fillsViewport ? 'h-full max-w-none p-2 md:p-4' : 'max-w-7xl p-4 md:p-8'}`}>
 
         {/* Header */}
         {screen !== 'game' && (
-        <header className="flex items-center justify-between mb-8">
+        <header className={`flex items-center justify-between shrink-0 ${screen === 'home' ? 'mb-3 md:mb-4' : 'mb-8'}`}>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)]">
               {user.avatar}
             </div>
             <div>
-              <h1 className="text-xl font-bold tracking-tight">Vision Express</h1>
+              <h1 className="text-2xl font-bold tracking-tight">Vision Express</h1>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Level {user.level}</span>
+                <span className="text-sm font-medium text-slate-300 uppercase tracking-wider">Level {user.level}</span>
                 <Progress value={(user.experience % 100)} className="w-20 h-1.5" />
               </div>
             </div>
@@ -1672,148 +1723,42 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              className="flex flex-1 min-h-0 flex-col gap-3"
             >
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-blue-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('tracking'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Rocket className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Rocket Tracker</CardTitle>
-                  <CardDescription className="text-slate-400">Improve eye tracking by following the moving rocket.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-blue-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
+              {/* The twelve tiles share the leftover viewport height: the column
+                  count steps up with width so rows stay a sensible shape, and
+                  auto-rows-fr splits the height evenly between them. Very short
+                  windows fall back to scrolling rather than crushing the tiles. */}
+              <div className="grid flex-1 min-h-0 auto-rows-fr grid-cols-2 gap-2.5 overflow-y-auto md:grid-cols-3 md:gap-3 xl:grid-cols-4">
+                {GAME_TILES.map(tile => (
+                  <Card
+                    key={tile.mode}
+                    className={`relative flex min-h-[9rem] flex-col gap-0 overflow-hidden border-slate-800 bg-slate-900 p-2.5 ${tile.hoverClass} group cursor-pointer transition-all md:p-3`}
+                    onClick={() => startGame(tile.mode)}
+                  >
+                    <div className="min-h-0 flex-1">
+                      <GamePreview mode={tile.mode} />
+                    </div>
+                    <div className="mt-2.5 flex shrink-0 items-center gap-2.5 md:mt-3">
+                      <div className={`h-10 w-10 shrink-0 rounded-lg md:h-11 md:w-11 ${tile.chipClass} flex items-center justify-center transition-transform group-hover:scale-110`}>
+                        <tile.Icon className={`h-6 w-6 ${tile.iconClass}`} />
+                      </div>
+                      <div className="min-w-0">
+                        <CardTitle className="truncate text-base leading-tight text-slate-50 md:text-lg">{tile.title}</CardTitle>
+                        <CardDescription className="mt-0.5 hidden truncate text-sm text-slate-300 lg:block">{tile.description}</CardDescription>
+                      </div>
+                    </div>
+                    <div className={`absolute bottom-0 left-0 right-0 h-1.5 ${tile.barClass} translate-y-full transform transition-transform group-hover:translate-y-0`} />
+                  </Card>
+                ))}
+              </div>
 
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-purple-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('contrast'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Plane className="h-6 w-6 text-purple-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Foggy Flight</CardTitle>
-                  <CardDescription className="text-slate-400">Train contrast sensitivity by finding planes in the fog.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-purple-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-orange-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('detail'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-orange-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Car className="h-6 w-6 text-orange-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Traffic Jam</CardTitle>
-                  <CardDescription className="text-slate-400">Sharpen focus by finding the odd vehicle out.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-orange-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-red-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('saccades'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-red-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Train className="h-6 w-6 text-red-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Speedway Saccades</CardTitle>
-                  <CardDescription className="text-slate-400">Train rapid eye movement by alternating focus between targets.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-red-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-green-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('peripheral'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Radar className="h-6 w-6 text-green-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Peripheral Patrol</CardTitle>
-                  <CardDescription className="text-slate-400">Expand your visual field by detecting targets at the edges.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-green-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-yellow-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('spotter'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <CloudFog className="h-6 w-6 text-yellow-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Foggy Spotter</CardTitle>
-                  <CardDescription className="text-slate-400">Train contrast sensitivity by finding the faded shape.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-yellow-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-cyan-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('checkpoint'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-cyan-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <ShieldAlert className="h-6 w-6 text-cyan-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Checkpoint</CardTitle>
-                  <CardDescription className="text-slate-400">Improve visual discrimination and reaction time.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-cyan-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-rose-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('metro'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-rose-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <TrainFront className="h-6 w-6 text-rose-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Metro Tracker</CardTitle>
-                  <CardDescription className="text-slate-400">Follow the metro train along its winding line with your eyes.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-rose-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-emerald-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('station'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-emerald-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <MapPin className="h-6 w-6 text-emerald-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Station Hunt</CardTitle>
-                  <CardDescription className="text-slate-400">Find the right station letter among look-alikes to sharpen fine detail vision.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-emerald-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-indigo-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('navigator'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-indigo-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Route className="h-6 w-6 text-indigo-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Line Navigator</CardTitle>
-                  <CardDescription className="text-slate-400">Trace tangled metro lines with your eyes to find the right terminal station.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-indigo-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-sky-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('crossing'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-sky-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <TramFront className="h-6 w-6 text-sky-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Railway Crossing</CardTitle>
-                  <CardDescription className="text-slate-400">Tap only the passing trains and let the cars go by.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-sky-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <Card className="relative bg-slate-900 border-slate-800 hover:border-fuchsia-500/50 transition-all cursor-pointer group overflow-hidden" onClick={() => { setSelectedMode('memory'); setScreen('game'); }}>
-                <CardHeader>
-                  <div className="w-12 h-12 rounded-lg bg-fuchsia-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                    <Brain className="h-6 w-6 text-fuchsia-500" />
-                  </div>
-                  <CardTitle className="text-slate-50">Metro Memory</CardTitle>
-                  <CardDescription className="text-slate-400">Watch stations light up, then repeat the route in order.</CardDescription>
-                </CardHeader>
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-fuchsia-500 transform translate-y-full group-hover:translate-y-0 transition-transform" />
-              </Card>
-
-              <div className="md:col-span-2 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex gap-4 items-start">
-                <div className="p-2 bg-blue-500/20 rounded-full">
-                  <Eye className="h-5 w-5 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="font-semibold text-blue-400">Pro Tip</h4>
-                  <p className="text-sm text-slate-400">Make sure to wear your patch on the strong eye as directed by your doctor for best results!</p>
-                </div>
+              <div className="flex shrink-0 items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-2.5">
+                <Eye className="h-5 w-5 shrink-0 text-blue-400" />
+                <p className="text-sm text-slate-300 md:text-base">
+                  <span className="font-semibold text-blue-400">Pro tip:</span> wear the patch on the
+                  strong eye as your doctor directed.
+                </p>
               </div>
 
             </motion.div>
@@ -1890,11 +1835,11 @@ export default function App() {
               <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-8">
                 <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
                   <div className="text-2xl font-bold text-blue-400">+{user.stats[selectedMode].slice(-1)[0]?.score * 10}</div>
-                  <div className="text-xs text-slate-500 uppercase">Experience</div>
+                  <div className="text-sm text-slate-300 uppercase">Experience</div>
                 </div>
                 <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
                   <div className="text-2xl font-bold text-purple-400">{user.stats[selectedMode].slice(-1)[0]?.score}</div>
-                  <div className="text-xs text-slate-500 uppercase">Score</div>
+                  <div className="text-sm text-slate-300 uppercase">Score</div>
                 </div>
               </div>
 
@@ -1923,8 +1868,8 @@ export default function App() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <label className="text-sm font-medium">Difficulty Level</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <label className="text-base font-medium">Difficulty Level</label>
+                    <div className="grid grid-cols-3 gap-3">
                       {(['easy', 'medium', 'hard'] as const).map((d) => (
                         <Button
                           key={d}
@@ -1943,7 +1888,7 @@ export default function App() {
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <label className="text-sm font-medium">Movement Speed</label>
+                      <label className="text-base font-medium">Movement Speed</label>
                       <span className="text-sm text-blue-400">{config.speed}</span>
                     </div>
                     <Slider 
@@ -1958,7 +1903,7 @@ export default function App() {
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <label className="text-sm font-medium">Target Size (px)</label>
+                      <label className="text-base font-medium">Target Size (px)</label>
                       <span className="text-sm text-blue-400">{config.size}px</span>
                     </div>
                     <Slider 
@@ -1973,7 +1918,7 @@ export default function App() {
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <label className="text-sm font-medium">Session Duration (s)</label>
+                      <label className="text-base font-medium">Session Duration (s)</label>
                       <span className="text-sm text-blue-400">{config.duration}s</span>
                     </div>
                     <Slider 
@@ -1988,8 +1933,8 @@ export default function App() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Sound Effects</label>
-                      <p className="text-xs text-slate-500">Enable or disable game sounds.</p>
+                      <label className="text-base font-medium">Sound Effects</label>
+                      <p className="text-sm text-slate-400">Enable or disable game sounds.</p>
                     </div>
                     <Button 
                       variant={config.soundEnabled ? "default" : "outline"}
@@ -2002,8 +1947,22 @@ export default function App() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
-                      <label className="text-sm font-medium">Anaglyph Mode (Red/Cyan)</label>
-                      <p className="text-xs text-slate-500">Enable if you have Red/Cyan glasses for dichoptic training.</p>
+                      <label className="text-base font-medium">Full Screen Exercises</label>
+                      <p className="text-sm text-slate-400">Fill the whole screen when an exercise starts.</p>
+                    </div>
+                    <Button
+                      variant={config.autoFullscreen ? "default" : "outline"}
+                      onClick={() => setConfig(c => ({ ...c, autoFullscreen: !c.autoFullscreen }))}
+                    >
+                      {config.autoFullscreen ? <Maximize className="h-4 w-4 mr-2" /> : <Minimize className="h-4 w-4 mr-2" />}
+                      {config.autoFullscreen ? "On" : "Off"}
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+                    <div className="space-y-0.5">
+                      <label className="text-base font-medium">Anaglyph Mode (Red/Cyan)</label>
+                      <p className="text-sm text-slate-400">Enable if you have Red/Cyan glasses for dichoptic training.</p>
                     </div>
                     <Button
                       variant={config.anaglyphMode ? "default" : "outline"}
@@ -2030,8 +1989,8 @@ export default function App() {
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-sm font-medium">Preview</label>
-                        <Button variant="outline" size="sm" onClick={() => setCalibrationTest(true)}>
+                        <label className="text-base font-medium">Preview</label>
+                        <Button variant="outline" onClick={() => setCalibrationTest(true)}>
                           <Maximize className="mr-2 h-4 w-4" /> Test full screen
                         </Button>
                       </div>
@@ -2050,7 +2009,7 @@ export default function App() {
                         <TrainFront className="relative h-12 w-12" style={{ color: renderConfig.anaglyphTarget }} />
                         <span className="relative text-4xl font-bold" style={{ color: renderConfig.anaglyphTarget }}>E</span>
                       </div>
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm text-slate-400">
                         Wearing the glasses, cover one eye at a time. Through the lens over the
                         training eye the train and letter should look bright while the line and
                         stations nearly disappear; through the other lens, the opposite. Judge it
@@ -2061,7 +2020,7 @@ export default function App() {
 
                     <div className="space-y-4">
                       <div className="flex justify-between">
-                        <label className="text-sm font-medium">Target brightness</label>
+                        <label className="text-base font-medium">Target brightness</label>
                         <span className="text-sm text-blue-400">{config.anaglyphTargetLevel}%</span>
                       </div>
                       <Slider
@@ -2072,7 +2031,7 @@ export default function App() {
                           setConfig(c => ({ ...c, anaglyphTargetLevel: val }));
                         }}
                       />
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm text-slate-400">
                         Turn this down until the targets stop showing as grey outlines through the
                         scenery lens. This is the strongest fix for ghosting.
                       </p>
@@ -2080,7 +2039,7 @@ export default function App() {
 
                     <div className="space-y-4">
                       <div className="flex justify-between">
-                        <label className="text-sm font-medium">Scenery brightness</label>
+                        <label className="text-base font-medium">Scenery brightness</label>
                         <span className="text-sm text-blue-400">{config.anaglyphSceneLevel}%</span>
                       </div>
                       <Slider
@@ -2091,7 +2050,7 @@ export default function App() {
                           setConfig(c => ({ ...c, anaglyphSceneLevel: val }));
                         }}
                       />
-                      <p className="text-xs text-slate-500">
+                      <p className="text-sm text-slate-400">
                         Lower this if the scenery bleeds through the target lens instead.
                       </p>
                     </div>
@@ -2112,7 +2071,7 @@ export default function App() {
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-sm font-medium">Starting points</label>
+                      <label className="text-base font-medium">Starting points</label>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {ANAGLYPH_PRESETS.map(preset => {
                           const active = config.anaglyphTarget === preset.target && config.anaglyphScene === preset.scene;
@@ -2120,7 +2079,7 @@ export default function App() {
                             <button
                               key={preset.name}
                               onClick={() => setConfig(c => ({ ...c, anaglyphTarget: preset.target, anaglyphScene: preset.scene }))}
-                              className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${active ? 'border-blue-500 bg-blue-500/10' : 'border-slate-800 bg-slate-800/40 hover:bg-slate-800'}`}
+                              className={`flex items-start gap-3 rounded-lg border p-4 text-left transition-colors ${active ? 'border-blue-500 bg-blue-500/10' : 'border-slate-800 bg-slate-800/40 hover:bg-slate-800'}`}
                             >
                               <span className="mt-0.5 flex shrink-0 gap-1">
                                 <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.target }} />
@@ -2128,7 +2087,7 @@ export default function App() {
                               </span>
                               <span>
                                 <span className="block text-sm font-medium text-slate-100">{preset.name}</span>
-                                <span className="block text-xs text-slate-500">{preset.description}</span>
+                                <span className="block text-sm text-slate-400">{preset.description}</span>
                               </span>
                             </button>
                           );
@@ -2156,7 +2115,7 @@ export default function App() {
                         <RotateCcw className="mr-2 h-4 w-4" /> Reset to classic
                       </Button>
                     </div>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-sm text-slate-400">
                       Swap the colours if the glasses put the red lens over the other eye. To reuse
                       this calibration on another device, copy the hex values and brightness levels
                       across.
@@ -2175,7 +2134,7 @@ export default function App() {
                       <button
                         key={av}
                         onClick={() => setUser(u => ({...u, avatar: av}))}
-                        className={`text-3xl p-3 rounded-xl border-2 transition-all ${user.avatar === av ? 'border-blue-500 bg-blue-500/10' : 'border-transparent bg-slate-800 hover:bg-slate-700'}`}
+                        className={`text-4xl h-16 w-16 flex items-center justify-center rounded-xl border-2 transition-all ${user.avatar === av ? 'border-blue-500 bg-blue-500/10' : 'border-transparent bg-slate-800 hover:bg-slate-700'}`}
                       >
                         {av}
                       </button>
@@ -2184,7 +2143,7 @@ export default function App() {
                 </CardContent>
               </Card>
 
-              <div className="text-xs text-slate-500 text-center italic">
+              <div className="text-sm text-slate-400 text-center italic">
                 Disclaimer: This application is a training aid and should be used in conjunction with professional medical advice and treatment plans.
               </div>
             </motion.div>
