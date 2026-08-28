@@ -34,18 +34,18 @@ const GAME_TILES: {
   hoverClass: string;
   barClass: string;
 }[] = [
-  { mode: 'tracking', title: 'Rocket Tracker', description: 'Follow the flying rocket with your eyes.', Icon: Rocket, iconClass: 'text-blue-400', chipClass: 'bg-blue-500/10', hoverClass: 'hover:border-blue-500/60', barClass: 'bg-blue-500' },
-  { mode: 'contrast', title: 'Foggy Flight', description: 'Find the planes hiding in the fog.', Icon: Plane, iconClass: 'text-purple-400', chipClass: 'bg-purple-500/10', hoverClass: 'hover:border-purple-500/60', barClass: 'bg-purple-500' },
-  { mode: 'detail', title: 'Traffic Jam', description: 'Spot the one vehicle that is different.', Icon: Car, iconClass: 'text-orange-400', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-500/60', barClass: 'bg-orange-500' },
-  { mode: 'saccades', title: 'Speedway Saccades', description: 'Catch the car as it jumps side to side.', Icon: Train, iconClass: 'text-red-400', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-500/60', barClass: 'bg-red-500' },
-  { mode: 'peripheral', title: 'Peripheral Patrol', description: 'Look straight ahead and catch the edges.', Icon: Radar, iconClass: 'text-green-400', chipClass: 'bg-green-500/10', hoverClass: 'hover:border-green-500/60', barClass: 'bg-green-500' },
-  { mode: 'spotter', title: 'Foggy Spotter', description: 'Find the one shape that has faded away.', Icon: CloudFog, iconClass: 'text-yellow-400', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-500/60', barClass: 'bg-yellow-500' },
-  { mode: 'checkpoint', title: 'Checkpoint', description: 'Tap only the vehicle that matches.', Icon: ShieldAlert, iconClass: 'text-cyan-400', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-500/60', barClass: 'bg-cyan-500' },
-  { mode: 'metro', title: 'Metro Tracker', description: 'Follow the train along the metro line.', Icon: TrainFront, iconClass: 'text-rose-400', chipClass: 'bg-rose-500/10', hoverClass: 'hover:border-rose-500/60', barClass: 'bg-rose-500' },
+  { mode: 'tracking', title: 'Rocket Tracker', description: 'Follow the flying rocket.', Icon: Rocket, iconClass: 'text-blue-400', chipClass: 'bg-blue-500/10', hoverClass: 'hover:border-blue-500/60', barClass: 'bg-blue-500' },
+  { mode: 'contrast', title: 'Foggy Flight', description: 'Find planes in the fog.', Icon: Plane, iconClass: 'text-purple-400', chipClass: 'bg-purple-500/10', hoverClass: 'hover:border-purple-500/60', barClass: 'bg-purple-500' },
+  { mode: 'detail', title: 'Traffic Jam', description: 'Spot the odd one out.', Icon: Car, iconClass: 'text-orange-400', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-500/60', barClass: 'bg-orange-500' },
+  { mode: 'saccades', title: 'Speedway Saccades', description: 'Catch the jumping car.', Icon: Train, iconClass: 'text-red-400', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-500/60', barClass: 'bg-red-500' },
+  { mode: 'peripheral', title: 'Peripheral Patrol', description: 'Catch targets at the edges.', Icon: Radar, iconClass: 'text-green-400', chipClass: 'bg-green-500/10', hoverClass: 'hover:border-green-500/60', barClass: 'bg-green-500' },
+  { mode: 'spotter', title: 'Foggy Spotter', description: 'Find the faded shape.', Icon: CloudFog, iconClass: 'text-yellow-400', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-500/60', barClass: 'bg-yellow-500' },
+  { mode: 'checkpoint', title: 'Checkpoint', description: 'Tap the matching vehicle.', Icon: ShieldAlert, iconClass: 'text-cyan-400', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-500/60', barClass: 'bg-cyan-500' },
+  { mode: 'metro', title: 'Metro Tracker', description: 'Follow the metro train.', Icon: TrainFront, iconClass: 'text-rose-400', chipClass: 'bg-rose-500/10', hoverClass: 'hover:border-rose-500/60', barClass: 'bg-rose-500' },
   { mode: 'station', title: 'Station Hunt', description: 'Find the right station letter.', Icon: MapPin, iconClass: 'text-emerald-400', chipClass: 'bg-emerald-500/10', hoverClass: 'hover:border-emerald-500/60', barClass: 'bg-emerald-500' },
-  { mode: 'navigator', title: 'Line Navigator', description: 'Follow one line to the right station.', Icon: Route, iconClass: 'text-indigo-400', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-500/60', barClass: 'bg-indigo-500' },
-  { mode: 'crossing', title: 'Railway Crossing', description: 'Tap the trains and let the cars pass.', Icon: TramFront, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
-  { mode: 'memory', title: 'Metro Memory', description: 'Remember the route and tap it back.', Icon: Brain, iconClass: 'text-fuchsia-400', chipClass: 'bg-fuchsia-500/10', hoverClass: 'hover:border-fuchsia-500/60', barClass: 'bg-fuchsia-500' },
+  { mode: 'navigator', title: 'Line Navigator', description: 'Trace the line to its stop.', Icon: Route, iconClass: 'text-indigo-400', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-500/60', barClass: 'bg-indigo-500' },
+  { mode: 'crossing', title: 'Railway Crossing', description: 'Tap trains, skip the cars.', Icon: TramFront, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
+  { mode: 'memory', title: 'Metro Memory', description: 'Repeat the lit-up route.', Icon: Brain, iconClass: 'text-fuchsia-400', chipClass: 'bg-fuchsia-500/10', hoverClass: 'hover:border-fuchsia-500/60', barClass: 'bg-fuchsia-500' },
 ];
 
 const CONFIG_STORAGE_KEY = 'eyequest_config';
@@ -1541,6 +1541,10 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [calibrationTest, setCalibrationTest] = useState(false);
 
+  // Home and game both lay themselves out inside one viewport height; settings
+  // and stats stay ordinary scrolling pages.
+  const fillsViewport = screen === 'home' || screen === 'game';
+
   // Brightness is folded in here so the settings screen keeps editing the base
   // colours while games and previews render the calibrated result.
   const renderConfig = useMemo<GameConfig>(() => ({
@@ -1574,6 +1578,23 @@ export default function App() {
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
+  /**
+   * Browsers only grant full screen from a user gesture, so this runs on the
+   * tap that opens an exercise. A page cannot go full screen on load — for
+   * that, install the app to the home screen (the manifest asks for full
+   * screen) and it launches without browser chrome.
+   */
+  const startGame = (mode: GameMode) => {
+    setSelectedMode(mode);
+    setScreen('game');
+    if (config.autoFullscreen && !document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {
+        // Refused (unsupported, or iPhone Safari): the in-app layout still
+        // fills the viewport, so this is only a nicety.
+      });
+    }
+  };
+
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch(err => {
@@ -1602,7 +1623,7 @@ export default function App() {
 
   return (
     <div
-      className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${screen === 'game' ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
+      className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${fillsViewport ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
       // Tailwind cannot compile colours that are only known at runtime, so the
       // calibrated anaglyph pair is published as inherited CSS variables here.
       style={{
@@ -1667,11 +1688,11 @@ export default function App() {
       {/* During a game the layout switches to a full-viewport flex column so the
           play area gets every pixel the screen has (100dvh tracks resizes and
           mobile browser chrome automatically) */}
-      <div className={`mx-auto ${screen === 'game' ? 'h-full max-w-none p-2 md:p-3 flex flex-col' : 'max-w-7xl p-4 md:p-8'}`}>
+      <div className={`mx-auto flex flex-col ${fillsViewport ? 'h-full max-w-none p-2 md:p-4' : 'max-w-7xl p-4 md:p-8'}`}>
 
         {/* Header */}
         {screen !== 'game' && (
-        <header className="flex items-center justify-between mb-8">
+        <header className={`flex items-center justify-between shrink-0 ${screen === 'home' ? 'mb-3 md:mb-4' : 'mb-8'}`}>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)]">
               {user.avatar}
@@ -1702,38 +1723,42 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="grid grid-cols-1 md:grid-cols-2 gap-6"
+              className="flex flex-1 min-h-0 flex-col gap-3"
             >
-              {GAME_TILES.map(tile => (
-                <Card
-                  key={tile.mode}
-                  className={`relative bg-slate-900 border-slate-800 ${tile.hoverClass} transition-all cursor-pointer group overflow-hidden`}
-                  onClick={() => { setSelectedMode(tile.mode); setScreen('game'); }}
-                >
-                  <CardHeader>
-                    <GamePreview mode={tile.mode} />
-                    <div className="mt-4 flex items-start gap-4">
-                      <div className={`w-14 h-14 shrink-0 rounded-xl ${tile.chipClass} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                        <tile.Icon className={`h-8 w-8 ${tile.iconClass}`} />
+              {/* The twelve tiles share the leftover viewport height: the column
+                  count steps up with width so rows stay a sensible shape, and
+                  auto-rows-fr splits the height evenly between them. Very short
+                  windows fall back to scrolling rather than crushing the tiles. */}
+              <div className="grid flex-1 min-h-0 auto-rows-fr grid-cols-2 gap-2.5 overflow-y-auto md:grid-cols-3 md:gap-3 xl:grid-cols-4">
+                {GAME_TILES.map(tile => (
+                  <Card
+                    key={tile.mode}
+                    className={`relative flex min-h-[9rem] flex-col gap-0 overflow-hidden border-slate-800 bg-slate-900 p-2.5 ${tile.hoverClass} group cursor-pointer transition-all md:p-3`}
+                    onClick={() => startGame(tile.mode)}
+                  >
+                    <div className="min-h-0 flex-1">
+                      <GamePreview mode={tile.mode} />
+                    </div>
+                    <div className="mt-2.5 flex shrink-0 items-center gap-2.5 md:mt-3">
+                      <div className={`h-10 w-10 shrink-0 rounded-lg md:h-11 md:w-11 ${tile.chipClass} flex items-center justify-center transition-transform group-hover:scale-110`}>
+                        <tile.Icon className={`h-6 w-6 ${tile.iconClass}`} />
                       </div>
-                      <div>
-                        <CardTitle className="text-xl text-slate-50">{tile.title}</CardTitle>
-                        <CardDescription className="mt-1 text-base text-slate-300">{tile.description}</CardDescription>
+                      <div className="min-w-0">
+                        <CardTitle className="truncate text-base leading-tight text-slate-50 md:text-lg">{tile.title}</CardTitle>
+                        <CardDescription className="mt-0.5 hidden truncate text-sm text-slate-300 lg:block">{tile.description}</CardDescription>
                       </div>
                     </div>
-                  </CardHeader>
-                  <div className={`absolute bottom-0 left-0 right-0 h-1.5 ${tile.barClass} transform translate-y-full group-hover:translate-y-0 transition-transform`} />
-                </Card>
-              ))}
+                    <div className={`absolute bottom-0 left-0 right-0 h-1.5 ${tile.barClass} translate-y-full transform transition-transform group-hover:translate-y-0`} />
+                  </Card>
+                ))}
+              </div>
 
-              <div className="md:col-span-2 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl flex gap-4 items-start">
-                <div className="p-2 bg-blue-500/20 rounded-full">
-                  <Eye className="h-5 w-5 text-blue-400" />
-                </div>
-                <div>
-                  <h4 className="text-lg font-semibold text-blue-400">Pro Tip</h4>
-                  <p className="text-base text-slate-300">Make sure to wear your patch on the strong eye as directed by your doctor for best results!</p>
-                </div>
+              <div className="flex shrink-0 items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-2.5">
+                <Eye className="h-5 w-5 shrink-0 text-blue-400" />
+                <p className="text-sm text-slate-300 md:text-base">
+                  <span className="font-semibold text-blue-400">Pro tip:</span> wear the patch on the
+                  strong eye as your doctor directed.
+                </p>
               </div>
 
             </motion.div>
@@ -1917,6 +1942,20 @@ export default function App() {
                     >
                       {config.soundEnabled ? <Volume2 className="h-4 w-4 mr-2"/> : <VolumeX className="h-4 w-4 mr-2"/>}
                       {config.soundEnabled ? "On" : "Off"}
+                    </Button>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+                    <div className="space-y-0.5">
+                      <label className="text-base font-medium">Full Screen Exercises</label>
+                      <p className="text-sm text-slate-400">Fill the whole screen when an exercise starts.</p>
+                    </div>
+                    <Button
+                      variant={config.autoFullscreen ? "default" : "outline"}
+                      onClick={() => setConfig(c => ({ ...c, autoFullscreen: !c.autoFullscreen }))}
+                    >
+                      {config.autoFullscreen ? <Maximize className="h-4 w-4 mr-2" /> : <Minimize className="h-4 w-4 mr-2" />}
+                      {config.autoFullscreen ? "On" : "Off"}
                     </Button>
                   </div>
 

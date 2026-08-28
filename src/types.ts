@@ -32,6 +32,8 @@ export interface GameConfig {
   /** 0-100 brightness of the scenery colour. */
   anaglyphSceneLevel: number;
   soundEnabled: boolean;
+  /** Enter full screen when an exercise starts, to maximise the play area. */
+  autoFullscreen: boolean;
   difficulty: Difficulty;
 }
 

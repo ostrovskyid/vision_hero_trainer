@@ -20,8 +20,10 @@ const loop = (duration: number, delay = 0) => ({
   ease: 'easeInOut' as const,
 });
 
+// Fills whatever space the tile gives it, so the home grid can size itself to
+// the viewport rather than the previews forcing a fixed height.
 const Frame = ({ children = null, className = '' }: { children?: ReactNode; className?: string }) => (
-  <div className={`relative h-32 w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-950 ${className}`}>
+  <div className={`relative h-full min-h-0 w-full overflow-hidden rounded-xl border border-slate-800 bg-slate-950 ${className}`}>
     {children}
   </div>
 );
