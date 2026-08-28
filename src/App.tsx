@@ -172,7 +172,7 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
             style={{ width: config.size, height: config.size }}
             onPointerDown={handleHit}
           >
-            <Rocket className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)] fill-[var(--ag-target)]' : 'text-blue-400 fill-blue-400'} drop-shadow-[0_0_15px_rgba(96,165,250,0.8)]`} />
+            <Rocket className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)] fill-[var(--ag-target)] drop-shadow-[0_0_15px_var(--ag-glow)]' : 'text-blue-400 fill-blue-400 drop-shadow-[0_0_15px_rgba(96,165,250,0.8)]'}`} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -240,7 +240,9 @@ const FoggyFlight = ({ config, onComplete }: { config: GameConfig; onComplete: (
 
   return (
     <motion.div 
-      className="relative w-full h-full min-h-[420px] bg-slate-400 rounded-xl overflow-hidden border-4 border-slate-800"
+      // A light grey field would be seen equally by both eyes and destroy the
+      // dichoptic separation, so anaglyph mode keeps the ground dark.
+      className={`relative w-full h-full min-h-[420px] ${config.anaglyphMode ? 'bg-slate-950' : 'bg-slate-400'} rounded-xl overflow-hidden border-4 border-slate-800`}
       animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
       transition={{ duration: 0.4 }}
       onClick={handleMiss}
@@ -709,7 +711,7 @@ const Checkpoint = ({ config, onComplete }: { config: GameConfig; onComplete: (s
         <div className="flex flex-col items-center gap-12">
           <div className="flex flex-col items-center gap-2 bg-slate-800 p-4 rounded-xl border border-slate-700">
             <span className="text-sm text-slate-400 uppercase tracking-wider font-bold">Target Vehicle</span>
-            {React.createElement(targetIcon, { className: "w-12 h-12 text-blue-400" })}
+            {React.createElement(targetIcon, { className: `w-12 h-12 ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-blue-400'}` })}
           </div>
 
           <div className="flex flex-col items-center gap-8">
@@ -858,7 +860,7 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
           style={{ left: `${trainPos.x}%`, top: `${trainPos.y}%`, width: config.size, height: config.size }}
           onPointerDown={handleHit}
         >
-          <TrainFront className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)] fill-[var(--ag-target)]' : 'text-red-400 fill-red-400'} drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]`} />
+          <TrainFront className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)] fill-[var(--ag-target)] drop-shadow-[0_0_15px_var(--ag-glow)]' : 'text-red-400 fill-red-400 drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]'}`} />
         </div>
       )}
     </motion.div>
@@ -945,7 +947,10 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
       {isPlaying && (
         <div className="flex items-center gap-3 mb-6 bg-slate-800 px-6 py-3 rounded-full border border-slate-700">
           <span className="text-sm text-slate-400 uppercase tracking-wider font-bold">Find station</span>
-          <div className="w-10 h-10 rounded-full bg-slate-50 border-4 flex items-center justify-center font-bold text-slate-900 text-lg" style={{ borderColor: config.anaglyphMode ? config.anaglyphTarget : '#3b82f6' }}>
+          <div
+            className={`w-10 h-10 rounded-full border-4 flex items-center justify-center font-bold text-lg ${config.anaglyphMode ? 'bg-black text-[var(--ag-target)]' : 'bg-slate-50 text-slate-900'}`}
+            style={{ borderColor: config.anaglyphMode ? config.anaglyphTarget : '#3b82f6' }}
+          >
             {targetLetter}
           </div>
         </div>
@@ -1070,7 +1075,7 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
         <>
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
             <span className="text-sm text-slate-400 font-bold whitespace-nowrap">Follow line</span>
-            <span className="px-3 py-1 rounded-md font-bold text-white" style={{ backgroundColor: config.anaglyphMode ? config.anaglyphTarget : target.color }}>{target.label}</span>
+            <span className={`px-3 py-1 rounded-md font-bold ${config.anaglyphMode ? 'text-slate-950' : 'text-white'}`} style={{ backgroundColor: config.anaglyphMode ? config.anaglyphTarget : target.color }}>{target.label}</span>
             <span className="text-sm text-slate-400 font-bold whitespace-nowrap">with your eyes only!</span>
           </div>
 
@@ -1083,7 +1088,19 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
           {puzzle.lines.map((line, i) => {
             const sy = 20 + (60 / (puzzle.lines.length - 1)) * i;
             return (
-              <div key={line.label} className="absolute -translate-y-1/2 px-2 py-0.5 rounded font-bold text-white text-sm md:text-base" style={{ left: '1%', top: `${sy}%`, backgroundColor: config.anaglyphMode ? config.anaglyphTarget : line.color }}>
+              <div
+                key={line.label}
+                className={`absolute -translate-y-1/2 px-2 py-0.5 rounded font-bold text-sm md:text-base ${config.anaglyphMode ? 'text-slate-950' : 'text-white'}`}
+                style={{
+                  left: '1%',
+                  top: `${sy}%`,
+                  // Each label has to match its own line, or the labels stop
+                  // telling the child which line is the target.
+                  backgroundColor: config.anaglyphMode
+                    ? (i === puzzle.targetLine ? config.anaglyphTarget : config.anaglyphScene)
+                    : line.color,
+                }}
+              >
                 {line.label}
               </div>
             );
@@ -1095,8 +1112,8 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
               whileHover={{ scale: 1.15 }}
               whileTap={{ scale: 0.9 }}
               onClick={() => handleChoice(i)}
-              className="absolute -translate-x-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 rounded-full bg-slate-50 border-4 border-slate-400 flex items-center justify-center font-bold text-slate-900 text-lg md:text-xl z-10"
-              style={{ left: `${t.x}%`, top: `${t.y}%` }}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 w-12 h-12 md:w-14 md:h-14 rounded-full border-4 flex items-center justify-center font-bold text-lg md:text-xl z-10 ${config.anaglyphMode ? 'bg-slate-950 text-[var(--ag-scene)]' : 'bg-slate-50 border-slate-400 text-slate-900'}`}
+              style={{ left: `${t.x}%`, top: `${t.y}%`, borderColor: config.anaglyphMode ? config.anaglyphScene : undefined }}
             >
               {t.label}
             </motion.button>
@@ -1536,6 +1553,9 @@ export default function App() {
         '--ag-scene': config.anaglyphScene,
         '--ag-scene-20': withAlpha(config.anaglyphScene, 0.2),
         '--ag-scene-30': withAlpha(config.anaglyphScene, 0.3),
+        // Target glow must stay inside the target's own channel, or it reaches
+        // the other eye as a grey halo.
+        '--ag-glow': withAlpha(config.anaglyphTarget, 0.75),
       } as React.CSSProperties}
     >
       {/* During a game the layout switches to a full-viewport flex column so the
