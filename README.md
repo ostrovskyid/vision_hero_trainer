@@ -182,22 +182,53 @@ rather than to the game:
 | **Target size** | 20–100px; larger targets suit deeper amblyopia |
 | **Session duration** | 10–300 seconds per round |
 | **Sound effects** | Feedback tones on and off |
-| **Anaglyph mode** | Red/cyan dichoptic rendering (see below) |
+| **Anaglyph mode** | Red/cyan dichoptic rendering, with per-device colour calibration (see below) |
 
 Progress, level and per-exercise history are stored in the browser's `localStorage` under
-`eyequest_user` — nothing is uploaded anywhere.
+`eyequest_user`; exercise settings under `eyequest_config` and the display calibration under
+`eyequest_display` — nothing is uploaded anywhere.
 
 ### Red/cyan anaglyph mode
 
-With anaglyph mode on, targets render in pure red and all scenery in pure cyan. Wearing
-red/cyan glasses, the eye behind the red filter sees the targets clearly while the other eye
-sees only the background — so the weaker eye has to do the work while both eyes stay open.
-This is the dichoptic principle used in clinical amblyopia software.
+With anaglyph mode on, targets render in one colour and all scenery in its complement — red
+and cyan by default. Wearing red/cyan glasses, the eye behind the red filter sees the targets
+clearly while the other eye sees only the background, so the weaker eye has to do the work
+while both eyes stay open. This is the dichoptic principle used in clinical amblyopia
+software.
 
-Cheap filters leak. To check a pair: put the glasses on, cover the red-lens eye, and look
-through the cyan lens alone — the red targets should almost disappear. Ask your
-ophthalmologist or orthoptist whether dichoptic training is appropriate, and which eye
-should be behind the red filter.
+### Display calibration
+
+<img src="docs/screenshots/display-calibration.png" alt="The display calibration panel" width="800">
+
+Panels differ in how saturated their red and cyan primaries are, and inexpensive glasses
+differ in what they actually block, so the textbook pure red / pure cyan pair ghosts badly on
+some combinations. Enabling anaglyph mode reveals a calibration panel where both colours are
+adjustable:
+
+- **Target and scenery brightness** — the strongest control. No filter blocks the opposite
+  colour completely, and a full-intensity target leaks the most, so dimming the target is
+  what stops it ghosting as a grey outline through the other lens.
+- **Colour pickers and hex fields** for the target and scenery colours.
+- **Starting points** — presets for dimmer scenery on bright screens and green- or
+  blue-shifted cyan for filters that leak.
+- **Live preview**, plus a **full-screen test** on a pure black field. Use the full-screen
+  test to judge a setting: the lit settings page around the inline preview reaches both eyes
+  and masks the very ghosting you are looking for.
+- **Swap colours** — if the glasses put the red lens over the other eye.
+- **Reset to classic** — back to pure `#FF0000` / `#00FFFF` at full brightness.
+
+To calibrate: open the full-screen test, put the glasses on and cover one eye at a time. Dim
+the target until it disappears through the scenery lens while staying clearly visible through
+the other one. On laptop LCDs the useful range is usually 50–70%; training in a dim room
+helps, because backlight bleed means screen black is never fully black.
+
+The calibration is saved **per device** under its own storage key, separate from the exercise
+settings, so it is set up once for a given screen and survives changes to difficulty,
+duration and the rest. It does not sync between devices — to reuse it elsewhere, copy the
+colours and brightness levels across.
+
+Ask your ophthalmologist or orthoptist whether dichoptic training is appropriate, and which
+eye should be behind the red filter.
 
 ## Getting started
 
