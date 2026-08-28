@@ -11,6 +11,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   anaglyphMode: false,
   anaglyphTarget: ANAGLYPH_TARGET_DEFAULT,
   anaglyphScene: ANAGLYPH_SCENE_DEFAULT,
+  anaglyphTargetLevel: 100,
+  anaglyphSceneLevel: 100,
   soundEnabled: true,
   difficulty: 'medium',
 };

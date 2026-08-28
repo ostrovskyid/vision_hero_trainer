@@ -27,6 +27,10 @@ export interface GameConfig {
   anaglyphTarget: string;
   /** Colour of the scenery the other eye sees (calibrated per screen). */
   anaglyphScene: string;
+  /** 0-100 brightness of the target colour. Lowering it kills red ghosting. */
+  anaglyphTargetLevel: number;
+  /** 0-100 brightness of the scenery colour. */
+  anaglyphSceneLevel: number;
   soundEnabled: boolean;
   difficulty: Difficulty;
 }

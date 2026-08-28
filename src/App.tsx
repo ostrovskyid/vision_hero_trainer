@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship,
@@ -20,6 +20,22 @@ import {
 
 const CONFIG_STORAGE_KEY = 'eyequest_config';
 const DISPLAY_STORAGE_KEY = 'eyequest_display';
+
+/**
+ * Scales a colour's brightness. Cheap cyan filters never block red completely,
+ * so a full-intensity red still ghosts through as a grey outline; dimming the
+ * target is the most effective lever the software has against that.
+ */
+const scaleColor = (hex: string, factor: number) => {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!match) return hex;
+  const value = parseInt(match[1], 16);
+  const scale = (channel: number) => Math.round(Math.min(255, Math.max(0, channel * factor)));
+  const r = scale((value >> 16) & 255);
+  const g = scale((value >> 8) & 255);
+  const b = scale(value & 255);
+  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0').toUpperCase()}`;
+};
 
 /** Expands a #rrggbb colour to an rgba() string, for the translucent tints. */
 const withAlpha = (hex: string, alpha: number) => {
@@ -1493,17 +1509,28 @@ export default function App() {
   });
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [calibrationTest, setCalibrationTest] = useState(false);
+
+  // Brightness is folded in here so the settings screen keeps editing the base
+  // colours while games and previews render the calibrated result.
+  const renderConfig = useMemo<GameConfig>(() => ({
+    ...config,
+    anaglyphTarget: scaleColor(config.anaglyphTarget, config.anaglyphTargetLevel / 100),
+    anaglyphScene: scaleColor(config.anaglyphScene, config.anaglyphSceneLevel / 100),
+  }), [config]);
 
   useEffect(() => {
     localStorage.setItem('eyequest_user', JSON.stringify(user));
   }, [user]);
 
   useEffect(() => {
-    const { anaglyphTarget, anaglyphScene, ...exerciseConfig } = config;
+    const { anaglyphTarget, anaglyphScene, anaglyphTargetLevel, anaglyphSceneLevel, ...exerciseConfig } = config;
     try {
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(exerciseConfig));
       // Kept under its own key: one calibration per device, set up once.
-      localStorage.setItem(DISPLAY_STORAGE_KEY, JSON.stringify({ anaglyphTarget, anaglyphScene }));
+      localStorage.setItem(DISPLAY_STORAGE_KEY, JSON.stringify({
+        anaglyphTarget, anaglyphScene, anaglyphTargetLevel, anaglyphSceneLevel,
+      }));
     } catch {
       // Storage can be unavailable (private mode); settings just won't persist.
     }
@@ -1549,15 +1576,64 @@ export default function App() {
       // Tailwind cannot compile colours that are only known at runtime, so the
       // calibrated anaglyph pair is published as inherited CSS variables here.
       style={{
-        '--ag-target': config.anaglyphTarget,
-        '--ag-scene': config.anaglyphScene,
-        '--ag-scene-20': withAlpha(config.anaglyphScene, 0.2),
-        '--ag-scene-30': withAlpha(config.anaglyphScene, 0.3),
+        '--ag-target': renderConfig.anaglyphTarget,
+        '--ag-scene': renderConfig.anaglyphScene,
+        '--ag-scene-20': withAlpha(renderConfig.anaglyphScene, 0.2),
+        '--ag-scene-30': withAlpha(renderConfig.anaglyphScene, 0.3),
         // Target glow must stay inside the target's own channel, or it reaches
         // the other eye as a grey halo.
-        '--ag-glow': withAlpha(config.anaglyphTarget, 0.75),
+        '--ag-glow': withAlpha(renderConfig.anaglyphTarget, 0.75),
       } as React.CSSProperties}
     >
+      {/* Calibration has to be judged on a dark field like the games use — the lit
+          settings page around the inline preview reaches both eyes and masks the
+          ghosting the parent is trying to see. */}
+      {calibrationTest && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black">
+          <div className="relative flex w-full max-w-3xl items-center justify-center gap-16 py-16">
+            <div className="absolute left-0 right-0 h-2" style={{ backgroundColor: renderConfig.anaglyphScene, opacity: 0.35 }} />
+            {[10, 50, 90].map(left => (
+              <div
+                key={left}
+                className="absolute h-5 w-5 -translate-x-1/2 rounded-full border-2"
+                style={{ left: `${left}%`, borderColor: renderConfig.anaglyphScene, backgroundColor: '#000000' }}
+              />
+            ))}
+            <TrainFront className="relative h-24 w-24" style={{ color: renderConfig.anaglyphTarget }} />
+            <span className="relative text-7xl font-bold" style={{ color: renderConfig.anaglyphTarget }}>E</span>
+          </div>
+
+          <div className="mt-16 flex items-center gap-3 text-slate-600">
+            <span className="text-xs uppercase tracking-wider">Target</span>
+            <button
+              onClick={() => setConfig(c => ({ ...c, anaglyphTargetLevel: Math.max(20, c.anaglyphTargetLevel - 5) }))}
+              className="h-9 w-9 rounded-md border border-slate-800 text-lg text-slate-500 hover:text-slate-300"
+              aria-label="Dimmer target"
+            >
+              –
+            </button>
+            <span className="w-14 text-center font-mono text-sm tabular-nums text-slate-500">{config.anaglyphTargetLevel}%</span>
+            <button
+              onClick={() => setConfig(c => ({ ...c, anaglyphTargetLevel: Math.min(100, c.anaglyphTargetLevel + 5) }))}
+              className="h-9 w-9 rounded-md border border-slate-800 text-lg text-slate-500 hover:text-slate-300"
+              aria-label="Brighter target"
+            >
+              +
+            </button>
+            <button
+              onClick={() => setCalibrationTest(false)}
+              className="ml-6 rounded-md border border-slate-800 px-4 py-2 text-sm text-slate-500 hover:text-slate-300"
+            >
+              Done
+            </button>
+          </div>
+          <p className="mt-6 max-w-md px-6 text-center text-xs leading-relaxed text-slate-700">
+            Cover one eye at a time. Dim the target until it disappears through the scenery lens
+            while staying clearly visible through the other one.
+          </p>
+        </div>
+      )}
+
       {/* During a game the layout switches to a full-viewport flex column so the
           play area gets every pixel the screen has (100dvh tracks resizes and
           mobile browser chrome automatically) */}
@@ -1777,18 +1853,18 @@ export default function App() {
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto">
-              {selectedMode === 'tracking' && <RocketTracker config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'contrast' && <FoggyFlight config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'detail' && <TrafficJam config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'saccades' && <SpeedwaySaccades config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'peripheral' && <PeripheralPatrol config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'spotter' && <FoggySpotter config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'checkpoint' && <Checkpoint config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'metro' && <MetroTracker config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'station' && <StationHunt config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'navigator' && <LineNavigator config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'crossing' && <RailwayCrossing config={config} onComplete={handleGameComplete} />}
-              {selectedMode === 'memory' && <MetroMemory config={config} onComplete={handleGameComplete} />}
+              {selectedMode === 'tracking' && <RocketTracker config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'contrast' && <FoggyFlight config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'detail' && <TrafficJam config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'saccades' && <SpeedwaySaccades config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'peripheral' && <PeripheralPatrol config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'spotter' && <FoggySpotter config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'checkpoint' && <Checkpoint config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'metro' && <MetroTracker config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'station' && <StationHunt config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'navigator' && <LineNavigator config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'crossing' && <RailwayCrossing config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'memory' && <MetroMemory config={renderConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}
@@ -1953,26 +2029,70 @@ export default function App() {
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">Preview</label>
-                      <div className="relative flex h-28 items-center justify-center gap-10 overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950">
+                      <div className="flex items-center justify-between">
+                        <label className="text-sm font-medium">Preview</label>
+                        <Button variant="outline" size="sm" onClick={() => setCalibrationTest(true)}>
+                          <Maximize className="mr-2 h-4 w-4" /> Test full screen
+                        </Button>
+                      </div>
+                      <div className="relative flex h-28 items-center justify-center gap-10 overflow-hidden rounded-xl border-4 border-slate-800 bg-black">
                         <div
                           className="absolute left-0 right-0 h-2"
-                          style={{ backgroundColor: config.anaglyphScene, opacity: 0.35 }}
+                          style={{ backgroundColor: renderConfig.anaglyphScene, opacity: 0.35 }}
                         />
                         {[20, 80].map(left => (
                           <div
                             key={left}
                             className="absolute h-4 w-4 -translate-x-1/2 rounded-full border-2"
-                            style={{ left: `${left}%`, borderColor: config.anaglyphScene, backgroundColor: '#0f172a' }}
+                            style={{ left: `${left}%`, borderColor: renderConfig.anaglyphScene, backgroundColor: '#000000' }}
                           />
                         ))}
-                        <TrainFront className="relative h-12 w-12" style={{ color: config.anaglyphTarget }} />
-                        <span className="relative text-4xl font-bold" style={{ color: config.anaglyphTarget }}>E</span>
+                        <TrainFront className="relative h-12 w-12" style={{ color: renderConfig.anaglyphTarget }} />
+                        <span className="relative text-4xl font-bold" style={{ color: renderConfig.anaglyphTarget }}>E</span>
                       </div>
                       <p className="text-xs text-slate-500">
                         Wearing the glasses, cover one eye at a time. Through the lens over the
                         training eye the train and letter should look bright while the line and
-                        stations nearly disappear; through the other lens, the opposite.
+                        stations nearly disappear; through the other lens, the opposite. Judge it
+                        with <strong className="text-slate-400">Test full screen</strong> — the bright
+                        settings page around this strip reaches both eyes and hides the difference.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between">
+                        <label className="text-sm font-medium">Target brightness</label>
+                        <span className="text-sm text-blue-400">{config.anaglyphTargetLevel}%</span>
+                      </div>
+                      <Slider
+                        value={[config.anaglyphTargetLevel]}
+                        min={20} max={100} step={5}
+                        onValueChange={(vals) => {
+                          const val = Array.isArray(vals) ? vals[0] : vals;
+                          setConfig(c => ({ ...c, anaglyphTargetLevel: val }));
+                        }}
+                      />
+                      <p className="text-xs text-slate-500">
+                        Turn this down until the targets stop showing as grey outlines through the
+                        scenery lens. This is the strongest fix for ghosting.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between">
+                        <label className="text-sm font-medium">Scenery brightness</label>
+                        <span className="text-sm text-blue-400">{config.anaglyphSceneLevel}%</span>
+                      </div>
+                      <Slider
+                        value={[config.anaglyphSceneLevel]}
+                        min={20} max={100} step={5}
+                        onValueChange={(vals) => {
+                          const val = Array.isArray(vals) ? vals[0] : vals;
+                          setConfig(c => ({ ...c, anaglyphSceneLevel: val }));
+                        }}
+                      />
+                      <p className="text-xs text-slate-500">
+                        Lower this if the scenery bleeds through the target lens instead.
                       </p>
                     </div>
 
@@ -2025,7 +2145,13 @@ export default function App() {
                       </Button>
                       <Button
                         variant="outline"
-                        onClick={() => setConfig(c => ({ ...c, anaglyphTarget: ANAGLYPH_TARGET_DEFAULT, anaglyphScene: ANAGLYPH_SCENE_DEFAULT }))}
+                        onClick={() => setConfig(c => ({
+                          ...c,
+                          anaglyphTarget: ANAGLYPH_TARGET_DEFAULT,
+                          anaglyphScene: ANAGLYPH_SCENE_DEFAULT,
+                          anaglyphTargetLevel: 100,
+                          anaglyphSceneLevel: 100,
+                        }))}
                       >
                         <RotateCcw className="mr-2 h-4 w-4" /> Reset to classic
                       </Button>
