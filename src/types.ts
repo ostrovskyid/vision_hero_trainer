@@ -23,6 +23,17 @@ export interface GameConfig {
   contrast: number;
   duration: number;
   anaglyphMode: boolean;
+  /** Colour the target eye should see through its filter (calibrated per screen). */
+  anaglyphTarget: string;
+  /** Colour of the scenery the other eye sees (calibrated per screen). */
+  anaglyphScene: string;
   soundEnabled: boolean;
   difficulty: Difficulty;
+}
+
+export interface AnaglyphPreset {
+  name: string;
+  description: string;
+  target: string;
+  scene: string;
 }

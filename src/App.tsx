@@ -4,7 +4,7 @@ import {
   Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship,
   Trophy, Play, Settings, ChevronLeft, Zap, Volume2, VolumeX, Eye, Maximize, Minimize,
   Radar, CloudFog, ShieldAlert, Crosshair, Target,
-  TrainFront, MapPin, Route, TramFront, Brain
+  TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,21 @@ import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { GameMode, GameConfig, UserProfile, GameStats } from './types';
-import { DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS } from './constants';
+import {
+  DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS,
+  ANAGLYPH_PRESETS, ANAGLYPH_TARGET_DEFAULT, ANAGLYPH_SCENE_DEFAULT,
+} from './constants';
+
+const CONFIG_STORAGE_KEY = 'eyequest_config';
+const DISPLAY_STORAGE_KEY = 'eyequest_display';
+
+/** Expands a #rrggbb colour to an rgba() string, for the translucent tints. */
+const withAlpha = (hex: string, alpha: number) => {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!match) return hex;
+  const value = parseInt(match[1], 16);
+  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
+};
 
 let audioCtx: AudioContext | null = null;
 
@@ -158,14 +172,14 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
             style={{ width: config.size, height: config.size }}
             onPointerDown={handleHit}
           >
-            <Rocket className={`w-full h-full ${config.anaglyphMode ? 'text-[#FF0000] fill-[#FF0000]' : 'text-blue-400 fill-blue-400'} drop-shadow-[0_0_15px_rgba(96,165,250,0.8)]`} />
+            <Rocket className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)] fill-[var(--ag-target)]' : 'text-blue-400 fill-blue-400'} drop-shadow-[0_0_15px_rgba(96,165,250,0.8)]`} />
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="absolute inset-0 opacity-20 pointer-events-none">
         {[...Array(20)].map((_, i) => (
-          <div key={i} className="absolute rounded-full" style={{ width: Math.random() * 3, height: Math.random() * 3, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, backgroundColor: config.anaglyphMode ? '#00FFFF' : '#FFFFFF' }} />
+          <div key={i} className="absolute rounded-full" style={{ width: Math.random() * 3, height: Math.random() * 3, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, backgroundColor: config.anaglyphMode ? config.anaglyphScene : '#FFFFFF' }} />
         ))}
       </div>
     </motion.div>
@@ -244,7 +258,7 @@ const FoggyFlight = ({ config, onComplete }: { config: GameConfig; onComplete: (
         <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
       </div>
 
-      <div className={`absolute inset-0 ${config.anaglyphMode ? 'bg-[#00FFFF]/30' : 'bg-slate-300/50 backdrop-blur-sm'}`} />
+      <div className={`absolute inset-0 ${config.anaglyphMode ? 'bg-[var(--ag-scene-30)]' : 'bg-slate-300/50 backdrop-blur-sm'}`} />
 
       {target && isPlaying && (
         <motion.div
@@ -254,7 +268,7 @@ const FoggyFlight = ({ config, onComplete }: { config: GameConfig; onComplete: (
           style={{ left: `${target.x}%`, top: `${target.y}%`, width: config.size, height: config.size }}
           onClick={handleHit}
         >
-          <target.icon className={`w-full h-full ${config.anaglyphMode ? 'text-[#FF0000]' : 'text-slate-600'}`} />
+          <target.icon className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-slate-600'}`} />
         </motion.div>
       )}
     </motion.div>
@@ -334,9 +348,9 @@ const TrafficJam = ({ config, onComplete }: { config: GameConfig; onComplete: (s
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => handleChoice(item.isOdd)}
-            className={`${config.difficulty === 'hard' ? 'w-20 h-20 md:w-24 md:h-24' : 'w-24 h-24 md:w-32 md:h-32'} rounded-2xl flex items-center justify-center transition-colors ${config.anaglyphMode ? 'bg-[#00FFFF]/20 hover:bg-[#00FFFF]/30' : 'bg-slate-800 hover:bg-slate-700'}`}
+            className={`${config.difficulty === 'hard' ? 'w-20 h-20 md:w-24 md:h-24' : 'w-24 h-24 md:w-32 md:h-32'} rounded-2xl flex items-center justify-center transition-colors ${config.anaglyphMode ? 'bg-[var(--ag-scene-20)] hover:bg-[var(--ag-scene-30)]' : 'bg-slate-800 hover:bg-slate-700'}`}
           >
-            <item.icon className={`${config.difficulty === 'hard' ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-16 md:h-16'} ${config.anaglyphMode ? 'text-[#FF0000]' : 'text-orange-400'}`} />
+            <item.icon className={`${config.difficulty === 'hard' ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-16 md:h-16'} ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-orange-400'}`} />
           </motion.button>
         ))}
       </motion.div>
@@ -411,7 +425,7 @@ const SpeedwaySaccades = ({ config, onComplete }: { config: GameConfig; onComple
           animate={{ scale: targetPos.scale }}
           onClick={handleHit}
         >
-          <Car className={`w-full h-full ${config.anaglyphMode ? 'text-[#FF0000]' : targetPos.color}`} />
+          <Car className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)]' : targetPos.color}`} />
         </motion.div>
       )}
     </motion.div>
@@ -496,7 +510,7 @@ const PeripheralPatrol = ({ config, onComplete }: { config: GameConfig; onComple
           style={{ left: `${targetPos.x}%`, top: `${targetPos.y}%`, width: config.size, height: config.size }}
           onClick={handleHit}
         >
-          <Radar className={`w-full h-full ${config.anaglyphMode ? 'text-[#FF0000]' : 'text-green-400'}`} />
+          <Radar className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-green-400'}`} />
         </motion.div>
       )}
     </motion.div>
@@ -573,9 +587,9 @@ const FoggySpotter = ({ config, onComplete }: { config: GameConfig; onComplete: 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => handleChoice(item.isTarget)}
-            className={`${config.difficulty === 'hard' ? 'w-20 h-20 md:w-24 md:h-24' : 'w-24 h-24 md:w-32 md:h-32'} rounded-2xl flex items-center justify-center transition-colors ${config.anaglyphMode ? 'bg-[#00FFFF]/20 hover:bg-[#00FFFF]/30' : 'bg-slate-800 hover:bg-slate-700'}`}
+            className={`${config.difficulty === 'hard' ? 'w-20 h-20 md:w-24 md:h-24' : 'w-24 h-24 md:w-32 md:h-32'} rounded-2xl flex items-center justify-center transition-colors ${config.anaglyphMode ? 'bg-[var(--ag-scene-20)] hover:bg-[var(--ag-scene-30)]' : 'bg-slate-800 hover:bg-slate-700'}`}
           >
-            <CloudFog className={`${config.difficulty === 'hard' ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-16 md:h-16'} ${config.anaglyphMode ? 'text-[#FF0000]' : 'text-yellow-400'} ${item.isTarget ? targetOpacity : 'opacity-100'}`} />
+            <CloudFog className={`${config.difficulty === 'hard' ? 'w-10 h-10 md:w-12 md:h-12' : 'w-12 h-12 md:w-16 md:h-16'} ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-yellow-400'} ${item.isTarget ? targetOpacity : 'opacity-100'}`} />
           </motion.button>
         ))}
       </motion.div>
@@ -708,7 +722,7 @@ const Checkpoint = ({ config, onComplete }: { config: GameConfig; onComplete: (s
               onClick={() => handleAction(true)}
               className="w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center border-4 border-slate-700 hover:border-blue-500 transition-colors"
             >
-              {React.createElement(currentIcon, { className: `w-16 h-16 ${config.anaglyphMode ? 'text-[#FF0000]' : 'text-slate-100'}` })}
+              {React.createElement(currentIcon, { className: `w-16 h-16 ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-slate-100'}` })}
             </motion.button>
             <span className="text-slate-400">Tap if it matches the target!</span>
           </div>
@@ -795,7 +809,7 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
     setScore(s => Math.max(0, s - 1));
   };
 
-  const lineColor = config.anaglyphMode ? '#00FFFF' : '#eab308';
+  const lineColor = config.anaglyphMode ? config.anaglyphScene : '#eab308';
 
   return (
     <motion.div
@@ -844,7 +858,7 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
           style={{ left: `${trainPos.x}%`, top: `${trainPos.y}%`, width: config.size, height: config.size }}
           onPointerDown={handleHit}
         >
-          <TrainFront className={`w-full h-full ${config.anaglyphMode ? 'text-[#FF0000] fill-[#FF0000]' : 'text-red-400 fill-red-400'} drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]`} />
+          <TrainFront className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)] fill-[var(--ag-target)]' : 'text-red-400 fill-red-400'} drop-shadow-[0_0_15px_rgba(248,113,113,0.8)]`} />
         </div>
       )}
     </motion.div>
@@ -931,7 +945,7 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
       {isPlaying && (
         <div className="flex items-center gap-3 mb-6 bg-slate-800 px-6 py-3 rounded-full border border-slate-700">
           <span className="text-sm text-slate-400 uppercase tracking-wider font-bold">Find station</span>
-          <div className="w-10 h-10 rounded-full bg-slate-50 border-4 flex items-center justify-center font-bold text-slate-900 text-lg" style={{ borderColor: config.anaglyphMode ? '#FF0000' : '#3b82f6' }}>
+          <div className="w-10 h-10 rounded-full bg-slate-50 border-4 flex items-center justify-center font-bold text-slate-900 text-lg" style={{ borderColor: config.anaglyphMode ? config.anaglyphTarget : '#3b82f6' }}>
             {targetLetter}
           </div>
         </div>
@@ -948,8 +962,8 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
             onClick={() => handleChoice(item.isTarget)}
-            className={`${cellSize} rounded-full flex items-center justify-center font-bold border-4 transition-colors ${config.anaglyphMode ? 'bg-black text-[#FF0000]' : 'bg-slate-50 text-slate-900'}`}
-            style={{ borderColor: config.anaglyphMode ? '#00FFFF' : item.color }}
+            className={`${cellSize} rounded-full flex items-center justify-center font-bold border-4 transition-colors ${config.anaglyphMode ? 'bg-black text-[var(--ag-target)]' : 'bg-slate-50 text-slate-900'}`}
+            style={{ borderColor: config.anaglyphMode ? config.anaglyphScene : item.color }}
           >
             <span className={letterSize}>{item.letter}</span>
           </motion.button>
@@ -1056,20 +1070,20 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
         <>
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
             <span className="text-sm text-slate-400 font-bold whitespace-nowrap">Follow line</span>
-            <span className="px-3 py-1 rounded-md font-bold text-white" style={{ backgroundColor: config.anaglyphMode ? '#FF0000' : target.color }}>{target.label}</span>
+            <span className="px-3 py-1 rounded-md font-bold text-white" style={{ backgroundColor: config.anaglyphMode ? config.anaglyphTarget : target.color }}>{target.label}</span>
             <span className="text-sm text-slate-400 font-bold whitespace-nowrap">with your eyes only!</span>
           </div>
 
           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
             {puzzle.lines.map((line, i) => (
-              <path key={i} d={line.path} fill="none" stroke={config.anaglyphMode ? (i === puzzle.targetLine ? '#FF0000' : '#00FFFF') : line.color} strokeWidth={1.2} strokeLinecap="round" />
+              <path key={i} d={line.path} fill="none" stroke={config.anaglyphMode ? (i === puzzle.targetLine ? config.anaglyphTarget : config.anaglyphScene) : line.color} strokeWidth={1.2} strokeLinecap="round" />
             ))}
           </svg>
 
           {puzzle.lines.map((line, i) => {
             const sy = 20 + (60 / (puzzle.lines.length - 1)) * i;
             return (
-              <div key={line.label} className="absolute -translate-y-1/2 px-2 py-0.5 rounded font-bold text-white text-sm md:text-base" style={{ left: '1%', top: `${sy}%`, backgroundColor: config.anaglyphMode ? '#FF0000' : line.color }}>
+              <div key={line.label} className="absolute -translate-y-1/2 px-2 py-0.5 rounded font-bold text-white text-sm md:text-base" style={{ left: '1%', top: `${sy}%`, backgroundColor: config.anaglyphMode ? config.anaglyphTarget : line.color }}>
                 {line.label}
               </div>
             );
@@ -1207,7 +1221,7 @@ const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplet
         >
           <v.icon
             className={`w-full h-full ${config.anaglyphMode
-              ? (v.isTarget ? 'text-[#FF0000]' : 'text-[#00FFFF]')
+              ? (v.isTarget ? 'text-[var(--ag-target)]' : 'text-[var(--ag-scene)]')
               : (v.isTarget ? 'text-red-400' : 'text-slate-500')}`}
             style={{ transform: v.dir === -1 ? 'scaleX(-1)' : undefined }}
           />
@@ -1341,7 +1355,7 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
         <polygon
           points={MEMORY_STATIONS.map(s => `${s.x},${s.y}`).join(' ')}
           fill="none"
-          stroke={config.anaglyphMode ? '#00FFFF' : '#334155'}
+          stroke={config.anaglyphMode ? config.anaglyphScene : '#334155'}
           strokeWidth={1}
           strokeLinejoin="round"
         />
@@ -1349,7 +1363,7 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
 
       {MEMORY_STATIONS.map((st, i) => {
         const lit = litStation === i;
-        const color = config.anaglyphMode ? '#FF0000' : st.color;
+        const color = config.anaglyphMode ? config.anaglyphTarget : st.color;
         return (
           <motion.button
             key={i}
@@ -1372,12 +1386,70 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
   );
 };
 
+const ColorField = ({ label, hint, value, onChange }: {
+  label: string;
+  hint: string;
+  value: string;
+  onChange: (hex: string) => void;
+}) => {
+  // The text field keeps its own draft so half-typed hex codes never reach the
+  // config (and never blank out the games behind the settings screen).
+  const [draft, setDraft] = useState(value);
+  useEffect(() => setDraft(value), [value]);
+
+  const commit = (raw: string) => {
+    const next = raw.trim().startsWith('#') ? raw.trim() : `#${raw.trim()}`;
+    if (/^#[0-9a-f]{6}$/i.test(next)) onChange(next.toUpperCase());
+  };
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-medium">{label}</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="color"
+          aria-label={`${label} colour picker`}
+          value={value}
+          onChange={(e) => onChange(e.target.value.toUpperCase())}
+          className="h-10 w-14 shrink-0 cursor-pointer rounded-md border border-slate-700 bg-slate-800 p-1"
+        />
+        <input
+          type="text"
+          aria-label={`${label} hex value`}
+          value={draft}
+          spellCheck={false}
+          maxLength={7}
+          onChange={(e) => { setDraft(e.target.value); commit(e.target.value); }}
+          onBlur={() => setDraft(value)}
+          className="h-10 w-full rounded-md border border-slate-700 bg-slate-800 px-3 font-mono text-sm uppercase text-slate-100 focus:border-blue-500 focus:outline-none"
+        />
+      </div>
+      <p className="text-xs text-slate-500">{hint}</p>
+    </div>
+  );
+};
+
 // --- Main App ---
 
 export default function App() {
   const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats'>('home');
   const [selectedMode, setSelectedMode] = useState<GameMode>('tracking');
-  const [config, setConfig] = useState<GameConfig>(DEFAULT_CONFIG);
+  const [config, setConfig] = useState<GameConfig>(() => {
+    // Exercise settings and the display calibration are stored separately:
+    // calibration belongs to the screen/glasses combination on THIS device and
+    // should outlive any change to difficulty, duration and the rest.
+    try {
+      const savedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
+      const savedDisplay = localStorage.getItem(DISPLAY_STORAGE_KEY);
+      return {
+        ...DEFAULT_CONFIG,
+        ...(savedConfig ? JSON.parse(savedConfig) : {}),
+        ...(savedDisplay ? JSON.parse(savedDisplay) : {}),
+      };
+    } catch {
+      return DEFAULT_CONFIG;
+    }
+  });
   const [user, setUser] = useState<UserProfile>(() => {
     const saved = localStorage.getItem('eyequest_user');
     const parsed = saved ? JSON.parse(saved) : null;
@@ -1408,6 +1480,17 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('eyequest_user', JSON.stringify(user));
   }, [user]);
+
+  useEffect(() => {
+    const { anaglyphTarget, anaglyphScene, ...exerciseConfig } = config;
+    try {
+      localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(exerciseConfig));
+      // Kept under its own key: one calibration per device, set up once.
+      localStorage.setItem(DISPLAY_STORAGE_KEY, JSON.stringify({ anaglyphTarget, anaglyphScene }));
+    } catch {
+      // Storage can be unavailable (private mode); settings just won't persist.
+    }
+  }, [config]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -1444,7 +1527,17 @@ export default function App() {
   };
 
   return (
-    <div className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${screen === 'game' ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}>
+    <div
+      className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${screen === 'game' ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
+      // Tailwind cannot compile colours that are only known at runtime, so the
+      // calibrated anaglyph pair is published as inherited CSS variables here.
+      style={{
+        '--ag-target': config.anaglyphTarget,
+        '--ag-scene': config.anaglyphScene,
+        '--ag-scene-20': withAlpha(config.anaglyphScene, 0.2),
+        '--ag-scene-30': withAlpha(config.anaglyphScene, 0.3),
+      } as React.CSSProperties}
+    >
       {/* During a game the layout switches to a full-viewport flex column so the
           play area gets every pixel the screen has (100dvh tracks resizes and
           mobile browser chrome automatically) */}
@@ -1816,7 +1909,7 @@ export default function App() {
                       <label className="text-sm font-medium">Anaglyph Mode (Red/Cyan)</label>
                       <p className="text-xs text-slate-500">Enable if you have Red/Cyan glasses for dichoptic training.</p>
                     </div>
-                    <Button 
+                    <Button
                       variant={config.anaglyphMode ? "default" : "outline"}
                       onClick={() => setConfig(c => ({...c, anaglyphMode: !c.anaglyphMode}))}
                     >
@@ -1825,6 +1918,105 @@ export default function App() {
                   </div>
                 </CardContent>
               </Card>
+
+              {config.anaglyphMode && (
+                <Card className="bg-slate-900 border-slate-800">
+                  <CardHeader>
+                    <CardTitle className="text-slate-50 flex items-center gap-2">
+                      <Palette className="h-5 w-5 text-blue-400" /> Display Calibration
+                    </CardTitle>
+                    <CardDescription className="text-slate-400">
+                      Screens and glasses vary, so the textbook red/cyan pair ghosts on some
+                      combinations. Tune the colours until each eye sees as little of the other's
+                      image as possible. Stored on this device only — set it up once per device.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Preview</label>
+                      <div className="relative flex h-28 items-center justify-center gap-10 overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950">
+                        <div
+                          className="absolute left-0 right-0 h-2"
+                          style={{ backgroundColor: config.anaglyphScene, opacity: 0.35 }}
+                        />
+                        {[20, 80].map(left => (
+                          <div
+                            key={left}
+                            className="absolute h-4 w-4 -translate-x-1/2 rounded-full border-2"
+                            style={{ left: `${left}%`, borderColor: config.anaglyphScene, backgroundColor: '#0f172a' }}
+                          />
+                        ))}
+                        <TrainFront className="relative h-12 w-12" style={{ color: config.anaglyphTarget }} />
+                        <span className="relative text-4xl font-bold" style={{ color: config.anaglyphTarget }}>E</span>
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        Wearing the glasses, cover one eye at a time. Through the lens over the
+                        training eye the train and letter should look bright while the line and
+                        stations nearly disappear; through the other lens, the opposite.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <ColorField
+                        label="Target colour"
+                        hint="Targets the training eye must find — red by default."
+                        value={config.anaglyphTarget}
+                        onChange={(hex) => setConfig(c => ({ ...c, anaglyphTarget: hex }))}
+                      />
+                      <ColorField
+                        label="Scenery colour"
+                        hint="Lines, grids and background the other eye sees — cyan by default."
+                        value={config.anaglyphScene}
+                        onChange={(hex) => setConfig(c => ({ ...c, anaglyphScene: hex }))}
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium">Starting points</label>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {ANAGLYPH_PRESETS.map(preset => {
+                          const active = config.anaglyphTarget === preset.target && config.anaglyphScene === preset.scene;
+                          return (
+                            <button
+                              key={preset.name}
+                              onClick={() => setConfig(c => ({ ...c, anaglyphTarget: preset.target, anaglyphScene: preset.scene }))}
+                              className={`flex items-start gap-3 rounded-lg border p-3 text-left transition-colors ${active ? 'border-blue-500 bg-blue-500/10' : 'border-slate-800 bg-slate-800/40 hover:bg-slate-800'}`}
+                            >
+                              <span className="mt-0.5 flex shrink-0 gap-1">
+                                <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.target }} />
+                                <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.scene }} />
+                              </span>
+                              <span>
+                                <span className="block text-sm font-medium text-slate-100">{preset.name}</span>
+                                <span className="block text-xs text-slate-500">{preset.description}</span>
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 border-t border-slate-800 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => setConfig(c => ({ ...c, anaglyphTarget: c.anaglyphScene, anaglyphScene: c.anaglyphTarget }))}
+                      >
+                        <ArrowLeftRight className="mr-2 h-4 w-4" /> Swap colours
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setConfig(c => ({ ...c, anaglyphTarget: ANAGLYPH_TARGET_DEFAULT, anaglyphScene: ANAGLYPH_SCENE_DEFAULT }))}
+                      >
+                        <RotateCcw className="mr-2 h-4 w-4" /> Reset to classic
+                      </Button>
+                    </div>
+                    <p className="text-xs text-slate-500">
+                      Swap the colours if the glasses put the red lens over the other eye. To reuse
+                      this calibration on another device, copy the two hex values across.
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
