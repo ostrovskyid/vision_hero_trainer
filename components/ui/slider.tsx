@@ -27,10 +27,12 @@ function Slider({
       thumbAlignment="edge"
       {...props}
     >
-      <SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
+      {/* Vertical padding widens the drag zone well past the thumb itself, so a
+          finger landing near the track still grabs it. */}
+      <SliderPrimitive.Control className="relative flex w-full touch-none items-center py-4 select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col data-vertical:px-3 data-vertical:py-0">
         <SliderPrimitive.Track
           data-slot="slider-track"
-          className="relative grow overflow-hidden rounded-full bg-muted select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
+          className="relative grow overflow-hidden rounded-full bg-muted select-none data-horizontal:h-3 data-horizontal:w-full data-vertical:h-full data-vertical:w-3"
         >
           <SliderPrimitive.Indicator
             data-slot="slider-range"
@@ -41,7 +43,7 @@ function Slider({
           <SliderPrimitive.Thumb
             data-slot="slider-thumb"
             key={index}
-            className="relative block size-5 shrink-0 rounded-full border-2 border-primary bg-white ring-ring/50 shadow-sm transition-[color,box-shadow] select-none after:absolute after:-inset-4 hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden active:ring-4 disabled:pointer-events-none disabled:opacity-50 cursor-grab active:cursor-grabbing"
+            className="relative block size-8 shrink-0 rounded-full border-2 border-primary bg-white ring-ring/50 shadow-md transition-[color,box-shadow] select-none after:absolute after:-inset-3 hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden active:ring-4 disabled:pointer-events-none disabled:opacity-50 cursor-grab active:cursor-grabbing"
           />
         ))}
       </SliderPrimitive.Control>

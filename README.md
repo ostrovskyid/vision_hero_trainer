@@ -37,6 +37,10 @@ point rather than ending the game, and every round finishes with confetti.
 - **Twelve exercises**, each training a different visual skill
 - **Three difficulty presets** plus manual control over speed, target size and session length
 - **Red/cyan anaglyph mode** for dichoptic training with 3D glasses
+- **Animated previews** on every home tile, so a child picks a game by recognising the
+  picture rather than reading the title
+- **Built for touch** — every control clears the 44px minimum tap target, with type and
+  contrast to match
 - **Full-screen play area** that uses every pixel of the display, on desktop or tablet
 - **Progress tracking** — XP, levels and per-exercise history saved locally in the browser
 - **Sound and haptic-style feedback**: rising tones for hits, a buzz and screen shake for misses
