@@ -2158,7 +2158,8 @@ export default function App() {
                     </div>
                     <p className="text-xs text-slate-500">
                       Swap the colours if the glasses put the red lens over the other eye. To reuse
-                      this calibration on another device, copy the two hex values across.
+                      this calibration on another device, copy the hex values and brightness levels
+                      across.
                     </p>
                   </CardContent>
                 </Card>
