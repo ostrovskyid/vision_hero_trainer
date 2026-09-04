@@ -8,7 +8,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   size: 40,
   contrast: 100,
   duration: 90,
-  anaglyphMode: false,
+  anaglyphMode: true,
   anaglyphTarget: ANAGLYPH_TARGET_DEFAULT,
   anaglyphScene: ANAGLYPH_SCENE_DEFAULT,
   anaglyphTargetLevel: 100,

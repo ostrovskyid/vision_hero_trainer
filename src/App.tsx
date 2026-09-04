@@ -1607,6 +1607,36 @@ export default function App() {
     }
   };
 
+  // A tablet dims and locks while a child is watching a slow target without
+  // touching the screen, which ends the exercise. Hold the screen awake for as
+  // long as an exercise is open, and re-acquire it after the tab is hidden
+  // (Android drops the lock on backgrounding).
+  useEffect(() => {
+    if (screen !== 'game') return;
+    const nav = navigator as Navigator & { wakeLock?: { request: (t: 'screen') => Promise<{ release: () => Promise<void> }> } };
+    if (!nav.wakeLock) return;
+
+    let sentinel: { release: () => Promise<void> } | null = null;
+    let cancelled = false;
+
+    const acquire = () => {
+      nav.wakeLock!.request('screen')
+        .then(lock => { if (cancelled) lock.release().catch(() => {}); else sentinel = lock; })
+        .catch(() => {
+          // Denied (unsupported, or not a secure context) — nothing to do.
+        });
+    };
+    const onVisibility = () => { if (document.visibilityState === 'visible') acquire(); };
+
+    acquire();
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisibility);
+      sentinel?.release().catch(() => {});
+    };
+  }, [screen]);
+
   const handleGameComplete = (stats: GameStats) => {
     const statsWithDifficulty = { ...stats, difficulty: config.difficulty };
     setUser(prev => ({
@@ -1623,7 +1653,7 @@ export default function App() {
 
   return (
     <div
-      className={`bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${fillsViewport ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
+      className={`safe-area bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${fillsViewport ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
       // Tailwind cannot compile colours that are only known at runtime, so the
       // calibrated anaglyph pair is published as inherited CSS variables here.
       style={{

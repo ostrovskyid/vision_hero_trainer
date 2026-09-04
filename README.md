@@ -36,15 +36,15 @@ point rather than ending the game, and every round finishes with confetti.
 
 - **Twelve exercises**, each training a different visual skill
 - **Three difficulty presets** plus manual control over speed, target size and session length
-- **Red/cyan anaglyph mode** for dichoptic training with 3D glasses
+- **Red/cyan anaglyph mode** for dichoptic training with 3D glasses, on by default
 - **Animated previews** on every home tile, so a child picks a game by recognising the
   picture rather than reading the title
 - **Built for touch** — every control clears the 44px minimum tap target, with type and
   contrast to match
 - **Fits the screen** — the home grid and the play area both size themselves to one
   viewport height, so nothing scrolls out of a child's reach
-- **Installable** — add it to a tablet's home screen and it launches full screen, with no
-  browser chrome
+- **Installable and offline** — add it to a tablet's home screen and it launches full
+  screen, with no browser chrome, and keeps working without a connection
 - **Progress tracking** — XP, levels and per-exercise history saved locally in the browser
 - **Sound and haptic-style feedback**: rising tones for hits, a buzz and screen shake for misses
 - **No account, no backend, no data collection** — everything stays in the browser
@@ -190,7 +190,7 @@ rather than to the game:
 | **Session duration** | 10–300 seconds per round |
 | **Sound effects** | Feedback tones on and off |
 | **Full screen exercises** | Fill the whole screen when an exercise starts |
-| **Anaglyph mode** | Red/cyan dichoptic rendering, with per-device colour calibration (see below) |
+| **Anaglyph mode** | Red/cyan dichoptic rendering, **on by default**, with per-device colour calibration (see below) |
 
 Progress, level and per-exercise history are stored in the browser's `localStorage` under
 `eyequest_user`; exercise settings under `eyequest_config` and the display calibration under
@@ -198,8 +198,9 @@ Progress, level and per-exercise history are stored in the browser's `localStora
 
 ### Red/cyan anaglyph mode
 
-With anaglyph mode on, targets render in one colour and all scenery in its complement — red
-and cyan by default. Wearing red/cyan glasses, the eye behind the red filter sees the targets
+Anaglyph mode is **on by default**, so the app expects red/cyan glasses out of the box; turn
+it off in Parent's Corner to play in ordinary colours. With it on, targets render in one
+colour and all scenery in its complement — red and cyan by default. Wearing red/cyan glasses, the eye behind the red filter sees the targets
 clearly while the other eye sees only the background, so the weaker eye has to do the work
 while both eyes stay open. This is the dichoptic principle used in clinical amblyopia
 software.
@@ -243,16 +244,35 @@ eye should be behind the red filter.
 The home screen and every exercise lay themselves out inside a single viewport height, so
 the app already uses the whole window without scrolling. To lose the browser chrome as well:
 
-- **Install it (best for daily training).** On a tablet or phone, open the site and choose
-  *Add to Home Screen*; on desktop Chrome or Edge, use the install icon in the address bar.
-  The [web app manifest](public/manifest.webmanifest) requests `display: fullscreen`, so
+- **Install it (best for daily training).** On an Android tablet, open the site in Chrome and
+  choose *Install app* / *Add to Home Screen*; on iPad Safari use *Share → Add to Home
+  Screen*; on desktop Chrome or Edge, use the install icon in the address bar. The
+  [web app manifest](public/manifest.webmanifest) requests `display: fullscreen`, so
   launching from the installed icon opens the app with no browser UI at all.
 - **Or let exercises go full screen.** *Full Screen Exercises* in Parent's Corner (on by
   default) puts the app into full screen when an exercise starts.
 
-A web page cannot put itself into full screen on load — browsers only grant it in response
-to a tap or click — which is why the app asks at the moment an exercise begins, and why
+A web page cannot put itself into full screen on load — browsers only grant it in response to
+a tap or click — which is why the app asks at the moment an exercise begins, and why
 installing is the way to have it open full screen every time.
+
+### On tablets
+
+Several things are tuned for a child using this on a tablet:
+
+- A [service worker](public/sw.js) caches the app, which is what lets Android install it as a
+  real standalone app rather than a browser shortcut — and means a session runs with no
+  connection at all.
+- The screen is held awake for the length of an exercise, so the tablet does not dim while a
+  child is watching a slow target without touching anything.
+- Pull-to-refresh is disabled, so swiping down on a target cannot reload the app mid-exercise,
+  and double-tap zoom and tap highlights are off, so every tap lands on the target.
+- The layout keeps clear of camera cutouts and rounded corners via safe-area insets, and
+  follows the screen through rotation.
+
+One caveat: **iPhone Safari does not support the Fullscreen API**, so the in-app setting has
+no effect there — installing to the home screen is the only route. iPad and Android both
+support either.
 
 ## Getting started
 
