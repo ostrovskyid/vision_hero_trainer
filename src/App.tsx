@@ -5,7 +5,8 @@ import {
   Trophy, Play, Settings, ChevronLeft, Volume2, VolumeX, Eye, Maximize, Minimize,
   Radar, CloudFog, ShieldAlert, Crosshair, Target,
   TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw,
-  Shapes, Dog, Clapperboard, Mic, MicOff, Sticker
+  Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
+  Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,14 @@ import { GameHud } from './GameHud';
 import { ShapeGarage } from './games/ShapeGarage';
 import { PopOutPups } from './games/PopOutPups';
 import { CartoonCinema } from './games/CartoonCinema';
+import { CountCarriages } from './games/CountCarriages';
+import { RocketDots } from './games/RocketDots';
+import { ZooHideSeek } from './games/ZooHideSeek';
+import { BusDriver } from './games/BusDriver';
+import { HangarMatch } from './games/HangarMatch';
+import { CarWash } from './games/CarWash';
+import { SpotDifference } from './games/SpotDifference';
+import { AnaglyphFilters } from './games/common';
 import { scaleColor, withAlpha, playSound, speak, stopSpeaking } from './feedback';
 
 /**
@@ -57,6 +66,13 @@ const GAME_TILES: {
   { mode: 'shapes', title: 'Shape Garage', description: 'Find the wheel with the same shape.', Icon: Shapes, iconClass: 'text-amber-400', chipClass: 'bg-amber-500/10', hoverClass: 'hover:border-amber-500/60', barClass: 'bg-amber-500' },
   { mode: 'popout', title: 'Pop-Out Pups', description: 'Tap the pup that floats out.', Icon: Dog, iconClass: 'text-pink-400', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-500/60', barClass: 'bg-pink-500', requiresAnaglyph: true },
   { mode: 'cinema', title: 'Cartoon Cinema', description: 'Watch the show, tap the stars.', Icon: Clapperboard, iconClass: 'text-teal-400', chipClass: 'bg-teal-500/10', hoverClass: 'hover:border-teal-500/60', barClass: 'bg-teal-500' },
+  { mode: 'carriages', title: 'Count the Carriages', description: 'How many carriages went by?', Icon: Hash, iconClass: 'text-red-400', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-500/60', barClass: 'bg-red-500' },
+  { mode: 'dots', title: 'Rocket Dot-to-Dot', description: 'Join 1, 2, 3… and blast off.', Icon: PenLine, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
+  { mode: 'zoo', title: 'Zoo Hide & Seek', description: 'Find the hiding animal.', Icon: TreePalm, iconClass: 'text-lime-400', chipClass: 'bg-lime-500/10', hoverClass: 'hover:border-lime-500/60', barClass: 'bg-lime-500' },
+  { mode: 'bus', title: 'Bus Driver', description: 'Drive the bus, pick everyone up.', Icon: Bus, iconClass: 'text-yellow-400', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-500/60', barClass: 'bg-yellow-500' },
+  { mode: 'hangar', title: 'Hangar Match', description: 'Park each plane by its shadow.', Icon: Warehouse, iconClass: 'text-violet-400', chipClass: 'bg-violet-500/10', hoverClass: 'hover:border-violet-500/60', barClass: 'bg-violet-500' },
+  { mode: 'carwash', title: 'Car Wash', description: 'Rub off every mud spot.', Icon: Droplets, iconClass: 'text-cyan-400', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-500/60', barClass: 'bg-cyan-500' },
+  { mode: 'differences', title: 'Spot the Difference', description: 'What changed in the zoo?', Icon: ScanSearch, iconClass: 'text-orange-400', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-500/60', barClass: 'bg-orange-500' },
 ];
 
 const ALL_MODES = GAME_TILES.map(t => t.mode);
@@ -78,6 +94,13 @@ const SKILL_LABELS: Record<GameMode, string> = {
   shapes: 'Acuity & Crowding',
   popout: '3D Depth',
   cinema: 'Dichoptic Viewing',
+  carriages: 'Visual Span & Counting',
+  dots: 'Eye-Hand Coordination',
+  zoo: 'Visual Closure',
+  bus: 'Eye-Hand Pursuit',
+  hangar: 'Shape Discrimination',
+  carwash: 'Visual Scanning',
+  differences: 'Visual Comparison',
 };
 
 /**
@@ -100,6 +123,13 @@ const GAME_INSTRUCTIONS: Record<GameMode, string> = {
   shapes: 'Find the wheel with the same shape!',
   popout: 'Put on your 3D glasses. Tap the pup that floats out!',
   cinema: 'Watch the cartoon and tap the stars!',
+  carriages: 'Watch the train and count the carriages!',
+  dots: 'Slide your finger from one to two to three!',
+  zoo: 'The animals are hiding. Can you find them?',
+  bus: 'Put your finger on the bus and drive it along the road!',
+  hangar: 'Drag each plane into the hangar with its shadow!',
+  carwash: 'Rub off all the mud!',
+  differences: 'The two pictures are nearly the same. Find what is different!',
 };
 
 /** Local calendar day, so the daily mission resets at the child's midnight. */
@@ -1669,6 +1699,7 @@ export default function App() {
         '--ag-glow': withAlpha(renderConfig.anaglyphTarget, 0.75),
       } as React.CSSProperties}
     >
+      <AnaglyphFilters target={renderConfig.anaglyphTarget} scene={renderConfig.anaglyphScene} />
       {/* Calibration has to be judged on a dark field like the games use — the lit
           settings page around the inline preview reaches both eyes and masks the
           ghosting the parent is trying to see. */}
@@ -1873,6 +1904,13 @@ export default function App() {
               {selectedMode === 'shapes' && <ShapeGarage config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'popout' && <PopOutPups config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'cinema' && <CartoonCinema config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'carriages' && <CountCarriages config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'dots' && <RocketDots config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'zoo' && <ZooHideSeek config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'bus' && <BusDriver config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'hangar' && <HangarMatch config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'carwash' && <CarWash config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'differences' && <SpotDifference config={gameConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}

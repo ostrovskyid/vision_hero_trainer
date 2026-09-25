@@ -347,6 +347,142 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
 
+    case 'carriages':
+      return (
+        <Frame className="flex flex-col items-center justify-center gap-2">
+          <div className="relative h-9 w-[80%] overflow-hidden rounded-md border-2 border-slate-600">
+            <motion.div
+              className="absolute top-1 flex gap-1"
+              animate={move({ left: ['100%', '-60%'] }, { left: '20%' })}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'linear', repeatDelay: 0.6 }}
+            >
+              {[0, 1, 2].map(i => <div key={i} className="h-5 w-8 rounded bg-red-500" />)}
+            </motion.div>
+          </div>
+          <div className="flex gap-1.5">
+            {[1, 2, 3].map(n => (
+              <div key={n} className={`flex h-6 w-6 items-center justify-center rounded border text-xs font-bold ${n === 3 ? 'border-red-400 text-red-300' : 'border-slate-600 text-slate-400'}`}>{n}</div>
+            ))}
+          </div>
+        </Frame>
+      );
+
+    case 'dots': {
+      const pts = [[50, 12], [64, 36], [64, 70], [76, 88], [24, 88], [36, 70], [36, 36]];
+      return (
+        <Frame>
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+            <motion.polyline
+              points={pts.map(p => p.join(',')).join(' ')}
+              fill="none" stroke="#38bdf8" strokeWidth="3" strokeLinejoin="round"
+              animate={move({ pathLength: [0, 1, 1] }, { pathLength: 0.6 })}
+              transition={{ duration: 4, repeat: Infinity, times: [0, 0.8, 1] }}
+            />
+            {pts.map(([x, y], i) => (
+              <g key={i}>
+                <circle cx={x} cy={y} r="3" fill="#f8fafc" />
+                <text x={x + 6} y={y - 3} fontSize="8" fill="#facc15" fontWeight="700">{i + 1}</text>
+              </g>
+            ))}
+          </svg>
+        </Frame>
+      );
+    }
+
+    case 'zoo':
+      return (
+        <Frame className="flex items-end justify-center gap-3 pb-2">
+          {['🦒', '🦁', '🐘'].map((a, i) => (
+            <div key={a} className="relative h-12 w-12 overflow-hidden">
+              <motion.span
+                className="absolute left-1.5 text-3xl leading-none"
+                animate={move({ top: ['40%', '4%', '40%'] }, { top: '10%' })}
+                transition={loop(2.6, i * 0.7)}
+              >
+                {a}
+              </motion.span>
+              <div className="absolute bottom-0 left-0 right-0 h-7 rounded-t-full bg-green-700" />
+            </div>
+          ))}
+        </Frame>
+      );
+
+    case 'bus':
+      return (
+        <Frame>
+          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <path d="M 4 70 C 30 70, 30 30, 55 30 S 80 70, 96 50" fill="none" stroke="#334155" strokeWidth="12" strokeLinecap="round" />
+            <path d="M 4 70 C 30 70, 30 30, 55 30 S 80 70, 96 50" fill="none" stroke="#e2e8f0" strokeWidth="1.2" strokeDasharray="4 4" />
+          </svg>
+          <motion.span
+            className="absolute -ml-3 -mt-3 text-2xl leading-none"
+            style={{ transform: 'scaleX(-1)' }}
+            animate={move({ left: ['6%', '30%', '55%', '78%', '94%'], top: ['70%', '52%', '30%', '58%', '50%'] }, { left: '55%', top: '30%' })}
+            transition={loop(5)}
+          >
+            🚌
+          </motion.span>
+        </Frame>
+      );
+
+    case 'hangar':
+      return (
+        <Frame className="flex flex-col items-center justify-center gap-1.5">
+          <motion.span
+            className="text-3xl leading-none"
+            animate={move({ y: [0, 22, 0], x: [0, -26, 0] }, { y: 0 })}
+            transition={loop(3)}
+          >
+            ✈️
+          </motion.span>
+          <div className="flex gap-2">
+            {['✈️', '🚁', '🚀'].map(e => (
+              <div key={e} className="flex h-10 w-10 items-center justify-center rounded-t-2xl border-2 border-b-0 border-slate-500">
+                <span className="text-xl leading-none" style={{ filter: 'brightness(0) invert(0.55)' }}>{e}</span>
+              </div>
+            ))}
+          </div>
+        </Frame>
+      );
+
+    case 'carwash':
+      return (
+        <Frame className="flex items-center justify-center">
+          <svg viewBox="0 0 230 100" className="w-[80%]" aria-hidden="true">
+            <path d="M20 70 L30 44 Q36 34 50 34 L90 34 Q104 12 130 12 L160 12 Q176 12 184 34 L200 40 Q210 44 210 58 L210 70 Z" fill="#3b82f6" />
+            <circle cx="60" cy="74" r="15" fill="#0f172a" />
+            <circle cx="170" cy="74" r="15" fill="#0f172a" />
+            {[[70, 52, 0], [120, 46, 0.6], [180, 56, 1.2]].map(([x, y, d]) => (
+              <motion.circle
+                key={x} cx={x} cy={y} r="9" fill="#78350f"
+                animate={move({ opacity: [1, 1, 0, 0] }, { opacity: 1 })}
+                transition={{ duration: 3.6, repeat: Infinity, delay: d, times: [0, 0.4, 0.55, 1] }}
+              />
+            ))}
+          </svg>
+        </Frame>
+      );
+
+    case 'differences':
+      return (
+        <Frame className="flex items-center justify-center gap-2">
+          {[0, 1].map(side => (
+            <div key={side} className="grid h-14 w-16 grid-cols-2 place-items-center rounded-md border-2 border-slate-600 text-lg leading-none">
+              <span>🐧</span>
+              <span>{side === 1 ? '🎈' : '⭐'}</span>
+              <span>🌴</span>
+              {side === 1 ? (
+                <motion.span
+                  className="h-5 w-5 rounded-full border-2 border-yellow-400"
+                  animate={move({ scale: [0.8, 1.2, 0.8] }, { scale: 1 })}
+                  transition={loop(1.8)}
+                />
+              ) : <span>🐟</span>}
+            </div>
+          ))}
+        </Frame>
+      );
+
     default:
       return <Frame />;
   }

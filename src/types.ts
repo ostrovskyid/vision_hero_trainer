@@ -1,4 +1,5 @@
-export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator' | 'crossing' | 'memory' | 'shapes' | 'popout' | 'cinema';
+export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator' | 'crossing' | 'memory' | 'shapes' | 'popout' | 'cinema'
+  | 'carriages' | 'dots' | 'zoo' | 'bus' | 'hangar' | 'carwash' | 'differences';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameStats {

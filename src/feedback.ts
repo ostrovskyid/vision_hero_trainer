@@ -39,7 +39,7 @@ const getAudioContext = () => {
   return audioCtx;
 };
 
-export const playSound = (type: 'hit' | 'miss' | 'complete', enabled: boolean) => {
+export const playSound = (type: 'hit' | 'miss' | 'complete' | 'honk', enabled: boolean) => {
   if (!enabled) return;
   try {
     const ctx = getAudioContext();
@@ -65,6 +65,16 @@ export const playSound = (type: 'hit' | 'miss' | 'complete', enabled: boolean) =
       gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
       osc.start();
       osc.stop(ctx.currentTime + 0.2);
+    } else if (type === 'honk') {
+      // Two friendly toots, for vehicles that are done.
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(392, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.setValueAtTime(0, ctx.currentTime + 0.14);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime + 0.2);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.4);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.4);
     } else if (type === 'complete') {
       osc.type = 'square';
       osc.frequency.setValueAtTime(440, ctx.currentTime);
