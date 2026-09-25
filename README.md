@@ -5,8 +5,7 @@
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
 Twenty-two short exercises themed around vehicles, metro maps, rockets, rescue pups and
-the zoo — built to make
-daily eye training something a child asks for rather than resists.
+the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)
