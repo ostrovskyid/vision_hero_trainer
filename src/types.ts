@@ -1,4 +1,4 @@
-export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator' | 'crossing' | 'memory';
+export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator' | 'crossing' | 'memory' | 'shapes' | 'popout' | 'cinema';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 export interface GameStats {
@@ -15,6 +15,10 @@ export interface UserProfile {
   level: number;
   experience: number;
   stats: Record<GameMode, GameStats[]>;
+  /** Vehicle stickers earned, one per day the daily mission is finished. */
+  stickers: string[];
+  /** Local YYYY-MM-DD of the last finished daily mission. */
+  lastMissionDate?: string;
 }
 
 export interface GameConfig {
@@ -35,6 +39,14 @@ export interface GameConfig {
   /** Enter full screen when an exercise starts, to maximise the play area. */
   autoFullscreen: boolean;
   difficulty: Difficulty;
+  /** Read instructions aloud, for children who cannot read yet. */
+  voiceEnabled: boolean;
+  /** Length of each game in the daily mission, in seconds. */
+  missionSeconds: number;
+  /** Length of a free-play Cartoon Cinema show, in minutes. */
+  cinemaMinutes: number;
+  /** 0-100 brightness of the strong (scenery) eye's picture in Cartoon Cinema. */
+  cinemaFellowLevel: number;
 }
 
 export interface AnaglyphPreset {

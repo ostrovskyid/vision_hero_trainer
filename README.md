@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Twelve short exercises themed around vehicles, metro maps and trains — built to make
+Fifteen short exercises themed around vehicles, metro maps, rockets and rescue pups — built to make
 daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,7 +34,13 @@ point rather than ending the game, and every round finishes with confetti.
 
 ## Highlights
 
-- **Twelve exercises**, each training a different visual skill
+- **Fifteen exercises**, each training a different visual skill — including a 3D depth game
+  and a passive cartoon for tired days
+- **Today's Mission** — one big button plays three short games back to back and awards a
+  vehicle sticker for the day
+- **Spoken instructions** — every game says what to do out loud, so a child who cannot read
+  yet can play on their own
+- **No countdown numbers** — time is a little car driving towards a finish flag
 - **Three difficulty presets** plus manual control over speed, target size and session length
 - **Red/cyan anaglyph mode** for dichoptic training with 3D glasses, on by default
 - **Animated previews** on every home tile, so a child picks a game by recognising the
@@ -173,7 +179,62 @@ order. The route grows by one station after every success.
 
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/shape-garage.png" alt="Shape Garage" width="100%">
+
+### 🔺 Shape Garage
+**Acuity under crowding, for pre-readers** — a car rolls in missing a wheel with a shape on
+it; find that wheel on a crowded tyre rack. Uses picture symbols in the spirit of the LEA
+Symbols chart (circle, apple, heart, square, house, triangle) instead of letters, with
+look-alikes as distractors. Shapes shrink after each find and grow back after a miss.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/pop-out-pups.png" alt="Pop-Out Pups" width="100%">
+
+### 🐶 Pop-Out Pups
+**Stereopsis (3D depth)** — every pup is drawn once per eye; one floats out of the screen,
+the rest sink behind it. All pups carry the same amount of offset, so only the two eyes
+working together can find the odd one. The depth adapts to the child (less after a find,
+more after a miss). On hard, every other round is a random-dot stereogram. **Needs red/cyan
+glasses, so it only appears while anaglyph mode is on.**
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/cartoon-cinema.png" alt="Cartoon Cinema" width="100%">
+
+### 🎬 Cartoon Cinema
+**Passive dichoptic viewing** — a looping cartoon (rocket launch, metro ride, night flight).
+With the glasses on, the weaker eye sees the full picture while the stronger eye gets a
+dimmer copy with soft patches drifting over it, so parts of the story are only visible to
+the weaker eye. Stars pop up now and then; tapping one shows the child is still watching.
+Without anaglyph mode it plays as an ordinary full-colour cartoon.
+
+</td>
+<td width="50%" valign="top">
+
+</td>
+</tr>
 </table>
+
+## Made for five-year-olds
+
+- **Today's Mission.** The big yellow button picks two games the child has played least
+  recently, then finishes with Cartoon Cinema. Each game runs for the *Daily Mission Game
+  Length* (2 minutes by default). Finishing the mission earns one vehicle sticker per day,
+  shown on the sticker shelf at the bottom of the home screen.
+- **Spoken instructions.** Each exercise reads its instruction aloud when it opens, and the
+  new games also speak each round's prompt ("Find the heart wheel!"). This uses the
+  browser's built-in voices, so it works offline.
+- **No countdown numbers.** The seconds counter is replaced by a little car driving along a
+  road to a finish flag. The new games never take points away for a wrong tap.
+- **Picture-first home screen.** Every tile, including the new ones, has an animated preview.
 
 ## Parent's Corner
 
@@ -190,7 +251,11 @@ rather than to the game:
 | **Session duration** | 10–300 seconds per round |
 | **Sound effects** | Feedback tones on and off |
 | **Full screen exercises** | Fill the whole screen when an exercise starts |
-| **Anaglyph mode** | Red/cyan dichoptic rendering, **on by default**, with per-device colour calibration (see below) |
+| **Daily mission game length** | 60–240 seconds per game in Today's Mission |
+| **Cartoon Cinema length** | 1–10 minutes for a free-play show |
+| **Spoken instructions** | Read instructions aloud on and off |
+| **Anaglyph mode** | Red/cyan dichoptic rendering, **on by default**, with per-device colour calibration (see below). Pop-Out Pups is only shown while it is on |
+| **Cartoon Cinema: strong-eye picture** | 0–100% brightness of the scenery eye's copy of the cartoon (anaglyph mode only) |
 
 Progress, level and per-exercise history are stored in the browser's `localStorage` under
 `eyequest_user`; exercise settings under `eyequest_config` and the display calibration under
@@ -238,6 +303,10 @@ colours and brightness levels across.
 
 Ask your ophthalmologist or orthoptist whether dichoptic training is appropriate, and which
 eye should be behind the red filter.
+
+Pop-Out Pups assumes standard red-left glasses, with the target-colour filter over the left
+eye. If the lenses are the other way round, the odd pup sinks into the screen instead of
+floating out. It is still the only one that looks different, so the game still works.
 
 ## Running it full screen
 
@@ -311,12 +380,15 @@ updating that value.
 | **Build** | Vite 6 |
 | **Animation** | Motion, canvas-confetti |
 | **Icons** | lucide-react |
-| **Audio** | Web Audio API (generated tones, no audio files) |
+| **Audio** | Web Audio API (generated tones, no audio files) and the Web Speech API for spoken instructions |
 | **Storage** | Browser `localStorage` |
 
 Components follow the [shadcn/ui](https://ui.shadcn.com) conventions and live in
-[`components/ui`](components/ui). Game logic and screens are in
-[`src/App.tsx`](src/App.tsx), with shared types and presets in
+[`components/ui`](components/ui). Screens and the original twelve games are in
+[`src/App.tsx`](src/App.tsx); Shape Garage, Pop-Out Pups and Cartoon Cinema live in
+[`src/games`](src/games). Sound, speech and colour helpers are in
+[`src/feedback.ts`](src/feedback.ts), the in-game progress bar in
+[`src/GameHud.tsx`](src/GameHud.tsx), and shared types and presets in
 [`src/types.ts`](src/types.ts) and [`src/constants.ts`](src/constants.ts).
 
 ## Disclaimer

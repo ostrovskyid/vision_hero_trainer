@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import {
-  Rocket, Plane, Car, Bus, CloudFog, Radar, Crosshair, TrainFront, TramFront,
+  Rocket, Plane, Car, Bus, CloudFog, Radar, Crosshair, TrainFront, TramFront, Star,
 } from 'lucide-react';
 import { GameMode } from './types';
+import { ShapeIcon, ShapeKind } from './shapes';
 
 /**
  * Miniature, animated illustrations of each exercise, shown on the home tiles.
@@ -280,6 +281,71 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
     }
+
+    case 'shapes':
+      return (
+        <Frame className="flex items-center justify-center gap-2.5">
+          {(['circle', 'house', 'apple', 'square'] as ShapeKind[]).map((kind, i) => (
+            <motion.div
+              key={kind}
+              className="flex h-10 w-10 items-center justify-center rounded-full border-[3px] border-slate-600 bg-slate-800"
+              animate={i === 2 ? move({ scale: [1, 1.18, 1] }, { scale: 1.12 }) : undefined}
+              transition={loop(2.2)}
+            >
+              <ShapeIcon kind={kind} size={20} color="#f8fafc" />
+            </motion.div>
+          ))}
+        </Frame>
+      );
+
+    case 'popout': {
+      // Red and cyan copies of each pup; the middle one's copies swap sides,
+      // which is what makes it float out through the glasses.
+      const pup = (color: string) => (
+        <svg viewBox="0 0 100 100" className="h-9 w-9" style={{ mixBlendMode: 'screen' }} aria-hidden="true">
+          <ellipse cx="20" cy="42" rx="14" ry="26" fill={color} />
+          <ellipse cx="80" cy="42" rx="14" ry="26" fill={color} />
+          <circle cx="50" cy="54" r="34" fill={color} />
+        </svg>
+      );
+      return (
+        <Frame className="flex items-center justify-center gap-4 bg-black">
+          {[-1, 1, -1].map((dir, i) => (
+            <motion.div
+              key={i}
+              className="relative h-9 w-11"
+              style={{ isolation: 'isolate' }}
+              animate={i === 1 ? move({ scale: [1, 1.15, 1] }, { scale: 1.1 }) : undefined}
+              transition={loop(2.4)}
+            >
+              <div className="absolute top-0" style={{ left: 4 + dir * 3 }}>{pup('#ff0000')}</div>
+              <div className="absolute top-0" style={{ left: 4 - dir * 3 }}>{pup('#00ffff')}</div>
+            </motion.div>
+          ))}
+        </Frame>
+      );
+    }
+
+    case 'cinema':
+      return (
+        <Frame className="bg-[#0b1030]">
+          <div className="absolute bottom-0 left-0 right-0 h-[18%] bg-slate-800" />
+          <motion.div
+            className="absolute left-[18%] top-1/2 -mt-5"
+            animate={move({ y: [18, -22, 18], x: [0, 70, 0], rotate: [0, 50, 0] }, { y: 0 })}
+            transition={loop(6)}
+          >
+            <Rocket className="h-10 w-10 -rotate-45 fill-slate-200/40 text-slate-200" />
+          </motion.div>
+          <motion.div
+            className="absolute right-[18%] top-[18%]"
+            animate={move({ opacity: [0, 1, 1, 0], scale: [0.4, 1.1, 1, 0.4] }, { opacity: 1 })}
+            transition={{ duration: 3, repeat: Infinity, delay: 1, times: [0, 0.2, 0.8, 1] }}
+          >
+            <Star className="h-7 w-7 fill-yellow-400 text-yellow-400" />
+          </motion.div>
+        </Frame>
+      );
 
     default:
       return <Frame />;
