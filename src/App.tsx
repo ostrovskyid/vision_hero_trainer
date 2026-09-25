@@ -1504,8 +1504,14 @@ export default function App() {
     }
   });
   const [user, setUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('eyequest_user');
-    const parsed = saved ? JSON.parse(saved) : null;
+    // Storage can be blocked (private mode, embedded frames); start fresh then.
+    let parsed: any = null;
+    try {
+      const saved = localStorage.getItem('eyequest_user');
+      parsed = saved ? JSON.parse(saved) : null;
+    } catch {
+      parsed = null;
+    }
     return {
       name: parsed?.name || 'Hero',
       avatar: parsed?.avatar || '🚀',
@@ -1543,7 +1549,11 @@ export default function App() {
   }), [config]);
 
   useEffect(() => {
-    localStorage.setItem('eyequest_user', JSON.stringify(user));
+    try {
+      localStorage.setItem('eyequest_user', JSON.stringify(user));
+    } catch {
+      // Progress just won't persist.
+    }
   }, [user]);
 
   useEffect(() => {
