@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import {
-  Rocket, Plane, Car, Bus, CloudFog, Radar, Crosshair, TrainFront, TramFront, Star,
+  Rocket, Plane, Car, Bus, CloudFog, TrainFront, TramFront, Star,
 } from 'lucide-react';
 import { GameMode } from './types';
 import { ShapeIcon, ShapeKind } from './shapes';
+import { RescuePup } from './pups';
 
 /**
  * Miniature, animated illustrations of each exercise, shown on the home tiles.
@@ -107,31 +108,6 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
 
-    case 'peripheral':
-      return (
-        <Frame>
-          <div className="absolute left-1/2 top-1/2 -ml-4 -mt-4">
-            <Crosshair className="h-8 w-8 text-blue-500/70" />
-          </div>
-          {[
-            { top: '12%', left: '12%' },
-            { top: '12%', right: '12%' },
-            { bottom: '12%', left: '18%' },
-            { bottom: '14%', right: '14%' },
-          ].map((pos, i) => (
-            <motion.div
-              key={i}
-              className="absolute"
-              style={pos}
-              animate={move({ opacity: [0.15, 1, 0.15], scale: [0.85, 1.1, 0.85] }, { opacity: 0.8 })}
-              transition={loop(3.2, i * 0.8)}
-            >
-              <Radar className="h-6 w-6 text-green-400" />
-            </motion.div>
-          ))}
-        </Frame>
-      );
-
     case 'spotter':
       return (
         <Frame className="flex items-center justify-center">
@@ -151,23 +127,6 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
               </div>
             ))}
           </div>
-        </Frame>
-      );
-
-    case 'checkpoint':
-      return (
-        <Frame className="flex flex-col items-center justify-center gap-2">
-          <div className="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-800 px-3 py-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Match</span>
-            <TrainFront className="h-4 w-4 text-cyan-300" />
-          </div>
-          <motion.div
-            className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-slate-700 bg-slate-800"
-            animate={move({ scale: [1, 1.12, 1] }, { scale: 1 })}
-            transition={loop(2.4)}
-          >
-            <TrainFront className="h-7 w-7 text-cyan-300" />
-          </motion.div>
         </Frame>
       );
 
@@ -603,6 +562,76 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
               </motion.span>
             ))}
           </div>
+        </Frame>
+      );
+
+    case 'nightsearch':
+      return (
+        <Frame className="bg-black">
+          <motion.div
+            className="absolute h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full"
+            style={{ background: 'radial-gradient(circle, rgba(253,230,138,0.35), transparent 70%)', top: '55%' }}
+            animate={move({ left: ['25%', '70%', '45%', '25%'] }, { left: '45%' })}
+            transition={loop(5)}
+          />
+          <span className="absolute left-[45%] top-[55%] -translate-x-1/2 -translate-y-1/2 text-2xl leading-none">🧸</span>
+          <div className="absolute left-2 top-2"><RescuePup role="police" size={34} /></div>
+        </Frame>
+      );
+
+    case 'skycatch':
+      return (
+        <Frame className="bg-gradient-to-b from-slate-950 to-indigo-950">
+          <motion.span
+            className="absolute text-xl leading-none"
+            animate={move({ top: ['0%', '62%'], left: ['40%', '46%'] }, { top: '35%', left: '44%' })}
+            transition={{ duration: 2.2, repeat: Infinity, ease: 'linear' }}
+          >
+            🦴
+          </motion.span>
+          <motion.div
+            className="absolute bottom-1 flex flex-col items-center"
+            animate={move({ left: ['20%', '38%', '20%'] }, { left: '38%' })}
+            transition={loop(2.2)}
+          >
+            <RescuePup role="pilot" size={30} />
+            <span className="-mt-1 text-2xl leading-none" style={{ transform: 'scaleX(-1)' }}>🚁</span>
+          </motion.div>
+        </Frame>
+      );
+
+    case 'firerescue':
+      return (
+        <Frame className="flex items-center justify-center gap-3">
+          <RescuePup role="fire" size={44} />
+          <div className="grid grid-cols-3 gap-1 rounded-md bg-orange-900 p-1.5">
+            {['🌷', '🔥', null, null, '🐱', '🔥'].map((c, i) => (
+              <motion.div
+                key={i}
+                className="flex h-7 w-7 items-center justify-center rounded-sm border border-amber-400 bg-black text-sm leading-none"
+                animate={c === '🔥' ? move({ scale: [1, 1.15, 1] }, { scale: 1 }) : undefined}
+                transition={loop(1.2, i * 0.2)}
+              >
+                {c}
+              </motion.div>
+            ))}
+          </div>
+        </Frame>
+      );
+
+    case 'lookout':
+      return (
+        <Frame className="flex items-center justify-center">
+          <RescuePup role="police" size={52} />
+          {[{ top: '14%', left: '12%' }, { bottom: '16%', right: '12%' }, { top: '18%', right: '16%' }].map((pos, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-4 w-4 rounded-full bg-yellow-300 shadow-[0_0_12px_#fde047]"
+              style={pos}
+              animate={move({ opacity: [0, 1, 0, 0] }, { opacity: i === 0 ? 1 : 0 })}
+              transition={{ duration: 3, repeat: Infinity, delay: i, times: [0, 0.1, 0.3, 1] }}
+            />
+          ))}
         </Frame>
       );
 

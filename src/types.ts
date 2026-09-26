@@ -1,7 +1,8 @@
 export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator' | 'crossing' | 'memory' | 'shapes' | 'popout' | 'cinema'
   | 'carriages' | 'dots' | 'zoo' | 'bus' | 'hangar' | 'carwash' | 'differences'
   | 'stripes' | 'docking' | 'maze' | 'paint' | 'pexeso'
-  | 'cage' | 'fusion';
+  | 'cage' | 'fusion'
+  | 'nightsearch' | 'skycatch' | 'firerescue' | 'lookout';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 /**
@@ -105,6 +106,10 @@ export interface GameConfig {
    * out (exotropia). The two eyes' pictures are shifted apart by this much.
    */
   deviationPD: number;
+  /** Names a parent gives the rescue pups, stored only on this device. */
+  pupNames: { police: string; pilot: string; fire: string };
+  /** Show games that need reading letters (for when the child starts reading). */
+  readingGames: boolean;
 }
 
 export interface AnaglyphPreset {

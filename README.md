@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Twenty-nine short exercises themed around vehicles, metro maps, rockets, rescue pups and
+Thirty-one short exercises themed around vehicles, metro maps, rockets, rescue pups and
 the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,7 +34,7 @@ point rather than ending the game, and every round finishes with confetti.
 
 ## Highlights
 
-- **Twenty-nine exercises**, each training a different visual skill — including a 3D depth game
+- **Thirty-one exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
   vehicle sticker for the day
@@ -101,11 +101,14 @@ forcing the fast, accurate eye jumps that reading depends on.
 <tr>
 <td width="50%" valign="top">
 
-<img src="docs/screenshots/peripheral-patrol.png" alt="Peripheral Patrol" width="100%">
+<img src="docs/screenshots/lookout.png" alt="Lookout" width="100%">
 
-### 📡 Peripheral Patrol
-**Peripheral awareness** — hold your gaze on the central crosshair while targets appear
-around the edges of the screen. Widens the useful visual field.
+### 🐶 Lookout (replaces Peripheral Patrol)
+**Peripheral awareness with the eyes kept in the middle** — the police pup sits on the
+lookout in the centre; when a light flashes briefly at the side, tap the **pup**, not the
+light. The answer is always in the middle and the lights are short, so there is no reason to
+look away: the child notices them out of the corner of the eye. The old game had the child
+tap the edge targets, so they simply looked at them.
 
 </td>
 <td width="50%" valign="top">
@@ -121,11 +124,12 @@ Difficulty controls just how subtle that difference is.
 <tr>
 <td width="50%" valign="top">
 
-<img src="docs/screenshots/checkpoint.png" alt="Checkpoint" width="100%">
+<img src="docs/screenshots/fire-rescue.png" alt="Fire Rescue" width="100%">
 
-### 🛡️ Checkpoint
-**Discrimination and reaction time** — a target vehicle is shown, then vehicles arrive one
-at a time. Tap only the matching ones before the timer runs out.
+### 🚒 Fire Rescue (replaces Checkpoint)
+**Visual discrimination under crowding** — small fires in a block of flats, among look-alike
+windows (lamps, flowers, oranges, candles). Tap every fire to spray it out. No clock
+pressure: the task is to look carefully, not fast. Windows shrink after each building.
 
 </td>
 <td width="50%" valign="top">
@@ -142,9 +146,32 @@ eye movement.
 <tr>
 <td width="50%" valign="top">
 
+<img src="docs/screenshots/night-search.png" alt="Night Search" width="100%">
+
+### 🔦 Night Search
+**Systematic scanning** — the park is dark and a toy is lost. Slide the torch around to
+find it; only toys in the light can be picked, so the whole park has to be searched on
+purpose. Toys shrink after each find, and the torch is smaller on harder levels.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/sky-catch.png" alt="Sky Catch" width="100%">
+
+### 🚁 Sky Catch
+**Pursuit and eye-hand** — treats drift and sway down the sky; steer the pilot pup's
+helicopter under them with a finger. A kitten on a balloon is a bonus rescue. Missed treats
+just fall away.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
 <img src="docs/screenshots/station-hunt.png" alt="Station Hunt" width="100%">
 
 ### 📍 Station Hunt
+*Needs letters: hidden until **Reading Games** is turned on in Parent's Corner.*
 **Acuity under crowding** — find the announced station among look-alike letters packed
 close together (E/F/H/L, O/Q/C/G). Crowded fine detail is the core deficit in amblyopia.
 
@@ -399,6 +426,17 @@ both eyes" instead of marking it wrong. **Glasses only.**
   drawn over scenery (the mud on the car, the bus on the road) are added on top of it, so
   the scenery eye never sees a target-shaped hole.
 
+## Rescue pups
+
+Four games star original rescue pups: a police pup (Night Search, Lookout), a pilot pup
+(Sky Catch) and a fire pup (Fire Rescue). In **Parent's Corner → Rescue Pups** a parent can
+give them the names the child uses. The names appear in the game titles and spoken
+instructions, and are stored only on that device, so the public app carries no one else's
+characters or trademarks.
+
+No game takes points away for a mistake: a wrong tap gets a gentle shake and sound, never a
+lower score.
+
 ## Treatment plan and Patch Pal
 
 Amblyopia treatment runs for years and changes along the way: patching, sometimes surgery,
@@ -491,6 +529,8 @@ rather than to the game:
 | Setting | What it does |
 |---------|--------------|
 | **Treatment plan** | Stage, comfort zone and daily patch goal (see above) |
+| **Rescue Pups** | Names for the police, pilot and fire pups, stored on this device only |
+| **Reading games** | Show games that need letters (Station Hunt); off by default |
 | **Picture check / Backup / Report** | Monthly picture check, backup file and progress report (see above) |
 | **Difficulty** | `easy` / `medium` / `hard` presets for speed, target size and grid density |
 | **Movement speed** | How fast targets travel — lower it for younger children |
@@ -633,7 +673,7 @@ updating that value.
 
 Components follow the [shadcn/ui](https://ui.shadcn.com) conventions and live in
 [`components/ui`](components/ui). Screens and the original twelve games are in
-[`src/App.tsx`](src/App.tsx); the seventeen newer games live in [`src/games`](src/games),
+[`src/App.tsx`](src/App.tsx); the newer games live in [`src/games`](src/games),
 together with their shared timer, start screen and anaglyph tint helpers
 ([`src/games/common.tsx`](src/games/common.tsx)). Sound, speech and colour helpers are in
 [`src/feedback.ts`](src/feedback.ts), the in-game progress bar in
