@@ -23,6 +23,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   therapyPhase: 'free',
   comfortZone: false,
   patchGoalMinutes: 120,
+  pxPerMm: 0,
 };
 
 /** One sticker per day the patch-time goal is reached. */

@@ -342,6 +342,32 @@ its settings once; everything stays adjustable, and the app never changes stage 
   with limited outward movement (as in a sixth-nerve palsy or Duane syndrome) to look far
   to the left. Ask the eye doctor whether it applies.
 
+## Monthly picture check and backup
+
+- **Monthly picture check** (Parent's Corner) is a short home check with picture symbols
+  (circle, square, house, apple, in the style of the LEA Symbols chart), drawn at their real
+  size for a fixed distance.
+  - **Setup:** a one-time card calibration (drag a box to the width of a bank card) makes
+    millimetres accurate on each screen.
+  - **Distance:** 1 m, with the parent tapping what the child names or points to, or 40 cm,
+    with the child tapping.
+  - **Crowding box:** optional, as crowded symbols are harder for an amblyopic eye.
+  - **Procedure:** lines from 0.05 to 1.0 (logMAR 1.3 → 0.0), five pictures a line; three
+    right passes a line and three wrong ends the check. It starts two lines easier than last
+    time, and never goes below what the screen can draw sharply.
+  - **Results:** saved per eye with distance, glasses and crowding, shown as a chart and a
+    table. The card shows **Due** after 30 days.
+  - This is a **trend check, not a medical test**. Its value is doing it the same way every
+    month and bringing the history to checkups.
+- **Backup** saves everything to one `vision-hero-backup-YYYY-MM-DD.json` file: progress,
+  stickers, game history, the patch log, picture checks and settings. It goes through the
+  tablet's share sheet (Files, Drive, email) or as a download.
+  - **Restore** checks the file first and asks for confirmation in the page before
+    replacing anything.
+  - The screen's own colour and size calibration is kept, since the backup's came from
+    another screen.
+  - Parent's Corner recommends a new backup after 30 days.
+
 ## Parent's Corner
 
 <img src="docs/screenshots/parents-corner.png" alt="The Parent's Corner settings screen" width="800">
@@ -352,6 +378,7 @@ rather than to the game:
 | Setting | What it does |
 |---------|--------------|
 | **Treatment plan** | Stage, comfort zone and daily patch goal (see above) |
+| **Picture check / Backup** | Monthly picture check and backup file (see above) |
 | **Difficulty** | `easy` / `medium` / `hard` presets for speed, target size and grid density |
 | **Movement speed** | How fast targets travel — lower it for younger children |
 | **Target size** | 20–100px; larger targets suit deeper amblyopia |

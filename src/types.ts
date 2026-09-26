@@ -8,6 +8,23 @@ export type Difficulty = 'easy' | 'medium' | 'hard';
  */
 export type TherapyPhase = 'free' | 'preop' | 'recovery' | 'pleoptic' | 'binocular' | 'maintenance';
 
+/** One result of the monthly picture check (a home trend, not a clinical test). */
+export interface VisionCheck {
+  /** ISO timestamp. */
+  date: string;
+  eye: 'left' | 'right' | 'both';
+  distanceCm: number;
+  glasses: boolean;
+  /** Symbols shown inside a crowding box. */
+  crowded: boolean;
+  /** Smallest line passed, in logMAR (0 = decimal 1.0; 1.3 = decimal 0.05). */
+  logMAR: number;
+  /** True when even the largest line was not passed. */
+  belowChart?: boolean;
+  /** True when the smallest line the screen can draw was passed (result is "at least"). */
+  atLimit?: boolean;
+}
+
 /** Patch (occlusion) time, tracked by Patch Pal. */
 export interface PatchRecord {
   /** Minutes of patch time per local day (YYYY-MM-DD). */
@@ -37,6 +54,9 @@ export interface UserProfile {
   /** Local YYYY-MM-DD of the last finished daily mission. */
   lastMissionDate?: string;
   patch: PatchRecord;
+  checks: VisionCheck[];
+  /** ISO timestamp of the last backup file saved from this device. */
+  lastBackupAt?: string;
 }
 
 export interface GameConfig {
@@ -71,6 +91,8 @@ export interface GameConfig {
   comfortZone: boolean;
   /** Daily patch-time goal in minutes. */
   patchGoalMinutes: number;
+  /** CSS pixels per millimetre on this screen, from the card calibration; 0 = not calibrated. */
+  pxPerMm: number;
 }
 
 export interface AnaglyphPreset {
