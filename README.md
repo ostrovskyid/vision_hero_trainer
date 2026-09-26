@@ -37,7 +37,14 @@ point rather than ending the game, and every round finishes with confetti.
 - **Thirty-one exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
-  vehicle sticker for the day
+  sticker for the season's album
+- **Rescue pups** — four games starring original police, pilot and fire pups that a parent
+  can name after the child's favourites (stored on the device only)
+- **Treatment stages and Patch Pal** — the app follows the stage the eye doctor has set
+  (before surgery, recovery, weaker-eye training, two eyes together, keeping the gains),
+  with a patch timer, daily goal and a comfort zone for limited eye movement
+- **Monthly picture check, backup and progress report** — a home vision trend check, a
+  backup file for years of records, and a one-page report to bring to checkups
 - **Spoken instructions** — every game says what to do out loud, so a child who cannot read
   yet can play on their own
 - **No countdown numbers** — time is a little car driving towards a finish flag
@@ -52,7 +59,8 @@ point rather than ending the game, and every round finishes with confetti.
 - **Installable and offline** — add it to a tablet's home screen and it launches full
   screen, with no browser chrome, and keeps working without a connection
 - **Progress tracking** — XP, levels and per-exercise history saved locally in the browser
-- **Sound and haptic-style feedback**: rising tones for hits, a buzz and screen shake for misses
+- **Sound and haptic-style feedback**: rising tones for hits, a gentle buzz and shake for
+  misses; no game ever takes points away
 - **No account, no backend, no data collection** — everything stays in the browser
 
 ## Exercises
