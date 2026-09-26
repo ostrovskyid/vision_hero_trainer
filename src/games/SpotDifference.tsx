@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer, tintStyle, targetColor, sceneColor, shuffle } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, tintStyle, targetColor, sceneColor, shuffle, useLater } from './common';
 
 /**
  * Two small zoo pictures side by side; find what is different. Comparing them
@@ -27,6 +27,7 @@ const LEVELS = {
 const HINT_AFTER_MS = 15000;
 
 export const SpotDifference = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const level = LEVELS[config.difficulty];
   const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -89,21 +90,22 @@ export const SpotDifference = ({ config, onComplete }: GameProps) => {
   };
 
   const tap = (cell: number, panel: string) => {
-    if (!isPlaying || found.length === diffs.length) return;
+    // Tapping a difference that is already circled is neither a find nor a miss.
+    if (!isPlaying || found.length === diffs.length || found.includes(cell)) return;
     setRounds(r => r + 1);
-    if (diffs.some(d => d.cell === cell) && !found.includes(cell)) {
+    if (diffs.some(d => d.cell === cell)) {
       playSound('hit', config.soundEnabled);
       setScore(s => s + 1);
       const now = [...found, cell];
       setFound(now);
       if (now.length === diffs.length) {
         speak('You found them all!', config.voiceEnabled);
-        setTimeout(newScene, 1500);
+        later(newScene, 1500);
       }
-    } else if (!found.includes(cell)) {
+    } else {
       playSound('miss', config.soundEnabled);
       setWrong(`${panel}-${cell}`);
-      setTimeout(() => setWrong(null), 400);
+      later(() => setWrong(null), 400);
     }
   };
 

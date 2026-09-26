@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer, targetColor, sceneColor } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, targetColor, sceneColor, useLater } from './common';
 
 /**
  * Brief-exposure counting. A metro train rushes past a window and the child
@@ -38,6 +38,7 @@ const Carriage = ({ color, width }: { color: string; width: number }) => (
 );
 
 export const CountCarriages = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const level = LEVELS[config.difficulty];
   const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -48,6 +49,9 @@ export const CountCarriages = ({ config, onComplete }: GameProps) => {
   const [asking, setAsking] = useState(false);
   const [wrong, setWrong] = useState<number | null>(null);
   const [right, setRight] = useState<number | null>(null);
+  // Set from a wrong answer until the replay starts, so extra taps in that
+  // moment neither count as attempts nor queue more replays.
+  const replaying = useRef(false);
 
   const timeLeft = useSessionTimer(config.duration, isPlaying, () => {
     setIsPlaying(false);
@@ -58,6 +62,7 @@ export const CountCarriages = ({ config, onComplete }: GameProps) => {
     setCount(n);
     setAsking(false);
     setRight(null);
+    replaying.current = false;
     setPass(p => p + 1);
   };
 
@@ -75,21 +80,22 @@ export const CountCarriages = ({ config, onComplete }: GameProps) => {
   };
 
   const answer = (n: number) => {
-    if (!isPlaying || !asking || right !== null) return;
+    if (!isPlaying || !asking || right !== null || replaying.current) return;
     setRounds(r => r + 1);
     if (n === count) {
       playSound('hit', config.soundEnabled);
       setScore(s => s + 1);
       setRight(n);
       speak(`Yes! ${n}!`, config.voiceEnabled);
-      setTimeout(newRound, 1100);
+      later(newRound, 1100);
     } else {
+      replaying.current = true;
       playSound('miss', config.soundEnabled);
       setWrong(n);
-      setTimeout(() => setWrong(null), 400);
+      later(() => setWrong(null), 400);
       speak("Let's look again!", config.voiceEnabled);
       // Same train again: a second look, never a penalty.
-      setTimeout(() => sendTrain(count), 900);
+      later(() => sendTrain(count), 900);
     }
   };
 

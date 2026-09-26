@@ -2,7 +2,7 @@ import { useRef, useState, type PointerEvent } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer, sceneColor, pick, shuffle } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, sceneColor, pick, shuffle, useLater } from './common';
 
 /**
  * Form discrimination: drag each aircraft into the hangar with its shadow.
@@ -26,6 +26,7 @@ type Aircraft = (typeof AIRCRAFT)[number];
 const HANGARS = { easy: 3, medium: 4, hard: 4 } as const;
 
 export const HangarMatch = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
@@ -71,11 +72,11 @@ export const HangarMatch = ({ config, onComplete }: GameProps) => {
       playSound('hit', config.soundEnabled);
       setScore(s => s + 1);
       setParked(index);
-      setTimeout(newRound, 1100);
+      later(newRound, 1100);
     } else {
       playSound('miss', config.soundEnabled);
       setWrong(index);
-      setTimeout(() => setWrong(null), 400);
+      later(() => setWrong(null), 400);
     }
   };
 

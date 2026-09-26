@@ -2,7 +2,7 @@ import { useRef, useState, type PointerEvent } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer, targetColor, sceneColor, pick } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, targetColor, sceneColor, pick, useLater } from './common';
 
 /**
  * Systematic scanning for small details: rub every mud spot off a muddy car.
@@ -46,6 +46,7 @@ const makeSpots = (count: number, radius: number): Spot[] => {
 };
 
 export const CarWash = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const level = LEVELS[config.difficulty];
   const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -117,7 +118,7 @@ export const CarWash = ({ config, onComplete }: GameProps) => {
       scrubbing.current = false;
       playSound('honk', config.soundEnabled);
       speak('Sparkly clean!', config.voiceEnabled);
-      setTimeout(newCar, 1600);
+      later(newCar, 1600);
     }
   };
 

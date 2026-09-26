@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater } from './common';
 
 /**
  * Stereopsis with red/cyan glasses. Every pup is drawn twice, once in each
@@ -100,6 +100,7 @@ const StereoTile = ({ shift, disc, left, right, size }: { shift: number; disc: b
 };
 
 export const PopOutPups = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const range = DISPARITY[config.difficulty];
   const slots = SLOTS[config.difficulty];
   const [isPlaying, setIsPlaying] = useState(false);
@@ -145,11 +146,11 @@ export const PopOutPups = ({ config, onComplete }: GameProps) => {
       // Staircase: a little less depth after each find...
       setDisparity(d => Math.max(range.min, d - 1));
       setFound(true);
-      setTimeout(() => newRound(round + 1), 800);
+      later(() => newRound(round + 1), 800);
     } else {
       playSound('miss', config.soundEnabled);
       setWrongIndex(index);
-      setTimeout(() => setWrongIndex(null), 400);
+      later(() => setWrongIndex(null), 400);
       // ...and a little more after a miss, so it settles at the child's threshold.
       setDisparity(d => Math.min(range.start + 4, d + 2));
     }

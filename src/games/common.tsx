@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Play } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -35,6 +35,31 @@ export const useSessionTimer = (duration: number, isPlaying: boolean, onFinish: 
   }, [isPlaying, duration]);
 
   return timeLeft;
+};
+
+/**
+ * `setTimeout` that is cancelled when the game closes. Games schedule the next
+ * round (and its spoken instruction) a moment after a find; without this, a
+ * session that ends or a tap on Back to Base in that moment would still speak
+ * the next round's instruction over the results or home screen.
+ */
+export const useLater = () => {
+  const ids = useRef(new Set<ReturnType<typeof setTimeout>>());
+  useEffect(() => {
+    const pending = ids.current;
+    return () => {
+      pending.forEach(clearTimeout);
+      pending.clear();
+    };
+  }, []);
+  return useCallback((fn: () => void, ms: number) => {
+    const id = setTimeout(() => {
+      ids.current.delete(id);
+      fn();
+    }, ms);
+    ids.current.add(id);
+    return id;
+  }, []);
 };
 
 /** The shared end-of-session fanfare: sound, confetti and the stats hand-off. */

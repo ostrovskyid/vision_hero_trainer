@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer, tintStyle, sceneColor, pick, shuffle } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, tintStyle, sceneColor, pick, shuffle, useLater } from './common';
 
 /**
  * Visual closure: recognising a whole from a part. Zoo animals hide behind
@@ -56,6 +56,7 @@ const CoverShape = ({ cover, color }: { cover: Cover; color: string }) => (
 );
 
 export const ZooHideSeek = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const level = LEVELS[config.difficulty];
   const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -99,11 +100,11 @@ export const ZooHideSeek = ({ config, onComplete }: GameProps) => {
       setScore(s => s + 1);
       setFound(true);
       speak(`You found the ${wanted.name}!`, config.voiceEnabled);
-      setTimeout(newRound, 1400);
+      later(newRound, 1400);
     } else {
       playSound('miss', config.soundEnabled);
       setWrong(i);
-      setTimeout(() => setWrong(null), 400);
+      later(() => setWrong(null), 400);
     }
   };
 

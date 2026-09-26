@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type PointerEvent } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, tintStyle, sceneColor, targetColor } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, tintStyle, sceneColor, targetColor, useLater } from './common';
 
 /**
  * Eye-hand coordination while following a path: drive the bus along a winding
@@ -49,6 +49,7 @@ const buildRoad = (w: number, h: number, stops: number, difficulty: 'easy' | 'me
 };
 
 export const BusDriver = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const [containerRef, size] = useElementSize<HTMLDivElement>();
   const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -119,7 +120,7 @@ export const BusDriver = ({ config, onComplete }: GameProps) => {
       playSound('honk', config.soundEnabled);
       setScore(s => s + 1);
       speak('All aboard! Great driving!', config.voiceEnabled);
-      setTimeout(() => setTrip(t => t + 1), 1800);
+      later(() => setTrip(t => t + 1), 1800);
     }
   };
 

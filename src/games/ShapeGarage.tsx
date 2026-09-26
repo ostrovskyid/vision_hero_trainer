@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { ShapeIcon, ShapeKind, SHAPE_FAMILIES, SHAPE_NAMES, ALL_SHAPES } from '../shapes';
-import { GameProps, StartOverlay, finishSession, useSessionTimer } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater } from './common';
 
 interface Tire {
   kind: ShapeKind;
@@ -25,6 +25,7 @@ const LAYOUT = {
  * settles near the smallest size the child can reliably resolve.
  */
 export const ShapeGarage = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const layout = LAYOUT[config.difficulty];
   const [isPlaying, setIsPlaying] = useState(false);
   const [started, setStarted] = useState(false);
@@ -71,12 +72,12 @@ export const ShapeGarage = ({ config, onComplete }: GameProps) => {
       setScore(s => s + 1);
       setShapeSize(s => Math.max(layout.minSize, s * 0.92));
       setFitted(true);
-      setTimeout(newRound, 700);
+      later(newRound, 700);
     } else {
       // No points lost: a gentle wobble on the wrong tyre is the only signal.
       playSound('miss', config.soundEnabled);
       setWrongIndex(index);
-      setTimeout(() => setWrongIndex(null), 400);
+      later(() => setWrongIndex(null), 400);
       setShapeSize(s => Math.min(config.size * 1.6, s * 1.1));
     }
   };

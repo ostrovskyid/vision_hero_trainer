@@ -3,8 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import {
-  GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, targetColor, sceneColor, pick,
-} from './common';
+  GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, targetColor, sceneColor, pick, useLater } from './common';
 
 /**
  * Dot-to-dot with a finger: 1 → 2 → 3 … draws a vehicle, which then takes off.
@@ -34,6 +33,7 @@ const PICTURES: Picture[] = [
 const MAX_POINTS = { easy: 5, medium: 8, hard: 16 } as const;
 
 export const RocketDots = ({ config, onComplete }: GameProps) => {
+  const later = useLater();
   const [containerRef, size] = useElementSize<HTMLDivElement>();
   const [started, setStarted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -104,12 +104,12 @@ export const RocketDots = ({ config, onComplete }: GameProps) => {
     if (reached === picture.points.length) {
       drawing.current = false;
       setFinger(null);
-      setTimeout(() => {
+      later(() => {
         setLaunched(true);
         playSound('honk', config.soundEnabled);
         speak(picture.cheer, config.voiceEnabled);
       }, 400);
-      setTimeout(newPicture, 2200);
+      later(newPicture, 2200);
     }
   };
 
