@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { GameMode, GameConfig, UserProfile, GameStats, PatchRecord } from './types';
 import {
-  DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS, STICKERS, PATCH_STICKERS,
+  DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS, PATCH_STICKERS,
   ANAGLYPH_PRESETS, ANAGLYPH_TARGET_DEFAULT, ANAGLYPH_SCENE_DEFAULT,
 } from './constants';
 import { GamePreview } from './GamePreview';
@@ -25,6 +25,8 @@ import { GameHud } from './GameHud';
 import { PatchPalBar, PatchPalScreen, PatchPrompt, todayPatchMinutes } from './PatchPal';
 import { PictureCheckScreen, toDecimal } from './PictureCheck';
 import { ProgressReport } from './ProgressReport';
+import { StickerAlbum } from './StickerAlbum';
+import { nextSticker, withSticker, currentAlbum, albumKey } from './stickers';
 import { buildBackup, saveBackupFile, parseBackup, daysSince, BackupFile } from './backup';
 import { PHASES, PATCH_PHASES, COMFORT_ZONE_GUTTER, phaseInfo, dayKey, runningMinutes } from './therapy';
 import { ShapeGarage } from './games/ShapeGarage';
@@ -1538,6 +1540,7 @@ const normalizeUser = (parsed: any): UserProfile => {
       lastStickerDate: parsed?.patch?.lastStickerDate,
     },
     checks: Array.isArray(parsed?.checks) ? parsed.checks : [],
+    albums: parsed?.albums && typeof parsed.albums === 'object' ? parsed.albums : {},
     lastBackupAt: typeof parsed?.lastBackupAt === 'string' ? parsed.lastBackupAt : undefined,
   };
 };
@@ -1545,7 +1548,7 @@ const normalizeUser = (parsed: any): UserProfile => {
 // --- Main App ---
 
 export default function App() {
-  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats' | 'patch' | 'check' | 'report'>('home');
+  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats' | 'patch' | 'check' | 'report' | 'album'>('home');
   const [selectedMode, setSelectedMode] = useState<GameMode>('tracking');
   const [config, setConfig] = useState<GameConfig>(() => {
     // Exercise settings and the display calibration are stored separately:
@@ -1627,10 +1630,12 @@ export default function App() {
   useEffect(() => {
     const today = dayKey(now);
     if (patchToday < config.patchGoalMinutes || user.patch.lastStickerDate === today) return;
-    const sticker = PATCH_STICKERS[user.stickers.length % PATCH_STICKERS.length];
+    // Patch stickers are pirates, kept in the album's Pirate Chest.
+    const pirates = user.stickers.filter(s => PATCH_STICKERS.includes(s)).length;
+    const sticker = PATCH_STICKERS[pirates % PATCH_STICKERS.length];
     setUser(prev => ({
       ...prev,
-      stickers: [...prev.stickers, sticker],
+      ...withSticker(prev, sticker, null),
       patch: { ...prev.patch, lastStickerDate: today },
     }));
     playSound('complete', config.soundEnabled);
@@ -1830,7 +1835,8 @@ export default function App() {
     const finishesMission = !!mission && mission.index === mission.modes.length - 1;
     const day = todayKey();
     const earnsSticker = finishesMission && user.lastMissionDate !== day;
-    const sticker = STICKERS[user.stickers.length % STICKERS.length];
+    // The daily-mission sticker fills this season's album.
+    const reward = nextSticker(user);
     setUser(prev => ({
       ...prev,
       experience: prev.experience + stats.score * 10,
@@ -1839,12 +1845,17 @@ export default function App() {
         ...prev.stats,
         [selectedMode]: [...prev.stats[selectedMode], statsWithDifficulty]
       },
-      ...(earnsSticker ? { stickers: [...prev.stickers, sticker], lastMissionDate: day } : {}),
+      ...(earnsSticker ? { ...withSticker(prev, reward.sticker, reward.key), lastMissionDate: day } : {}),
     }));
     if (finishesMission) {
-      setMissionReward(earnsSticker ? sticker : null);
+      setMissionReward(earnsSticker ? reward.sticker : null);
       setMission(null);
-      speak(earnsSticker ? 'Mission complete! You won a new sticker!' : 'Mission complete! Great job!', config.voiceEnabled);
+      speak(
+        !earnsSticker ? 'Mission complete! Great job!'
+          : reward.completesPage ? 'Mission complete! You finished a page of your sticker album!'
+          : 'Mission complete! You won a new sticker!',
+        config.voiceEnabled,
+      );
     } else if (mission) {
       speak('Great job! Ready for the next game?', config.voiceEnabled);
     } else {
@@ -2050,24 +2061,31 @@ export default function App() {
               </>
               )}
 
-              <div className="flex shrink-0 items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-2.5">
-                <Sticker className="h-5 w-5 shrink-0 text-blue-400" />
+              {/* The sticker shelf opens the seasonal album. */}
+              <button
+                onClick={() => setScreen('album')}
+                className="flex shrink-0 items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-2.5 text-left transition-colors hover:border-blue-400/50"
+              >
+                <span className="text-2xl leading-none" aria-hidden="true">{currentAlbum().pages[0].cover}</span>
+                <span className="shrink-0 text-sm font-semibold text-blue-200">
+                  {(user.albums[albumKey()] ?? []).length}/{currentAlbum().stickers.length}
+                </span>
                 {user.stickers.length > 0 ? (
-                  <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" aria-label={`${user.stickers.length} stickers collected`}>
+                  <span className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" aria-label={`${user.stickers.length} stickers collected. Open the sticker album`}>
                     {/* Newest first, so a fresh sticker is always in view. */}
                     {[...user.stickers].reverse().slice(0, 24).map((sticker, i) => (
                       <span key={i} className="text-2xl leading-none">{sticker}</span>
                     ))}
-                  </div>
+                  </span>
                 ) : (
-                  <p className="min-w-0 flex-1 text-sm text-slate-300 md:text-base">
+                  <span className="min-w-0 flex-1 text-sm text-slate-300 md:text-base">
                     Finish today's mission to win your first sticker!
-                  </p>
+                  </span>
                 )}
-                <p className="hidden shrink-0 items-center gap-2 text-sm text-slate-400 lg:flex">
+                <span className="hidden shrink-0 items-center gap-2 text-sm text-slate-400 lg:flex">
                   <Eye className="h-4 w-4 text-blue-400" /> Wear the patch as your doctor directed.
-                </p>
-              </div>
+                </span>
+              </button>
 
             </motion.div>
           )}
@@ -2224,6 +2242,8 @@ export default function App() {
               onClose={() => setScreen('home')}
             />
           )}
+
+          {screen === 'album' && <StickerAlbum user={user} onClose={() => setScreen('home')} />}
 
           {screen === 'report' && (
             <ProgressReport
