@@ -20,7 +20,13 @@ export const DEFAULT_CONFIG: GameConfig = {
   missionSeconds: 120,
   cinemaMinutes: 3,
   cinemaFellowLevel: 50,
+  therapyPhase: 'free',
+  comfortZone: false,
+  patchGoalMinutes: 120,
 };
+
+/** One sticker per day the patch-time goal is reached. */
+export const PATCH_STICKERS = ['🦜', '⚓', '🗺️', '🧭', '🐙', '🦈', '🏝️', '💰', '🚢', '🐚', '🦀', '🐬'];
 
 /** Earned in order, one per finished daily mission. */
 export const STICKERS = [

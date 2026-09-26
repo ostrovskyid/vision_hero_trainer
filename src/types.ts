@@ -2,6 +2,22 @@ export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'periph
   | 'carriages' | 'dots' | 'zoo' | 'bus' | 'hangar' | 'carwash' | 'differences';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
+/**
+ * Where the child is in their treatment plan, as set by a parent to match
+ * what the eye doctor has asked for. 'free' applies no restrictions.
+ */
+export type TherapyPhase = 'free' | 'preop' | 'recovery' | 'pleoptic' | 'binocular' | 'maintenance';
+
+/** Patch (occlusion) time, tracked by Patch Pal. */
+export interface PatchRecord {
+  /** Minutes of patch time per local day (YYYY-MM-DD). */
+  log: Record<string, number>;
+  /** Epoch ms when the running patch timer started, or null when stopped. */
+  startedAt: number | null;
+  /** Local day of the last daily-goal sticker, so it is awarded once a day. */
+  lastStickerDate?: string;
+}
+
 export interface GameStats {
   score: number;
   timeSpent: number;
@@ -20,6 +36,7 @@ export interface UserProfile {
   stickers: string[];
   /** Local YYYY-MM-DD of the last finished daily mission. */
   lastMissionDate?: string;
+  patch: PatchRecord;
 }
 
 export interface GameConfig {
@@ -48,6 +65,12 @@ export interface GameConfig {
   cinemaMinutes: number;
   /** 0-100 brightness of the strong (scenery) eye's picture in Cartoon Cinema. */
   cinemaFellowLevel: number;
+  /** Treatment phase chosen in Parent's Corner. */
+  therapyPhase: TherapyPhase;
+  /** Keep game targets out of the left part of the screen. */
+  comfortZone: boolean;
+  /** Daily patch-time goal in minutes. */
+  patchGoalMinutes: number;
 }
 
 export interface AnaglyphPreset {

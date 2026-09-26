@@ -14,13 +14,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Slider } from '@/components/ui/slider';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { GameMode, GameConfig, UserProfile, GameStats } from './types';
+import { GameMode, GameConfig, UserProfile, GameStats, PatchRecord } from './types';
 import {
-  DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS, STICKERS,
+  DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS, STICKERS, PATCH_STICKERS,
   ANAGLYPH_PRESETS, ANAGLYPH_TARGET_DEFAULT, ANAGLYPH_SCENE_DEFAULT,
 } from './constants';
 import { GamePreview } from './GamePreview';
 import { GameHud } from './GameHud';
+import { PatchPalBar, PatchPalScreen, PatchPrompt, todayPatchMinutes } from './PatchPal';
+import { PHASES, PATCH_PHASES, COMFORT_ZONE_GUTTER, phaseInfo, dayKey, runningMinutes } from './therapy';
 import { ShapeGarage } from './games/ShapeGarage';
 import { PopOutPups } from './games/PopOutPups';
 import { CartoonCinema } from './games/CartoonCinema';
@@ -1485,7 +1487,7 @@ const ColorField = ({ label, hint, value, onChange }: {
 // --- Main App ---
 
 export default function App() {
-  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats'>('home');
+  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats' | 'patch'>('home');
   const [selectedMode, setSelectedMode] = useState<GameMode>('tracking');
   const [config, setConfig] = useState<GameConfig>(() => {
     // Exercise settings and the display calibration are stored separately:
@@ -1522,6 +1524,11 @@ export default function App() {
       ) as Record<GameMode, GameStats[]>,
       stickers: Array.isArray(parsed?.stickers) ? parsed.stickers : [],
       lastMissionDate: parsed?.lastMissionDate,
+      patch: {
+        log: parsed?.patch?.log && typeof parsed.patch.log === 'object' ? parsed.patch.log : {},
+        startedAt: typeof parsed?.patch?.startedAt === 'number' ? parsed.patch.startedAt : null,
+        lastStickerDate: parsed?.patch?.lastStickerDate,
+      },
     };
   });
 
@@ -1534,6 +1541,79 @@ export default function App() {
   const [missionReward, setMissionReward] = useState<string | null | undefined>(undefined);
 
   const visibleTiles = GAME_TILES.filter(t => config.anaglyphMode || !t.requiresAnaglyph);
+  const phase = phaseInfo(config.therapyPhase);
+  const patchRunning = user.patch.startedAt !== null;
+  // A game that is waiting for the "patch on?" answer before it starts.
+  const [pendingPlay, setPendingPlay] = useState<(() => void) | null>(null);
+
+  // Patch time runs on the wall clock, so re-render while the timer is running
+  // (every second on Patch Pal itself, every 20 s elsewhere).
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!patchRunning && screen !== 'patch') return;
+    const id = setInterval(() => setNow(Date.now()), screen === 'patch' ? 1000 : 20000);
+    return () => clearInterval(id);
+  }, [patchRunning, screen]);
+
+  const updatePatch = (change: (patch: PatchRecord) => PatchRecord) =>
+    setUser(prev => ({ ...prev, patch: change(prev.patch) }));
+
+  const startPatch = () => {
+    if (patchRunning) return;
+    setNow(Date.now());
+    updatePatch(p => ({ ...p, startedAt: Date.now() }));
+    speak('Patch on! Ahoy, captain!', config.voiceEnabled);
+  };
+
+  const stopPatch = () => {
+    setNow(Date.now());
+    updatePatch(p => {
+      if (!p.startedAt) return p;
+      // Credited to the day the patch went on.
+      const day = dayKey(p.startedAt);
+      const minutes = runningMinutes(p.startedAt);
+      return { ...p, startedAt: null, log: { ...p.log, [day]: Math.round((p.log[day] ?? 0) + minutes) } };
+    });
+  };
+
+  const adjustPatch = (minutes: number) => {
+    const day = dayKey();
+    updatePatch(p => ({ ...p, log: { ...p.log, [day]: Math.max(0, (p.log[day] ?? 0) + minutes) } }));
+  };
+
+  // One pirate sticker the first time each day that the patch goal is reached.
+  const patchToday = todayPatchMinutes(user.patch, now);
+  useEffect(() => {
+    const today = dayKey(now);
+    if (patchToday < config.patchGoalMinutes || user.patch.lastStickerDate === today) return;
+    const sticker = PATCH_STICKERS[user.stickers.length % PATCH_STICKERS.length];
+    setUser(prev => ({
+      ...prev,
+      stickers: [...prev.stickers, sticker],
+      patch: { ...prev.patch, lastStickerDate: today },
+    }));
+    playSound('complete', config.soundEnabled);
+    confetti({ particleCount: 200, spread: 140, origin: { y: 0.4 } });
+    speak('Patch goal done! You won a pirate sticker!', config.voiceEnabled);
+  }, [patchToday, config.patchGoalMinutes, user.patch.lastStickerDate]);
+
+  /**
+   * In the one-eye phases, ask for the patch (and glasses) before playing if
+   * the patch timer is not running. The prompt's button is a tap, so full
+   * screen and speech still start from a user gesture.
+   */
+  const requestPlay = (play: () => void) => {
+    if (PATCH_PHASES.includes(config.therapyPhase) && !patchRunning) {
+      setPendingPlay(() => play);
+      return;
+    }
+    play();
+  };
+
+  const choosePhase = (id: GameConfig['therapyPhase']) => {
+    const info = phaseInfo(id);
+    setConfig(c => ({ ...c, ...info.apply, therapyPhase: id }));
+  };
   const missionDoneToday = user.lastMissionDate === todayKey();
 
   // Home and game both lay themselves out inside one viewport height; settings
@@ -1710,6 +1790,14 @@ export default function App() {
       } as React.CSSProperties}
     >
       <AnaglyphFilters target={renderConfig.anaglyphTarget} scene={renderConfig.anaglyphScene} />
+
+      {pendingPlay && (
+        <PatchPrompt
+          onPatchOn={() => { const play = pendingPlay; setPendingPlay(null); startPatch(); play(); }}
+          onSkip={() => { const play = pendingPlay; setPendingPlay(null); play(); }}
+          onCancel={() => setPendingPlay(null)}
+        />
+      )}
       {/* Calibration has to be judged on a dark field like the games use — the lit
           settings page around the inline preview reaches both eyes and masks the
           ghosting the parent is trying to see. */}
@@ -1775,6 +1863,9 @@ export default function App() {
               <h1 className="text-2xl font-bold tracking-tight">Vision Express</h1>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-slate-300 uppercase tracking-wider">Level {user.level}</span>
+                {config.therapyPhase !== 'free' && (
+                  <Badge variant="outline" className="border-slate-700 text-slate-300">{phase.short}</Badge>
+                )}
                 <Progress value={(user.experience % 100)} className="w-20 h-1.5" />
               </div>
             </div>
@@ -1799,9 +1890,25 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               className="flex flex-1 min-h-0 flex-col gap-3"
             >
+              {config.therapyPhase !== 'free' && (
+                <PatchPalBar patch={user.patch} goal={config.patchGoalMinutes} now={now} onOpen={() => setScreen('patch')} />
+              )}
+
+              {phase.locked ? (
+                // Recovery after an operation: nothing to play, just a friendly note.
+                <div className="flex flex-1 min-h-0 flex-col items-center justify-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-6 text-center">
+                  <div className="text-7xl">🩹</div>
+                  <h2 className="text-3xl font-bold">Get well soon, captain!</h2>
+                  <p className="max-w-md text-lg text-slate-300">
+                    Your eye is resting after the doctor fixed it. The games will be back when the doctor says so.
+                  </p>
+                  <p className="text-sm text-slate-500">A parent can change this in Parent's Corner.</p>
+                </div>
+              ) : (
+              <>
               {/* One big button runs today's mission: three short games, then a sticker. */}
               <button
-                onClick={startMission}
+                onClick={() => requestPlay(startMission)}
                 className="flex shrink-0 items-center gap-3 rounded-xl border-2 border-yellow-400/60 bg-gradient-to-r from-yellow-500/20 to-orange-500/10 px-4 py-2.5 text-left transition-transform active:scale-[0.99] hover:border-yellow-300"
               >
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-slate-950 shadow-[0_0_20px_rgba(250,204,21,0.45)]">
@@ -1834,7 +1941,7 @@ export default function App() {
                   <Card
                     key={tile.mode}
                     className={`relative flex min-h-[9rem] flex-col gap-0 overflow-hidden border-slate-800 bg-slate-900 p-2.5 ${tile.hoverClass} group cursor-pointer transition-all md:p-3`}
-                    onClick={() => startGame(tile.mode)}
+                    onClick={() => requestPlay(() => startGame(tile.mode))}
                   >
                     <div className="min-h-0 flex-1">
                       <GamePreview mode={tile.mode} />
@@ -1852,6 +1959,9 @@ export default function App() {
                   </Card>
                 ))}
               </div>
+
+              </>
+              )}
 
               <div className="flex shrink-0 items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-2.5">
                 <Sticker className="h-5 w-5 shrink-0 text-blue-400" />
@@ -1898,7 +2008,13 @@ export default function App() {
                 </div>
               </div>
 
-              <div className="flex-1 min-h-0 overflow-y-auto">
+              {/* The comfort zone keeps the left part of the play area empty, so
+                  targets never ask an eye with limited outward movement to look
+                  far to the left. */}
+              <div
+                className="flex-1 min-h-0 overflow-y-auto"
+                style={config.comfortZone ? { paddingLeft: COMFORT_ZONE_GUTTER } : undefined}
+              >
               {selectedMode === 'tracking' && <RocketTracker config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'contrast' && <FoggyFlight config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'detail' && <TrafficJam config={gameConfig} onComplete={handleGameComplete} />}
@@ -1995,6 +2111,18 @@ export default function App() {
             </motion.div>
           )}
 
+          {screen === 'patch' && (
+            <PatchPalScreen
+              patch={user.patch}
+              goal={config.patchGoalMinutes}
+              now={now}
+              onStart={startPatch}
+              onStop={stopPatch}
+              onAdjust={adjustPatch}
+              onClose={() => setScreen('home')}
+            />
+          )}
+
           {screen === 'settings' && (
             <motion.div
               key="settings"
@@ -2006,6 +2134,64 @@ export default function App() {
                 <h2 className="text-2xl font-bold">Parent's Corner</h2>
                 <Button variant="ghost" onClick={() => setScreen('home')}>Close</Button>
               </div>
+
+              {/* The treatment plan comes first: it decides which games appear
+                  and how they are set up. */}
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-slate-50">Treatment Plan</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Match the app to the stage your eye doctor has set. Choosing a stage applies its settings once; you can still change any of them below.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {PHASES.map(p => (
+                      <button
+                        key={p.id}
+                        onClick={() => choosePhase(p.id)}
+                        aria-pressed={config.therapyPhase === p.id}
+                        className={`rounded-lg border p-3 text-left transition-colors ${config.therapyPhase === p.id ? 'border-blue-500 bg-blue-500/10' : 'border-slate-800 hover:border-slate-600'}`}
+                      >
+                        <div className="font-medium text-slate-50">{p.label}</div>
+                        <div className="mt-0.5 text-sm text-slate-400">{p.description}</div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4 border-t border-slate-800 pt-4">
+                    <div className="space-y-0.5">
+                      <label className="text-base font-medium">Comfort Zone</label>
+                      <p className="text-sm text-slate-400">Keep targets out of the left part of the screen, for an eye that can't turn fully outward to the left. Ask the eye doctor whether to use it.</p>
+                    </div>
+                    <Button
+                      variant={config.comfortZone ? 'default' : 'outline'}
+                      onClick={() => setConfig(c => ({ ...c, comfortZone: !c.comfortZone }))}
+                    >
+                      {config.comfortZone ? 'On' : 'Off'}
+                    </Button>
+                  </div>
+
+                  <div className="space-y-4 border-t border-slate-800 pt-4">
+                    <div className="flex justify-between">
+                      <div className="space-y-0.5">
+                        <label className="text-base font-medium">Daily Patch Goal</label>
+                        <p className="text-sm text-slate-400">The patch time your eye doctor prescribed. Patch Pal gives a sticker each day it is reached.</p>
+                      </div>
+                      <span className="text-sm text-blue-400">{Math.floor(config.patchGoalMinutes / 60)} h {String(config.patchGoalMinutes % 60).padStart(2, '0')} min</span>
+                    </div>
+                    <Slider
+                      value={[config.patchGoalMinutes]}
+                      min={30} max={480} step={30}
+                      onValueChange={(vals) => {
+                        const val = Array.isArray(vals) ? vals[0] : vals;
+                        setConfig(c => ({ ...c, patchGoalMinutes: val }));
+                      }}
+                    />
+                    <Button variant="outline" onClick={() => setScreen('patch')}>Open Patch Pal</Button>
+                  </div>
+                </CardContent>
+              </Card>
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
