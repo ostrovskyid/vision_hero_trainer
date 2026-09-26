@@ -24,6 +24,7 @@ import { GamePreview } from './GamePreview';
 import { GameHud } from './GameHud';
 import { PatchPalBar, PatchPalScreen, PatchPrompt, todayPatchMinutes } from './PatchPal';
 import { PictureCheckScreen, toDecimal } from './PictureCheck';
+import { ProgressReport } from './ProgressReport';
 import { buildBackup, saveBackupFile, parseBackup, daysSince, BackupFile } from './backup';
 import { PHASES, PATCH_PHASES, COMFORT_ZONE_GUTTER, phaseInfo, dayKey, runningMinutes } from './therapy';
 import { ShapeGarage } from './games/ShapeGarage';
@@ -95,6 +96,7 @@ const GAME_TILES: {
 ];
 
 const ALL_MODES = GAME_TILES.map(t => t.mode);
+const GAME_TITLES = Object.fromEntries(GAME_TILES.map(t => [t.mode, t.title])) as Record<GameMode, string>;
 
 /** The skill badge shown above each exercise. */
 const SKILL_LABELS: Record<GameMode, string> = {
@@ -1543,7 +1545,7 @@ const normalizeUser = (parsed: any): UserProfile => {
 // --- Main App ---
 
 export default function App() {
-  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats' | 'patch' | 'check'>('home');
+  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats' | 'patch' | 'check' | 'report'>('home');
   const [selectedMode, setSelectedMode] = useState<GameMode>('tracking');
   const [config, setConfig] = useState<GameConfig>(() => {
     // Exercise settings and the display calibration are stored separately:
@@ -1861,7 +1863,7 @@ export default function App() {
 
   return (
     <div
-      className={`safe-area bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 ${fillsViewport ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
+      className={`safe-area bg-slate-950 text-slate-50 font-sans selection:bg-blue-500/30 print:bg-white print:text-slate-900 ${fillsViewport ? 'h-dvh overflow-hidden' : 'min-h-screen'}`}
       // Tailwind cannot compile colours that are only known at runtime, so the
       // calibrated anaglyph pair is published as inherited CSS variables here.
       style={{
@@ -1939,7 +1941,7 @@ export default function App() {
 
         {/* Header */}
         {screen !== 'game' && (
-        <header className={`flex items-center justify-between shrink-0 ${screen === 'home' ? 'mb-3 md:mb-4' : 'mb-8'}`}>
+        <header className={`flex items-center justify-between shrink-0 print:hidden ${screen === 'home' ? 'mb-3 md:mb-4' : 'mb-8'}`}>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-2xl shadow-[0_0_20px_rgba(37,99,235,0.4)]">
               {user.avatar}
@@ -2223,6 +2225,16 @@ export default function App() {
             />
           )}
 
+          {screen === 'report' && (
+            <ProgressReport
+              user={user}
+              config={config}
+              skillLabels={SKILL_LABELS}
+              gameTitles={GAME_TITLES}
+              onClose={() => setScreen('settings')}
+            />
+          )}
+
           {screen === 'check' && (
             <PictureCheckScreen
               checks={user.checks}
@@ -2300,6 +2312,18 @@ export default function App() {
                     />
                     <Button variant="outline" onClick={() => setScreen('patch')}>Open Patch Pal</Button>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-slate-50">Progress Report</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Patch time, home picture checks and game practice for a chosen period, on one page to show the orthoptist. Print it, save it as a PDF, or copy it as text.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={() => setScreen('report')}>Open report</Button>
                 </CardContent>
               </Card>
 
