@@ -8,7 +8,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   size: 40,
   contrast: 100,
   duration: 90,
-  anaglyphMode: true,
+  // Ordinary colours by default; red/cyan glasses mode is turned on in Parent's Corner.
+  anaglyphMode: false,
   anaglyphTarget: ANAGLYPH_TARGET_DEFAULT,
   anaglyphScene: ANAGLYPH_SCENE_DEFAULT,
   anaglyphTargetLevel: 100,

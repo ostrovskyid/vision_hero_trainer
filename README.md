@@ -29,8 +29,8 @@ sensitivity, acuity under crowding, peripheral awareness, visual memory — and 
 is scored, so a child collects points and levels up instead of counting minutes.
 
 **Compliance is the hardest part of amblyopia treatment.** Everything here is designed
-around that: sessions are short, targets are large and friendly by default, mistakes cost a
-point rather than ending the game, and every round finishes with confetti.
+around that: sessions are short, targets are large and friendly by default, mistakes never cost
+points, and every round finishes with confetti.
 
 ## Highlights
 
@@ -49,7 +49,7 @@ point rather than ending the game, and every round finishes with confetti.
   yet can play on their own
 - **No countdown numbers** — time is a little car driving towards a finish flag
 - **Three difficulty presets** plus manual control over speed, target size and session length
-- **Red/cyan anaglyph mode** for dichoptic training with 3D glasses, on by default
+- **Red/cyan anaglyph mode** for dichoptic training with 3D glasses, off by default
 - **Animated previews** on every home tile, so a child picks a game by recognising the
   picture rather than reading the title
 - **Built for touch** — every control clears the 44px minimum tap target, with type and
@@ -421,8 +421,8 @@ both eyes" instead of marking it wrong. **Glasses only.**
 
 - **Today's Mission.** The big yellow button picks two games the child has played least
   recently, then finishes with Cartoon Cinema. Each game runs for the *Daily Mission Game
-  Length* (2 minutes by default). Finishing the mission earns one vehicle sticker per day,
-  shown on the sticker shelf at the bottom of the home screen.
+  Length* (2 minutes by default). Finishing the mission earns one sticker per day for the
+  season's album (see below).
 - **Spoken instructions.** Each exercise reads its instruction aloud when it opens, and the
   new games also speak each round's prompt ("Find the heart wheel!"). This uses the
   browser's built-in voices, so it works offline.
@@ -550,7 +550,7 @@ rather than to the game:
 | **Cartoon Cinema length** | 1–10 minutes for a free-play show |
 | **Spoken instructions** | Read instructions aloud on and off |
 | **Eye angle compensation** | −30 to +30 prism dioptres (+ = eyes turn in). Draws the two eyes' pictures that far apart in Lion in the Cage, Fusion Stars and Pop-Out Pups, so an eye with a residual angle can still line them up. Set it to the orthoptist's near measurement, or leave 0 |
-| **Anaglyph mode** | Red/cyan dichoptic rendering, **on by default**, with per-device colour calibration (see below). Pop-Out Pups is only shown while it is on |
+| **Anaglyph mode** | Red/cyan dichoptic rendering, **off by default**, with per-device colour calibration (see below). Pop-Out Pups is only shown while it is on |
 | **Cartoon Cinema: strong-eye picture** | 0–100% brightness of the scenery eye's copy of the cartoon (anaglyph mode only) |
 
 Progress, level and per-exercise history are stored in the browser's `localStorage` under
@@ -559,8 +559,8 @@ Progress, level and per-exercise history are stored in the browser's `localStora
 
 ### Red/cyan anaglyph mode
 
-Anaglyph mode is **on by default**, so the app expects red/cyan glasses out of the box; turn
-it off in Parent's Corner to play in ordinary colours. With it on, targets render in one
+Anaglyph mode is **off by default**, so the app plays in ordinary colours out of the box; turn
+it on in Parent's Corner when using red/cyan glasses. With it on, targets render in one
 colour and all scenery in its complement — red and cyan by default. Wearing red/cyan glasses, the eye behind the red filter sees the targets
 clearly while the other eye sees only the background, so the weaker eye has to do the work
 while both eyes stay open. This is the dichoptic principle used in clinical amblyopia
