@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater, compensationPx } from './common';
+import { t } from '../i18n';
 
 /**
  * Stereopsis with red/cyan glasses. Every pup is drawn twice, once in each
@@ -128,7 +129,7 @@ export const PopOutPups = ({ config, onComplete }: GameProps) => {
     setMagic(isMagic);
     setFound(false);
     setRound(nextRound);
-    speak(isMagic ? 'Find the magic floating circle!' : 'Which pup jumps out of the screen?', config.voiceEnabled);
+    speak(t(isMagic ? 'Find the magic floating circle!' : 'Which pup jumps out of the screen?'), config.voiceEnabled);
   };
 
   const start = () => {
@@ -168,7 +169,7 @@ export const PopOutPups = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full items-center justify-center overflow-hidden rounded-xl border-4 border-slate-800 bg-black pb-8">
       {!started && (
-        <StartOverlay label="Meet the Pups" hint="Put on your 3D glasses. Tap the pup that floats out!" onStart={start}>
+        <StartOverlay label={t('Meet the Pups')} hint={t('Put on your 3D glasses. Tap the pup that floats out!')} onStart={start}>
           <div className="relative" style={{ width: 80, height: 80 }}>
             <div className="absolute" style={{ left: 5 }}><Pup color={left} size={70} /></div>
             <div className="absolute" style={{ left: -5 }}><Pup color={right} size={70} /></div>
@@ -188,7 +189,7 @@ export const PopOutPups = ({ config, onComplete }: GameProps) => {
               <motion.button
                 key={`${round}-${i}`}
                 onClick={() => choose(i)}
-                aria-label={`Pup ${i + 1}`}
+                aria-label={t('Pup {n}', { n: i + 1 })}
                 initial={{ opacity: 0 }}
                 animate={wrongIndex === i
                   ? { opacity: 1, x: [-8, 8, -8, 8, 0] }

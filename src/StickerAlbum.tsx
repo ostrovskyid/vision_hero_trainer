@@ -5,6 +5,9 @@ import { Button } from '@/components/ui/button';
 import { UserProfile } from './types';
 import { albumForKey, albumKey } from './stickers';
 import { PATCH_STICKERS } from './constants';
+import { t } from './i18n';
+
+const SEASON_NAMES: Record<string, string> = { autumn: 'Autumn', winter: 'Winter', spring: 'Spring', summer: 'Summer' };
 
 const SEASON_BG: Record<string, string> = {
   autumn: 'from-orange-500/20 to-amber-900/10',
@@ -25,7 +28,7 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
   const [open, setOpen] = useState(current);
   const album = albumForKey(open);
   const have = user.albums[open] ?? [];
-  const seasonName = album.season[0].toUpperCase() + album.season.slice(1);
+  const seasonName = t(SEASON_NAMES[album.season]);
   const pirates = user.stickers.filter(s => PATCH_STICKERS.includes(s));
 
   return (
@@ -36,8 +39,8 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
       className="mx-auto flex w-full max-w-2xl flex-col gap-5 py-4"
     >
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={onClose}><ChevronLeft className="mr-2 h-4 w-4" /> Back</Button>
-        <h2 className="text-2xl font-bold">Sticker Album</h2>
+        <Button variant="ghost" onClick={onClose}><ChevronLeft className="mr-2 h-4 w-4" /> {t('Back')}</Button>
+        <h2 className="text-2xl font-bold">{t('Sticker Album')}</h2>
         <div className="w-20" />
       </div>
 
@@ -47,7 +50,7 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
             const a = albumForKey(k);
             return (
               <Button key={k} size="sm" variant={open === k ? 'default' : 'outline'} onClick={() => setOpen(k)} aria-pressed={open === k}>
-                <span className="mr-1.5">{a.pages[0].cover}</span> {a.season[0].toUpperCase() + a.season.slice(1)} {a.year}
+                <span className="mr-1.5">{a.pages[0].cover}</span> {t(SEASON_NAMES[a.season])} {a.year}
               </Button>
             );
           })}
@@ -55,8 +58,8 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
       )}
 
       <p className="text-slate-300">
-        {seasonName} {album.year} · {have.length} of {album.stickers.length} stickers
-        {open === current && have.length < album.stickers.length ? ` · ${album.stickers.length - have.length} to go` : ''}
+        {seasonName} {album.year} · {t('{have} of {total} stickers', { have: have.length, total: album.stickers.length })}
+        {open === current && have.length < album.stickers.length ? ` · ${t('{n} to go', { n: album.stickers.length - have.length })}` : ''}
       </p>
 
       {album.pages.map((page, p) => {
@@ -68,10 +71,10 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
             <div className="mb-4 flex items-center gap-3">
               <span className="text-5xl leading-none">{page.cover}</span>
               <div>
-                <h3 className="text-2xl font-bold">{page.title}</h3>
-                <p className="text-slate-300">Page {p + 1} · {pageHave} of {page.stickers.length}{done ? ' · Complete!' : ''}</p>
+                <h3 className="text-2xl font-bold">{t(page.title)}</h3>
+                <p className="text-slate-300">{t('Page {n}', { n: p + 1 })} · {t('{have} of {total}', { have: pageHave, total: page.stickers.length })}{done ? ` · ${t('Complete!')}` : ''}</p>
               </div>
-              {done && <span className="ml-auto text-5xl" aria-label="Page complete">🏆</span>}
+              {done && <span className="ml-auto text-5xl" aria-label={t('Page complete')}>🏆</span>}
             </div>
             <div className="grid grid-cols-4 gap-3 sm:grid-cols-6">
               {page.stickers.map((s, i) => {
@@ -88,7 +91,7 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
                       className="text-4xl leading-none sm:text-5xl"
                       // Not earned yet: a faint shadow of the shape to look forward to.
                       style={earned ? undefined : { filter: 'brightness(0) invert(1)', opacity: 0.12 }}
-                      aria-label={earned ? s : 'Sticker to win'}
+                      aria-label={earned ? s : t('Sticker to win')}
                     >
                       {s}
                     </span>
@@ -102,8 +105,8 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
 
       {pirates.length > 0 && (
         <section className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
-          <h3 className="mb-3 flex items-center gap-2 text-xl font-bold"><span className="text-3xl">🏴‍☠️</span> Pirate Chest</h3>
-          <p className="mb-3 text-sm text-slate-400">One for every day the patch goal was reached.</p>
+          <h3 className="mb-3 flex items-center gap-2 text-xl font-bold"><span className="text-3xl">🏴‍☠️</span> {t('Pirate Chest')}</h3>
+          <p className="mb-3 text-sm text-slate-400">{t('One for every day the patch goal was reached.')}</p>
           <div className="flex flex-wrap gap-2 text-3xl leading-none">
             {pirates.map((s, i) => <span key={i}>{s}</span>)}
           </div>
@@ -111,7 +114,7 @@ export const StickerAlbum = ({ user, onClose }: { user: UserProfile; onClose: ()
       )}
 
       <p className="text-center text-sm text-slate-400">
-        Finish Today's Mission to win the next album sticker. A new album starts every season.
+        {t("Finish Today's Mission to win the next album sticker. A new album starts every season.")}
       </p>
     </motion.div>
   );

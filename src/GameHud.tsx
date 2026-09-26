@@ -1,5 +1,6 @@
 import { Trophy, Car, Flag } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { t } from './i18n';
 
 /**
  * The in-game heads-up display. A five-year-old cannot read "37s" and a
@@ -16,7 +17,7 @@ export const GameHud = ({ score, timeLeft, duration }: { score: number; timeLeft
       <div
         className="absolute bottom-1.5 left-4 right-10 z-20 h-6 pointer-events-none"
         role="progressbar"
-        aria-label="Time"
+        aria-label={t('Time')}
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={Math.round(progress * 100)}

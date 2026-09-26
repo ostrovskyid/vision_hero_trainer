@@ -4,6 +4,7 @@ import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater, tintStyle, sceneColor, shuffle } from './common';
 import { RescuePup, pupName } from '../pups';
+import { t } from '../i18n';
 
 /**
  * The fire pup's rescue: small fires have broken out in a block of flats, and
@@ -53,7 +54,7 @@ export const FireRescue = ({ config, onComplete }: GameProps) => {
     setWindows(shuffle(cells));
     setSaved(false);
     setRound(r => r + 1);
-    speak(fires === 1 ? `${name} needs help! Find the fire!` : `${name} needs help! Find all ${fires} fires!`, config.voiceEnabled);
+    speak(fires === 1 ? t('{name} needs help! Find the fire!', { name }) : t('{name} needs help! Find all {n} fires!', { name, n: fires }), config.voiceEnabled);
   };
 
   const start = () => {
@@ -75,7 +76,7 @@ export const FireRescue = ({ config, onComplete }: GameProps) => {
       if (next.every(x => !x.fire || x.out)) {
         setSaved(true);
         setWindowSize(s => Math.max(34, s * 0.93));
-        later(() => { playSound('honk', config.soundEnabled); speak('All the fires are out! Hooray!', config.voiceEnabled); }, 400);
+        later(() => { playSound('honk', config.soundEnabled); speak(t('All the fires are out! Hooray!'), config.voiceEnabled); }, 400);
         later(newBuilding, 2000);
       }
     } else {
@@ -91,7 +92,7 @@ export const FireRescue = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full items-center justify-center gap-6 overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8 pt-12">
       {!started && (
-        <StartOverlay label="Ready, Set, Rescue" hint={`Tap every fire to help ${name} spray it out!`} onStart={start}>
+        <StartOverlay label={t('Ready, Set, Rescue')} hint={t('Tap every fire to help {name} spray it out!', { name })} onStart={start}>
           <RescuePup role="fire" size={110} style={tintStyle(config, 'target')} />
         </StartOverlay>
       )}
@@ -113,7 +114,7 @@ export const FireRescue = ({ config, onComplete }: GameProps) => {
                 <motion.button
                   key={`${round}-${i}`}
                   onClick={() => tap(i)}
-                  aria-label={w.fire && !w.out ? 'Fire' : w.content ? 'Window' : 'Empty window'}
+                  aria-label={t(w.fire && !w.out ? 'Fire' : w.content ? 'Window' : 'Empty window')}
                   animate={wrong === i ? { x: [-6, 6, -6, 6, 0] } : { x: 0 }}
                   transition={{ duration: 0.35 }}
                   className="relative flex items-center justify-center rounded-md bg-black"

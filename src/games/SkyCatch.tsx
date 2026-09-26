@@ -3,6 +3,7 @@ import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, tintStyle } from './common';
 import { RescuePup, pupName } from '../pups';
+import { t } from '../i18n';
 
 /**
  * The pilot pup's sky catch: treats drift down the sky and the child steers
@@ -43,7 +44,7 @@ export const SkyCatch = ({ config, onComplete }: GameProps) => {
   const start = () => {
     setStarted(true);
     setIsPlaying(true);
-    speak(`Fly with ${name}! Catch the treats!`, config.voiceEnabled);
+    speak(t('Fly with {name}! Catch the treats!', { name }), config.voiceEnabled);
   };
 
   const treatSize = Math.max(40, config.size * 1.1);
@@ -69,22 +70,22 @@ export const SkyCatch = ({ config, onComplete }: GameProps) => {
       }
       const catchY = size.height - 110;
       const next: Treat[] = [];
-      for (const t of list) {
-        const y = t.y + fallSpeed * dt;
-        const x = t.x * size.width + Math.sin(y / 60 + t.phase) * level.sway;
+      for (const tr of list) {
+        const y = tr.y + fallSpeed * dt;
+        const x = tr.x * size.width + Math.sin(y / 60 + tr.phase) * level.sway;
         const cx = copterRef.current * size.width;
         if (y >= catchY && y <= catchY + 40 && Math.abs(x - cx) < copterW / 2) {
-          const points = t.kind === 'kitten' ? 3 : 1;
+          const points = tr.kind === 'kitten' ? 3 : 1;
           scoreRef.current += points;
           setScore(scoreRef.current);
           setCaught(c => c + 1);
-          setPop({ x, y, id: t.id });
-          playSound(t.kind === 'kitten' ? 'honk' : 'hit', config.soundEnabled);
-          if (t.kind === 'kitten') speak('You rescued the kitten!', config.voiceEnabled);
+          setPop({ x, y, id: tr.id });
+          playSound(tr.kind === 'kitten' ? 'honk' : 'hit', config.soundEnabled);
+          if (tr.kind === 'kitten') speak(t('You rescued the kitten!'), config.voiceEnabled);
           continue;
         }
         if (y > size.height + treatSize) { setDropped(d => d + 1); continue; }
-        next.push({ ...t, y });
+        next.push({ ...tr, y });
       }
       list = next;
       setTreats(list);
@@ -104,7 +105,7 @@ export const SkyCatch = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-xl border-4 border-slate-800 bg-gradient-to-b from-slate-950 to-indigo-950">
       {!started && (
-        <StartOverlay label="Take Off" hint={`Slide your finger to fly ${name} under the treats!`} onStart={start}>
+        <StartOverlay label={t('Take Off')} hint={t('Slide your finger to fly {name} under the treats!', { name })} onStart={start}>
           <RescuePup role="pilot" size={110} style={tintStyle(config, 'target')} />
         </StartOverlay>
       )}

@@ -4,6 +4,7 @@ import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, useLater, targetColor, tintStyle } from './common';
 import { RescuePup, pupName } from '../pups';
+import { t } from '../i18n';
 
 /**
  * Peripheral awareness with the eyes kept in the middle. The police pup sits
@@ -70,7 +71,7 @@ export const LookoutAlert = ({ config, onComplete }: GameProps) => {
   const start = () => {
     setStarted(true);
     setIsPlaying(true);
-    speak(`Look at ${name}! When a light flashes at the side, tap ${name}!`, config.voiceEnabled);
+    speak(t('Look at {name}! When a light flashes at the side, tap {name}!', { name }), config.voiceEnabled);
   };
 
   const tapPup = () => {
@@ -84,7 +85,7 @@ export const LookoutAlert = ({ config, onComplete }: GameProps) => {
       later(() => setCheer(false), 500);
     } else {
       // Too early: a gentle reminder, no points lost.
-      speak('Wait for the light!', config.voiceEnabled);
+      speak(t('Wait for the light!'), config.voiceEnabled);
     }
   };
 
@@ -93,7 +94,7 @@ export const LookoutAlert = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950">
       {!started && (
-        <StartOverlay label="Start the Lookout" hint={`Keep your eyes on ${name}. When a light flashes at the side, tap ${name}!`} onStart={start}>
+        <StartOverlay label={t('Start the Lookout')} hint={t('Keep your eyes on {name}. When a light flashes at the side, tap {name}!', { name })} onStart={start}>
           <RescuePup role="police" size={110} style={tintStyle(config, 'target')} />
         </StartOverlay>
       )}
@@ -120,7 +121,7 @@ export const LookoutAlert = ({ config, onComplete }: GameProps) => {
             {/* The pup on the lookout: the only thing to tap, always in the middle. */}
             <motion.button
               onClick={tapPup}
-              aria-label={`Tap ${name}`}
+              aria-label={t('Tap {name}', { name })}
               className="absolute flex items-center justify-center rounded-full"
               style={{ left: size.width / 2 - pupSize / 2, top: size.height / 2 - pupSize / 2, width: pupSize, height: pupSize }}
               animate={cheer ? { scale: [1, 1.15, 1], rotate: [0, -6, 6, 0] } : { y: [0, -4, 0] }}

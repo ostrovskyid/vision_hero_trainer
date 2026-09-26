@@ -4,6 +4,7 @@ import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, useLater, tintStyle, shuffle, pick } from './common';
 import { RescuePup, pupName } from '../pups';
+import { t } from '../i18n';
 
 /**
  * The police pup's night search: the park is dark, a toy is lost, and the
@@ -83,7 +84,7 @@ export const NightSearch = ({ config, onComplete }: GameProps) => {
     setWanted(target);
     setFound(null);
     setRound(r => r + 1);
-    speak(`Help ${name} find the ${target.name}!`, config.voiceEnabled);
+    speak(t(`Help {name} find the ${target.name}!`, { name }), config.voiceEnabled);
   };
 
   const start = () => {
@@ -116,13 +117,13 @@ export const NightSearch = ({ config, onComplete }: GameProps) => {
       setScore(s => s + 1);
       setFound(i);
       setToySize(s => Math.max(level.minSize, s * 0.92));
-      speak(`You found the ${wanted.name}! Good job!`, config.voiceEnabled);
+      speak(t(`You found the ${wanted.name}! Good job!`), config.voiceEnabled);
       later(newRound, 1600);
     } else {
       playSound('miss', config.soundEnabled);
       setWrong(i);
       later(() => setWrong(null), 400);
-      speak(`That's the ${spot.toy.name}. Keep looking!`, config.voiceEnabled);
+      speak(t(`That's the ${spot.toy.name}. Keep looking!`), config.voiceEnabled);
     }
   };
 
@@ -133,7 +134,7 @@ export const NightSearch = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full flex-col overflow-hidden rounded-xl border-4 border-slate-800 bg-black">
       {!started && (
-        <StartOverlay label="Grab the Torch" hint={`It's dark! Slide the torch around and help ${name} find the lost toy.`} onStart={start}>
+        <StartOverlay label={t('Grab the Torch')} hint={t("It's dark! Slide the torch around and help {name} find the lost toy.", { name })} onStart={start}>
           <RescuePup role="police" size={110} style={tintStyle(config, 'target')} />
         </StartOverlay>
       )}
@@ -142,7 +143,7 @@ export const NightSearch = ({ config, onComplete }: GameProps) => {
       {started && (
         <div className="relative z-20 mx-auto mt-3 flex items-center gap-3 rounded-full border border-slate-700 bg-slate-900 py-1.5 pl-2 pr-5">
           <RescuePup role="police" size={52} style={tintStyle(config, 'target')} />
-          <span className="text-sm font-bold uppercase tracking-wider text-slate-400">Find</span>
+          <span className="text-sm font-bold uppercase tracking-wider text-slate-400">{t('Find')}</span>
           <span className="text-4xl leading-none" style={tintStyle(config, 'target')}>{wanted.emoji}</span>
         </div>
       )}
@@ -169,7 +170,7 @@ export const NightSearch = ({ config, onComplete }: GameProps) => {
               <motion.button
                 key={`${round}-${i}`}
                 onPointerDown={tapToy(i)}
-                aria-label={spot.toy.name}
+                aria-label={t(spot.toy.name)}
                 className="absolute flex items-center justify-center leading-none"
                 style={{
                   left: spot.x * size.width - Math.max(44, toySize) / 2,

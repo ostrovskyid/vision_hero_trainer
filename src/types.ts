@@ -4,6 +4,7 @@ export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'periph
   | 'cage' | 'fusion'
   | 'nightsearch' | 'skycatch' | 'firerescue' | 'lookout';
 export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Lang = 'en' | 'ru';
 
 /**
  * Where the child is in their treatment plan, as set by a parent to match
@@ -110,6 +111,8 @@ export interface GameConfig {
   pupNames: { police: string; pilot: string; fire: string };
   /** Show games that need reading letters (for when the child starts reading). */
   readingGames: boolean;
+  /** Interface and speech language. */
+  language: Lang;
 }
 
 export interface AnaglyphPreset {

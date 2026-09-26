@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater, tintStyle, sceneColor, shuffle } from './common';
+import { t } from '../i18n';
 
 /**
  * Pexeso (pairs memory). Turn two cards; a matching pair stays open. Harder
@@ -49,7 +50,7 @@ export const VehiclePexeso = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newDeal();
-    speak('Turn two cards. Can you find the pairs?', config.voiceEnabled);
+    speak(t('Turn two cards. Can you find the pairs?'), config.voiceEnabled);
   };
 
   const turn = (i: number) => {
@@ -68,7 +69,7 @@ export const VehiclePexeso = ({ config, onComplete }: GameProps) => {
         setOpen([]);
         if (next.every(c => c.matched)) {
           playSound('honk', config.soundEnabled);
-          speak('You found them all!', config.voiceEnabled);
+          speak(t('You found them all!'), config.voiceEnabled);
           later(newDeal, 1200);
         }
       }, 500);
@@ -84,7 +85,7 @@ export const VehiclePexeso = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full items-center justify-center overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8 pt-12">
       {!started && (
-        <StartOverlay label="Deal the Cards" hint="Turn two cards and find the pairs!" onStart={start}>
+        <StartOverlay label={t('Deal the Cards')} hint={t('Turn two cards and find the pairs!')} onStart={start}>
           <div className="text-6xl" style={tintStyle(config, 'target')}>🃏</div>
         </StartOverlay>
       )}
@@ -98,7 +99,7 @@ export const VehiclePexeso = ({ config, onComplete }: GameProps) => {
               <motion.button
                 key={`${deal}-${card.id}`}
                 onClick={() => turn(i)}
-                aria-label={faceUp ? card.emoji : 'Card'}
+                aria-label={faceUp ? card.emoji : t('Card')}
                 initial={{ rotateY: 180, opacity: 0 }}
                 animate={{ rotateY: faceUp ? 0 : 180, opacity: card.matched ? 0.55 : 1 }}
                 transition={{ duration: 0.3 }}

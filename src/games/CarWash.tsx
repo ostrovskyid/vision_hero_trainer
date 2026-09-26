@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, targetColor, sceneColor, pick, useLater } from './common';
+import { t } from '../i18n';
 
 /**
  * Systematic scanning for small details: rub every mud spot off a muddy car.
@@ -78,7 +79,7 @@ export const CarWash = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newCar();
-    speak('Rub off all the mud!', config.voiceEnabled);
+    speak(t('Rub off all the mud!'), config.voiceEnabled);
   };
 
   const toCar = (e: PointerEvent) => {
@@ -117,7 +118,7 @@ export const CarWash = ({ config, onComplete }: GameProps) => {
       setShiny(true);
       scrubbing.current = false;
       playSound('honk', config.soundEnabled);
-      speak('Sparkly clean!', config.voiceEnabled);
+      speak(t('Sparkly clean!'), config.voiceEnabled);
       later(newCar, 1600);
     }
   };
@@ -137,7 +138,7 @@ export const CarWash = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full touch-none items-center justify-center overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8">
       {!started && (
-        <StartOverlay label="Open the Car Wash" hint="Rub the mud off with your finger!" onStart={start}>
+        <StartOverlay label={t('Open the Car Wash')} hint={t('Rub the mud off with your finger!')} onStart={start}>
           <div className="text-6xl">🧽🚗</div>
         </StartOverlay>
       )}
@@ -156,7 +157,7 @@ export const CarWash = ({ config, onComplete }: GameProps) => {
           onPointerMove={onMove}
           onPointerUp={onUp}
           onPointerCancel={onUp}
-          aria-label="Muddy car"
+          aria-label={t('Muddy car')}
           role="img"
         >
           <path d={BODY} fill={body} fillOpacity={config.anaglyphMode ? 0.6 : 1} />

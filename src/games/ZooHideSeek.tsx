@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, tintStyle, sceneColor, pick, shuffle, useLater } from './common';
+import { t } from '../i18n';
 
 /**
  * Visual closure: recognising a whole from a part. Zoo animals hide behind
@@ -83,7 +84,7 @@ export const ZooHideSeek = ({ config, onComplete }: GameProps) => {
     setWanted(target);
     setFound(false);
     setRound(r => r + 1);
-    speak(`Where is the ${target.name}?`, config.voiceEnabled);
+    speak(t(`Where is the ${target.name}?`), config.voiceEnabled);
   };
 
   const start = () => {
@@ -99,7 +100,7 @@ export const ZooHideSeek = ({ config, onComplete }: GameProps) => {
       playSound('hit', config.soundEnabled);
       setScore(s => s + 1);
       setFound(true);
-      speak(`You found the ${wanted.name}!`, config.voiceEnabled);
+      speak(t(`You found the ${wanted.name}!`), config.voiceEnabled);
       later(newRound, 1400);
     } else {
       playSound('miss', config.soundEnabled);
@@ -128,7 +129,7 @@ export const ZooHideSeek = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full flex-col items-center justify-center gap-5 overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8">
       {!started && (
-        <StartOverlay label="Open the Zoo" hint="The animals are hiding! Find the one I name." onStart={start}>
+        <StartOverlay label={t('Open the Zoo')} hint={t('The animals are hiding! Find the one I name.')} onStart={start}>
           <div className="text-6xl" style={tintStyle(config, 'target')}>🦁🦓🦛</div>
         </StartOverlay>
       )}
@@ -137,7 +138,7 @@ export const ZooHideSeek = ({ config, onComplete }: GameProps) => {
       {started && (
         <>
           <div className="flex items-center gap-3 rounded-full border border-slate-700 bg-slate-900 px-5 py-2">
-            <span className="text-sm font-bold uppercase tracking-wider text-slate-400">Find</span>
+            <span className="text-sm font-bold uppercase tracking-wider text-slate-400">{t('Find')}</span>
             <span className="text-5xl leading-none" style={tintStyle(config, 'target')}>{wanted.emoji}</span>
           </div>
 
@@ -149,7 +150,7 @@ export const ZooHideSeek = ({ config, onComplete }: GameProps) => {
                 <motion.button
                   key={`${round}-${i}`}
                   onClick={() => choose(spot, i)}
-                  aria-label={`Hiding place ${i + 1}`}
+                  aria-label={t('Hiding place {n}', { n: i + 1 })}
                   initial={{ opacity: 0, y: 12 }}
                   animate={wrong === i ? { opacity: 1, y: 0, rotate: [-4, 4, -4, 4, 0] } : { opacity: 1, y: 0 }}
                   transition={{ duration: 0.35 }}

@@ -1,4 +1,5 @@
 import { GameConfig, TherapyPhase } from './types';
+import { t } from './i18n';
 
 /**
  * Treatment phases a parent can switch between in Parent's Corner. Each one
@@ -86,5 +87,5 @@ export const runningMinutes = (startedAt: number | null, now = Date.now()) =>
 export const formatMinutes = (minutes: number) => {
   const m = Math.floor(minutes);
   const h = Math.floor(m / 60);
-  return h > 0 ? `${h} h ${String(m % 60).padStart(2, '0')} min` : `${m} min`;
+  return h > 0 ? t('{h} h {m} min', { h, m: String(m % 60).padStart(2, '0') }) : t('{m} min', { m });
 };

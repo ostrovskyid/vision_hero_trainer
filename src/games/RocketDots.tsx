@@ -4,6 +4,7 @@ import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import {
   GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, targetColor, sceneColor, pick, useLater } from './common';
+import { t } from '../i18n';
 
 /**
  * Dot-to-dot with a finger: 1 → 2 → 3 … draws a vehicle, which then takes off.
@@ -72,7 +73,7 @@ export const RocketDots = ({ config, onComplete }: GameProps) => {
     nextRef.current = 0;
     setLaunched(false);
     setRound(r => r + 1);
-    speak(`Start at number one!`, config.voiceEnabled);
+    speak(t('Start at number one!'), config.voiceEnabled);
   };
 
   const start = () => {
@@ -107,7 +108,7 @@ export const RocketDots = ({ config, onComplete }: GameProps) => {
       later(() => {
         setLaunched(true);
         playSound('honk', config.soundEnabled);
-        speak(picture.cheer, config.voiceEnabled);
+        speak(t(picture.cheer), config.voiceEnabled);
       }, 400);
       later(newPicture, 2200);
     }
@@ -154,7 +155,7 @@ export const RocketDots = ({ config, onComplete }: GameProps) => {
       onPointerUp={onUp}
       onPointerCancel={onUp}
     >
-      {!started && <StartOverlay label="Draw a Picture" hint="Slide your finger from 1 to 2 to 3…" onStart={start} />}
+      {!started && <StartOverlay label={t('Draw a Picture')} hint={t('Slide your finger from 1 to 2 to 3…')} onStart={start} />}
       <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       {started && size.width > 0 && (

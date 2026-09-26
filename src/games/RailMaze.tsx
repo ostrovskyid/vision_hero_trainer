@@ -4,6 +4,7 @@ import { playSound, speak } from '../feedback';
 import {
   GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, useLater, targetColor, sceneColor, tintStyle,
 } from './common';
+import { t } from '../i18n';
 
 /**
  * Tracing: drive a little train through a track maze with a finger, from the
@@ -80,7 +81,7 @@ export const RailMaze = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newMaze();
-    speak('Drive the train to the station. Stay on the tracks!', config.voiceEnabled);
+    speak(t('Drive the train to the station. Stay on the tracks!'), config.voiceEnabled);
   };
 
   // Board geometry: the maze keeps square cells and is centred.
@@ -120,7 +121,7 @@ export const RailMaze = ({ config, onComplete }: GameProps) => {
       setArrived(true);
       setScore(s => s + 1);
       playSound('honk', config.soundEnabled);
-      speak('Next stop! Great driving!', config.voiceEnabled);
+      speak(t('Next stop! Great driving!'), config.voiceEnabled);
       later(newMaze, 1500);
     }
     return true;
@@ -176,7 +177,7 @@ export const RailMaze = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950">
       {!started && (
-        <StartOverlay label="Start the Train" hint="Put your finger on the train and drive it to the station!" onStart={start}>
+        <StartOverlay label={t('Start the Train')} hint={t('Put your finger on the train and drive it to the station!')} onStart={start}>
           <div className="text-6xl" style={tintStyle(config, 'target')}>🚂🏁</div>
         </StartOverlay>
       )}

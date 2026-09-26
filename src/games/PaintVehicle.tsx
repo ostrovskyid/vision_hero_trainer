@@ -4,6 +4,7 @@ import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { scaleColor } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater, pick } from './common';
+import { t } from '../i18n';
 
 /**
  * Colouring within the lines, the calm pleoptic exercise that suits long
@@ -108,7 +109,7 @@ export const PaintVehicle = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newPicture();
-    speak('Pick a colour, then tap a part to paint it!', config.voiceEnabled);
+    speak(t('Pick a colour, then tap a part to paint it!'), config.voiceEnabled);
   };
 
   const fill = (i: number) => {
@@ -123,7 +124,7 @@ export const PaintVehicle = ({ config, onComplete }: GameProps) => {
     setFills(next);
     if (next.every(f => f !== null)) {
       setDone(true);
-      later(() => { playSound('honk', config.soundEnabled); speak(`What a beautiful ${picture.name}!`, config.voiceEnabled); }, 300);
+      later(() => { playSound('honk', config.soundEnabled); speak(t(`What a beautiful ${picture.name}!`), config.voiceEnabled); }, 300);
       later(newPicture, 2000);
     }
   };
@@ -131,7 +132,7 @@ export const PaintVehicle = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8 pt-12">
       {!started && (
-        <StartOverlay label="Open the Paint Shop" hint="Pick a colour, then tap each part to paint it!" onStart={start}>
+        <StartOverlay label={t('Open the Paint Shop')} hint={t('Pick a colour, then tap each part to paint it!')} onStart={start}>
           <div className="text-6xl">🎨🚒</div>
         </StartOverlay>
       )}
@@ -147,7 +148,7 @@ export const PaintVehicle = ({ config, onComplete }: GameProps) => {
             animate={done ? { x: [0, 0, 600], opacity: [1, 1, 0] } : { x: 0, opacity: 1 }}
             transition={done ? { duration: 2, times: [0, 0.6, 1] } : { duration: 0.5 }}
             role="img"
-            aria-label={`${picture.name} to paint`}
+            aria-label={t(`${picture.name} to paint`)}
           >
             {picture.parts.map((part, i) => (
               <path
@@ -169,7 +170,7 @@ export const PaintVehicle = ({ config, onComplete }: GameProps) => {
               <button
                 key={c}
                 onClick={() => setPaint(i)}
-                aria-label={`Paint ${i + 1}`}
+                aria-label={t('Paint {n}', { n: i + 1 })}
                 aria-pressed={paint === i}
                 className="h-14 w-14 rounded-full transition-transform"
                 style={{

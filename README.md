@@ -47,6 +47,8 @@ points, and every round finishes with confetti.
   backup file for years of records, and a one-page report to bring to checkups
 - **Spoken instructions** — every game says what to do out loud, so a child who cannot read
   yet can play on their own
+- **English and Russian** — every screen, game and spoken instruction; the device language
+  is picked on first start and can be switched in Parent's Corner
 - **No countdown numbers** — time is a little car driving towards a finish flag
 - **Three difficulty presets** plus manual control over speed, target size and session length
 - **Red/cyan anaglyph mode** for dichoptic training with 3D glasses, off by default
@@ -526,6 +528,17 @@ The period never starts before the first record, so averages aren't diluted by d
 tracking began. **Print / PDF** prints a clean white page (or saves a PDF from the print
 dialog), and **Copy as text** puts a plain summary on the clipboard for an email or
 message. The report says clearly that it is home data, not clinical measurements.
+
+## Languages
+
+The app speaks English and Russian (Русский). On first start it follows the device
+language; switch it any time at the top of Parent's Corner (**Language · Язык**). Speech
+uses the device's own voice for that language, so on a tablet without a Russian voice
+installed, add one in the system text-to-speech settings.
+
+Texts are written in English in the code and looked up in `src/locales/ru.ts`; a missing
+translation falls back to English. Pup names are typed by the parent, so the Russian
+sentences keep them in the nominative ("{name} ищет мишку").
 
 ## Parent's Corner
 

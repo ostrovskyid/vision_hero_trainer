@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, sceneColor, pick, shuffle, useLater } from './common';
+import { t } from '../i18n';
 
 /**
  * Form discrimination: drag each aircraft into the hangar with its shadow.
@@ -56,7 +57,7 @@ export const HangarMatch = ({ config, onComplete }: GameProps) => {
     setParked(null);
     setDrag(null);
     setRound(r => r + 1);
-    speak(`Park the ${next.name} in its hangar!`, config.voiceEnabled);
+    speak(t(`Park the ${next.name} in its hangar!`), config.voiceEnabled);
   };
 
   const start = () => {
@@ -113,7 +114,7 @@ export const HangarMatch = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full touch-none flex-col items-center justify-around overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8 pt-12">
       {!started && (
-        <StartOverlay label="Open the Airport" hint="Drag each aircraft into the hangar with its shadow!" onStart={start}>
+        <StartOverlay label={t('Open the Airport')} hint={t('Drag each aircraft into the hangar with its shadow!')} onStart={start}>
           <div className="text-6xl" style={planeStyle}>✈️🚁</div>
         </StartOverlay>
       )}
@@ -133,7 +134,7 @@ export const HangarMatch = ({ config, onComplete }: GameProps) => {
               onPointerMove={onMove}
               onPointerUp={onUp}
               onPointerCancel={() => setDrag(null)}
-              aria-label={plane.name}
+              aria-label={t(plane.name)}
               role="img"
             >
               <motion.span
@@ -157,7 +158,7 @@ export const HangarMatch = ({ config, onComplete }: GameProps) => {
                 ref={el => { hangarRefs.current[i] = el; }}
                 onClick={() => choose(i)}
                 role="button"
-                aria-label={`Hangar ${i + 1}`}
+                aria-label={t('Hangar {n}', { n: i + 1 })}
                 animate={wrong === i ? { x: [-8, 8, -8, 8, 0] } : { x: 0 }}
                 transition={{ duration: 0.35 }}
                 className="relative flex cursor-pointer items-center justify-center rounded-t-[48px] bg-black"

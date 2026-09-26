@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater, tintStyle } from './common';
+import { t } from '../i18n';
 
 /**
  * Perceptual learning with stripe patches (Gabor patches), the stimulus used
@@ -116,7 +117,7 @@ export const ZebraStripes = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newRound();
-    speak('A zebra is hiding in the stripes. Where is it?', config.voiceEnabled);
+    speak(t('A zebra is hiding in the stripes. Where is it?'), config.voiceEnabled);
   };
 
   const choose = (i: number) => {
@@ -153,7 +154,7 @@ export const ZebraStripes = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full items-center justify-center overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8">
       {!started && (
-        <StartOverlay label="Find the Zebras" hint="Tap the window with the stripes!" onStart={start}>
+        <StartOverlay label={t('Find the Zebras')} hint={t('Tap the window with the stripes!')} onStart={start}>
           <div className="text-6xl">🦓</div>
         </StartOverlay>
       )}
@@ -165,7 +166,7 @@ export const ZebraStripes = ({ config, onComplete }: GameProps) => {
             <motion.button
               key={`${round}-${i}`}
               onClick={() => choose(i)}
-              aria-label={i === 0 ? 'First window' : 'Second window'}
+              aria-label={t(i === 0 ? 'First window' : 'Second window')}
               animate={wrong === i ? { x: [-8, 8, -8, 8, 0] } : { x: 0 }}
               transition={{ duration: 0.35 }}
               className="relative rounded-3xl border-4 border-slate-700 p-1"

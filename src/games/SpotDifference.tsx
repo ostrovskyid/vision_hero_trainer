@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, tintStyle, targetColor, sceneColor, shuffle, useLater } from './common';
+import { t } from '../i18n';
 
 /**
  * Two small zoo pictures side by side; find what is different. Comparing them
@@ -69,7 +70,7 @@ export const SpotDifference = ({ config, onComplete }: GameProps) => {
     setFound([]);
     setHint(null);
     setRound(r => r + 1);
-    speak(`Find ${level.diffs} things that are different!`, config.voiceEnabled);
+    speak(t('Find {n} things that are different!', { n: level.diffs }), config.voiceEnabled);
   };
 
   // A sparkle after a long search, so nobody gets stuck.
@@ -99,7 +100,7 @@ export const SpotDifference = ({ config, onComplete }: GameProps) => {
       const now = [...found, cell];
       setFound(now);
       if (now.length === diffs.length) {
-        speak('You found them all!', config.voiceEnabled);
+        speak(t('You found them all!'), config.voiceEnabled);
         later(newScene, 1500);
       }
     } else {
@@ -128,7 +129,7 @@ export const SpotDifference = ({ config, onComplete }: GameProps) => {
           <motion.button
             key={`${round}-${side}-${i}`}
             onClick={() => tap(i, side)}
-            aria-label={missing ? 'Empty spot' : emoji}
+            aria-label={missing ? t('Empty spot') : emoji}
             animate={wrong === `${side}-${i}` ? { x: [-6, 6, -6, 6, 0] } : { x: 0 }}
             transition={{ duration: 0.35 }}
             className="absolute flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full"
@@ -162,7 +163,7 @@ export const SpotDifference = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full flex-col items-center justify-center overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8 pt-12">
       {!started && (
-        <StartOverlay label="Open the Pictures" hint="The two pictures are nearly the same. Find what's different!" onStart={start}>
+        <StartOverlay label={t('Open the Pictures')} hint={t("The two pictures are nearly the same. Find what's different!")} onStart={start}>
           <div className="text-6xl" style={tintStyle(config, 'target')}>🐧🔍</div>
         </StartOverlay>
       )}
@@ -170,7 +171,7 @@ export const SpotDifference = ({ config, onComplete }: GameProps) => {
 
       {started && (
         <>
-          <div className="mb-3 flex gap-2" aria-label={`${found.length} of ${diffs.length} found`}>
+          <div className="mb-3 flex gap-2" aria-label={t('{found} of {total} found', { found: found.length, total: diffs.length })}>
             {diffs.map((_, i) => (
               <div
                 key={i}

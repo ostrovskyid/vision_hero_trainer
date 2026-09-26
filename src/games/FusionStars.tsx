@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater, compensationPx } from './common';
+import { t, plural } from '../i18n';
 
 /**
  * Fusion with a built-in check. A night sky is drawn for both eyes (the
@@ -78,7 +79,7 @@ export const FusionStars = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newRound();
-    speak('Glasses on! How many stars can you see?', config.voiceEnabled);
+    speak(t('Glasses on! How many stars can you see?'), config.voiceEnabled);
   };
 
   const total = stars.length;
@@ -92,7 +93,7 @@ export const FusionStars = ({ config, onComplete }: GameProps) => {
       playSound('hit', config.soundEnabled);
       setScore(s => s + 1);
       setRight(n);
-      speak(`Yes, ${n} stars!`, config.voiceEnabled);
+      speak(t('Yes, {stars}!', { stars: plural(n, ['{n} star', '{n} stars'], ['{n} звезда', '{n} звезды', '{n} звёзд']) }), config.voiceEnabled);
       later(newRound, 1100);
       return;
     }
@@ -101,7 +102,7 @@ export const FusionStars = ({ config, onComplete }: GameProps) => {
     later(() => setWrong(null), 400);
     // Counting one eye's stars only is a sign that eye's partner switched off.
     if (n === leftOnly || n === rightOnly) {
-      speak('Look with both eyes! Some stars are hiding.', config.voiceEnabled);
+      speak(t('Look with both eyes! Some stars are hiding.'), config.voiceEnabled);
     }
   };
 
@@ -113,7 +114,7 @@ export const FusionStars = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full flex-col items-center justify-center gap-5 overflow-hidden rounded-xl border-4 border-slate-800 bg-black pb-8 pt-12">
       {!started && (
-        <StartOverlay label="Look at the Sky" hint="Glasses on! Count all the stars you can see." onStart={start}>
+        <StartOverlay label={t('Look at the Sky')} hint={t('Glasses on! Count all the stars you can see.')} onStart={start}>
           <div className="text-6xl">⭐</div>
         </StartOverlay>
       )}

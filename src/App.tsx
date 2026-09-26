@@ -23,7 +23,7 @@ import {
 import { GamePreview } from './GamePreview';
 import { GameHud } from './GameHud';
 import { PatchPalBar, PatchPalScreen, PatchPrompt, todayPatchMinutes } from './PatchPal';
-import { PictureCheckScreen, toDecimal } from './PictureCheck';
+import { PictureCheckScreen, toDecimal, EYE_LABEL } from './PictureCheck';
 import { ProgressReport } from './ProgressReport';
 import { StickerAlbum } from './StickerAlbum';
 import { nextSticker, withSticker, currentAlbum, albumKey } from './stickers';
@@ -50,7 +50,8 @@ import { NightSearch } from './games/NightSearch';
 import { SkyCatch } from './games/SkyCatch';
 import { FireRescue } from './games/FireRescue';
 import { LookoutAlert } from './games/LookoutAlert';
-import { PupRole, pupName, possessive, withPupNames, RescuePup, DEFAULT_PUP_NAMES } from './pups';
+import { PupRole, pupName, pupTitle, withPupNames, RescuePup, DEFAULT_PUP_NAMES } from './pups';
+import { t, setLang, locale, plural, LANGUAGES } from './i18n';
 import { AnaglyphFilters } from './games/common';
 import { scaleColor, withAlpha, playSound, speak, stopSpeaking } from './feedback';
 
@@ -190,6 +191,9 @@ const GAME_INSTRUCTIONS: Record<GameMode, string> = {
   lookout: 'Look at {police}! When a light flashes at the side, tap {police}!',
 };
 
+const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as const;
+const DIFFICULTY_MODE_LABELS = { easy: 'Easy Mode', medium: 'Medium Mode', hard: 'Hard Mode' } as const;
+
 /** Local calendar day, so the daily mission resets at the child's midnight. */
 const todayKey = () => {
   const d = new Date();
@@ -284,7 +288,7 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
       {!isPlaying && Math.ceil(timeLeft) === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50" onPointerDown={(e) => e.stopPropagation()}>
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Mission
+            <Play className="mr-2 h-6 w-6" /> {t('Start Mission')}
           </Button>
         </div>
       )}
@@ -377,7 +381,7 @@ const FoggyFlight = ({ config, onComplete }: { config: GameConfig; onComplete: (
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50" onClick={(e) => e.stopPropagation()}>
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Flight
+            <Play className="mr-2 h-6 w-6" /> {t('Start Flight')}
           </Button>
         </div>
       )}
@@ -452,7 +456,7 @@ const TrafficJam = ({ config, onComplete }: { config: GameConfig; onComplete: (s
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Traffic Jam
+            <Play className="mr-2 h-6 w-6" /> {t('Start Traffic Jam')}
           </Button>
         </div>
       )}
@@ -529,7 +533,7 @@ const SpeedwaySaccades = ({ config, onComplete }: { config: GameConfig; onComple
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50" onClick={(e) => e.stopPropagation()}>
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Speedway
+            <Play className="mr-2 h-6 w-6" /> {t('Start Speedway')}
           </Button>
         </div>
       )}
@@ -598,7 +602,7 @@ const FoggySpotter = ({ config, onComplete }: { config: GameConfig; onComplete: 
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Spotter
+            <Play className="mr-2 h-6 w-6" /> {t('Start Spotter')}
           </Button>
         </div>
       )}
@@ -714,7 +718,7 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
       {!isPlaying && Math.ceil(timeLeft) === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50" onPointerDown={(e) => e.stopPropagation()}>
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Depart Station
+            <Play className="mr-2 h-6 w-6" /> {t('Depart Station')}
           </Button>
         </div>
       )}
@@ -821,7 +825,7 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Station Hunt
+            <Play className="mr-2 h-6 w-6" /> {t('Start Station Hunt')}
           </Button>
         </div>
       )}
@@ -830,7 +834,7 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
 
       {isPlaying && (
         <div className="flex items-center gap-3 mb-6 bg-slate-800 px-6 py-3 rounded-full border border-slate-700">
-          <span className="text-sm text-slate-400 uppercase tracking-wider font-bold">Find station</span>
+          <span className="text-sm text-slate-400 uppercase tracking-wider font-bold">{t('Find station')}</span>
           <div
             className={`w-10 h-10 rounded-full border-4 flex items-center justify-center font-bold text-lg ${config.anaglyphMode ? 'bg-black text-[var(--ag-target)]' : 'bg-slate-50 text-slate-900'}`}
             style={{ borderColor: config.anaglyphMode ? config.anaglyphTarget : '#3b82f6' }}
@@ -944,7 +948,7 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Open the Map
+            <Play className="mr-2 h-6 w-6" /> {t('Open the Map')}
           </Button>
         </div>
       )}
@@ -954,9 +958,9 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
       {isPlaying && puzzle && target && (
         <>
           <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
-            <span className="text-sm text-slate-400 font-bold whitespace-nowrap">Follow line</span>
+            <span className="text-sm text-slate-400 font-bold whitespace-nowrap">{t('Follow line')}</span>
             <span className={`px-3 py-1 rounded-md font-bold ${config.anaglyphMode ? 'text-slate-950' : 'text-white'}`} style={{ backgroundColor: config.anaglyphMode ? config.anaglyphTarget : target.color }}>{target.label}</span>
-            <span className="text-sm text-slate-400 font-bold whitespace-nowrap">with your eyes only!</span>
+            <span className="text-sm text-slate-400 font-bold whitespace-nowrap">{t('with your eyes only!')}</span>
           </div>
 
           <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -1091,9 +1095,9 @@ const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplet
       {!isPlaying && Math.ceil(timeLeft) === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <div className="flex flex-col items-center gap-4">
-            <p className="text-lg text-slate-300 font-medium">Tap only the trains — let the cars pass!</p>
+            <p className="text-lg text-slate-300 font-medium">{t('Tap only the trains — let the cars pass!')}</p>
             <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-              <Play className="mr-2 h-6 w-6" /> Open the Crossing
+              <Play className="mr-2 h-6 w-6" /> {t('Open the Crossing')}
             </Button>
           </div>
         </div>
@@ -1222,9 +1226,9 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
       {!isPlaying && timeLeft === config.duration && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
           <div className="flex flex-col items-center gap-4">
-            <p className="text-lg text-slate-300 font-medium">Watch which stations light up, then tap them in the same order!</p>
+            <p className="text-lg text-slate-300 font-medium">{t('Watch which stations light up, then tap them in the same order!')}</p>
             <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-              <Play className="mr-2 h-6 w-6" /> Start the Route
+              <Play className="mr-2 h-6 w-6" /> {t('Start the Route')}
             </Button>
           </div>
         </div>
@@ -1235,7 +1239,7 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
       {isPlaying && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
           <span className="text-sm font-bold text-slate-300">
-            {phase === 'showing' ? '👀 Watch the route...' : '✋ Your turn! Repeat the route'}
+            {t(phase === 'showing' ? '👀 Watch the route...' : '✋ Your turn! Repeat the route')}
           </span>
         </div>
       )}
@@ -1297,14 +1301,14 @@ const ColorField = ({ label, hint, value, onChange }: {
       <div className="flex items-center gap-2">
         <input
           type="color"
-          aria-label={`${label} colour picker`}
+          aria-label={t('{label}: colour picker', { label })}
           value={value}
           onChange={(e) => onChange(e.target.value.toUpperCase())}
           className="h-12 w-16 shrink-0 cursor-pointer rounded-md border border-slate-700 bg-slate-800 p-1"
         />
         <input
           type="text"
-          aria-label={`${label} hex value`}
+          aria-label={t('{label}: hex value', { label })}
           value={draft}
           spellCheck={false}
           maxLength={7}
@@ -1365,6 +1369,8 @@ export default function App() {
       return DEFAULT_CONFIG;
     }
   });
+  // Every t() call below and in the games reads this, so it is set before any of them render.
+  setLang(config.language);
   const [user, setUser] = useState<UserProfile>(() => {
     // Storage can be blocked (private mode, embedded frames); start fresh then.
     try {
@@ -1384,7 +1390,7 @@ export default function App() {
   const [missionReward, setMissionReward] = useState<string | null | undefined>(undefined);
 
   const visibleTiles = GAME_TILES.filter(t => (config.anaglyphMode || !t.requiresAnaglyph) && (config.readingGames || !t.needsReading));
-  const tileTitle = (tile: (typeof GAME_TILES)[number]) => (tile.pup ? `${possessive(pupName(config, tile.pup))} ${tile.title}` : tile.title);
+  const tileTitle = (tile: (typeof GAME_TILES)[number]) => (tile.pup ? pupTitle(pupName(config, tile.pup), tile.title) : t(tile.title));
   const phase = phaseInfo(config.therapyPhase);
   const patchRunning = user.patch.startedAt !== null;
   // A game that is waiting for the "patch on?" answer before it starts.
@@ -1406,7 +1412,7 @@ export default function App() {
     if (patchRunning) return;
     setNow(Date.now());
     updatePatch(p => ({ ...p, startedAt: Date.now() }));
-    speak('Patch on! Ahoy, captain!', config.voiceEnabled);
+    speak(t('Patch on! Ahoy, captain!'), config.voiceEnabled);
   };
 
   const stopPatch = () => {
@@ -1440,7 +1446,7 @@ export default function App() {
     }));
     playSound('complete', config.soundEnabled);
     confetti({ particleCount: 200, spread: 140, origin: { y: 0.4 } });
-    speak('Patch goal done! You won a pirate sticker!', config.voiceEnabled);
+    speak(t('Patch goal done! You won a pirate sticker!'), config.voiceEnabled);
   }, [patchToday, config.patchGoalMinutes, user.patch.lastStickerDate]);
 
   /**
@@ -1466,7 +1472,7 @@ export default function App() {
     const saved = await saveBackupFile(buildBackup({ ...user, lastBackupAt: savedAt }, config));
     if (saved) {
       setUser(prev => ({ ...prev, lastBackupAt: savedAt }));
-      setBackupMessage({ kind: 'ok', text: 'Backup saved. Keep the file somewhere safe, like Google Drive or email.' });
+      setBackupMessage({ kind: 'ok', text: t('Backup saved. Keep the file somewhere safe, like Google Drive or email.') });
     }
   };
 
@@ -1495,7 +1501,7 @@ export default function App() {
       pxPerMm: c.pxPerMm,
     }));
     setPendingRestore(null);
-    setBackupMessage({ kind: 'ok', text: `Restored the backup from ${new Date(pendingRestore.savedAt).toLocaleDateString()}.` });
+    setBackupMessage({ kind: 'ok', text: t('Restored the backup from {date}.', { date: new Date(pendingRestore.savedAt).toLocaleDateString(locale()) }) });
   };
 
   const lastCheck = user.checks[user.checks.length - 1];
@@ -1560,7 +1566,7 @@ export default function App() {
     setScreen('game');
     setMissionReward(undefined);
     // Spoken from the tap itself: iOS only lets a page start speech from a gesture.
-    speak(withPupNames(GAME_INSTRUCTIONS[mode], config), config.voiceEnabled);
+    speak(withPupNames(t(GAME_INSTRUCTIONS[mode]), config), config.voiceEnabled);
     if (config.autoFullscreen && !document.fullscreenElement) {
       document.documentElement.requestFullscreen?.().catch(() => {
         // Refused (unsupported, or iPhone Safari): the in-app layout still
@@ -1651,15 +1657,15 @@ export default function App() {
       setMissionReward(earnsSticker ? reward.sticker : null);
       setMission(null);
       speak(
-        !earnsSticker ? 'Mission complete! Great job!'
+        t(!earnsSticker ? 'Mission complete! Great job!'
           : reward.completesPage ? 'Mission complete! You finished a page of your sticker album!'
-          : 'Mission complete! You won a new sticker!',
+          : 'Mission complete! You won a new sticker!'),
         config.voiceEnabled,
       );
     } else if (mission) {
-      speak('Great job! Ready for the next game?', config.voiceEnabled);
+      speak(t('Great job! Ready for the next game?'), config.voiceEnabled);
     } else {
-      speak('Great job!', config.voiceEnabled);
+      speak(t('Great job!'), config.voiceEnabled);
     }
     setScreen('stats');
   };
@@ -1715,11 +1721,11 @@ export default function App() {
           </div>
 
           <div className="mt-16 flex items-center gap-3 text-slate-600">
-            <span className="text-xs uppercase tracking-wider">Target</span>
+            <span className="text-xs uppercase tracking-wider">{t('Target')}</span>
             <button
               onClick={() => setConfig(c => ({ ...c, anaglyphTargetLevel: Math.max(20, c.anaglyphTargetLevel - 5) }))}
               className="h-12 w-12 rounded-md border border-slate-800 text-xl text-slate-500 hover:text-slate-300"
-              aria-label="Dimmer target"
+              aria-label={t('Dimmer target')}
             >
               –
             </button>
@@ -1727,7 +1733,7 @@ export default function App() {
             <button
               onClick={() => setConfig(c => ({ ...c, anaglyphTargetLevel: Math.min(100, c.anaglyphTargetLevel + 5) }))}
               className="h-12 w-12 rounded-md border border-slate-800 text-xl text-slate-500 hover:text-slate-300"
-              aria-label="Brighter target"
+              aria-label={t('Brighter target')}
             >
               +
             </button>
@@ -1735,12 +1741,11 @@ export default function App() {
               onClick={() => setCalibrationTest(false)}
               className="ml-6 h-12 rounded-md border border-slate-800 px-6 text-base text-slate-500 hover:text-slate-300"
             >
-              Done
+              {t('Done')}
             </button>
           </div>
           <p className="mt-6 max-w-md px-6 text-center text-xs leading-relaxed text-slate-700">
-            Cover one eye at a time. Dim the target until it disappears through the scenery lens
-            while staying clearly visible through the other one.
+            {t('Cover one eye at a time. Dim the target until it disappears through the scenery lens while staying clearly visible through the other one.')}
           </p>
         </div>
       )}
@@ -1758,21 +1763,21 @@ export default function App() {
               {user.avatar}
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Vision Express</h1>
+              <h1 className="text-2xl font-bold tracking-tight">{t('Vision Express')}</h1>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-slate-300 uppercase tracking-wider">Level {user.level}</span>
+                <span className="text-sm font-medium text-slate-300 uppercase tracking-wider">{t('Level {n}', { n: user.level })}</span>
                 {config.therapyPhase !== 'free' && (
-                  <Badge variant="outline" className="border-slate-700 text-slate-300">{phase.short}</Badge>
+                  <Badge variant="outline" className="border-slate-700 text-slate-300">{t(phase.short)}</Badge>
                 )}
                 <Progress value={(user.experience % 100)} className="w-20 h-1.5" />
               </div>
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleFullscreen} title="Toggle Fullscreen">
+            <Button variant="ghost" size="icon" onClick={toggleFullscreen} title={t('Toggle Fullscreen')}>
               {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
             </Button>
-            <Button variant="ghost" size="icon" onClick={() => setScreen('settings')}>
+            <Button variant="ghost" size="icon" onClick={() => setScreen('settings')} title={t("Parent's Corner")}>
               <Settings className="h-5 w-5" />
             </Button>
           </div>
@@ -1796,11 +1801,11 @@ export default function App() {
                 // Recovery after an operation: nothing to play, just a friendly note.
                 <div className="flex flex-1 min-h-0 flex-col items-center justify-center gap-4 rounded-xl border border-slate-800 bg-slate-900 p-6 text-center">
                   <div className="text-7xl">🩹</div>
-                  <h2 className="text-3xl font-bold">Get well soon, captain!</h2>
+                  <h2 className="text-3xl font-bold">{t('Get well soon, captain!')}</h2>
                   <p className="max-w-md text-lg text-slate-300">
-                    Your eye is resting after the doctor fixed it. The games will be back when the doctor says so.
+                    {t('Your eye is resting after the doctor fixed it. The games will be back when the doctor says so.')}
                   </p>
-                  <p className="text-sm text-slate-500">A parent can change this in Parent's Corner.</p>
+                  <p className="text-sm text-slate-500">{t("A parent can change this in Parent's Corner.")}</p>
                 </div>
               ) : (
               <>
@@ -1813,9 +1818,9 @@ export default function App() {
                   <Play className="h-6 w-6 fill-slate-950" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-lg font-bold leading-tight text-yellow-100 md:text-xl">Today's Mission</div>
+                  <div className="text-lg font-bold leading-tight text-yellow-100 md:text-xl">{t("Today's Mission")}</div>
                   <div className="text-sm text-slate-300">
-                    {missionDoneToday ? 'Sticker collected! Play again for fun.' : '3 games, then a new sticker!'}
+                    {t(missionDoneToday ? 'Sticker collected! Play again for fun.' : '3 games, then a new sticker!')}
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-1.5">
@@ -1850,7 +1855,7 @@ export default function App() {
                       </div>
                       <div className="min-w-0">
                         <CardTitle className="truncate text-base leading-tight text-slate-50 md:text-lg">{tileTitle(tile)}</CardTitle>
-                        <CardDescription className="mt-0.5 hidden truncate text-sm text-slate-300 lg:block">{tile.description}</CardDescription>
+                        <CardDescription className="mt-0.5 hidden truncate text-sm text-slate-300 lg:block">{t(tile.description)}</CardDescription>
                       </div>
                     </div>
                     <div className={`absolute bottom-0 left-0 right-0 h-1.5 ${tile.barClass} translate-y-full transform transition-transform group-hover:translate-y-0`} />
@@ -1871,7 +1876,7 @@ export default function App() {
                   {(user.albums[albumKey()] ?? []).length}/{currentAlbum().stickers.length}
                 </span>
                 {user.stickers.length > 0 ? (
-                  <span className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" aria-label={`${user.stickers.length} stickers collected. Open the sticker album`}>
+                  <span className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" aria-label={t('{n} stickers collected. Open the sticker album', { n: user.stickers.length })}>
                     {/* Newest first, so a fresh sticker is always in view. */}
                     {[...user.stickers].reverse().slice(0, 24).map((sticker, i) => (
                       <span key={i} className="text-2xl leading-none">{sticker}</span>
@@ -1879,11 +1884,11 @@ export default function App() {
                   </span>
                 ) : (
                   <span className="min-w-0 flex-1 text-sm text-slate-300 md:text-base">
-                    Finish today's mission to win your first sticker!
+                    {t("Finish today's mission to win your first sticker!")}
                   </span>
                 )}
                 <span className="hidden shrink-0 items-center gap-2 text-sm text-slate-400 lg:flex">
-                  <Eye className="h-4 w-4 text-blue-400" /> Wear the patch as your doctor directed.
+                  <Eye className="h-4 w-4 text-blue-400" /> {t('Wear the patch as your doctor directed.')}
                 </span>
               </button>
 
@@ -1900,14 +1905,14 @@ export default function App() {
             >
               <div className="mb-2 flex items-center justify-between shrink-0">
                 <Button variant="ghost" size="sm" onClick={leaveGame}>
-                  <ChevronLeft className="mr-2 h-4 w-4" /> Back to Base
+                  <ChevronLeft className="mr-2 h-4 w-4" /> {t('Back to Base')}
                 </Button>
                 <div className="flex items-center gap-1">
                 <Badge className="bg-blue-600">
-                  {mission && `Mission ${mission.index + 1}/${mission.modes.length} · `}
-                  {SKILL_LABELS[selectedMode]}
+                  {mission && `${t('Mission {i}/{n}', { i: mission.index + 1, n: mission.modes.length })} · `}
+                  {t(SKILL_LABELS[selectedMode])}
                 </Badge>
-                <Button variant="ghost" size="icon" onClick={toggleFullscreen} title="Toggle Fullscreen">
+                <Button variant="ghost" size="icon" onClick={toggleFullscreen} title={t('Toggle Fullscreen')}>
                   {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
                 </Button>
                 </div>
@@ -1977,37 +1982,37 @@ export default function App() {
                 </div>
               )}
               <h2 className="text-3xl font-bold mb-2">
-                {typeof missionReward === 'string' ? 'New Sticker!' : 'Mission Accomplished!'}
+                {t(typeof missionReward === 'string' ? 'New Sticker!' : 'Mission Accomplished!')}
               </h2>
               <div className="flex justify-center mb-4">
-                <Badge variant="outline" className="capitalize px-4 py-1 border-slate-700">
-                  {user.stats[selectedMode].slice(-1)[0]?.difficulty || 'medium'} Mode
+                <Badge variant="outline" className="px-4 py-1 border-slate-700">
+                  {t(DIFFICULTY_MODE_LABELS[user.stats[selectedMode].slice(-1)[0]?.difficulty || 'medium'])}
                 </Badge>
               </div>
-              <p className="text-slate-400 mb-8">You're getting stronger every day, Hero.</p>
+              <p className="text-slate-400 mb-8">{t("You're getting stronger every day, Hero.")}</p>
               {typeof user.stats[selectedMode].slice(-1)[0]?.alignedPD === 'number' && (
                 // For the parent: where the child lined the pictures up this time.
                 <p className="-mt-6 mb-8 text-sm text-slate-500">
-                  Pictures lined up at {user.stats[selectedMode].slice(-1)[0].alignedPD} prism dioptres
-                  {user.stats[selectedMode].slice(-1)[0].alignedPD! >= 2 ? ' (eyes turned in)' : user.stats[selectedMode].slice(-1)[0].alignedPD! <= -2 ? ' (eyes turned out)' : ''}.
-                  A home game, not a measurement.
+                  {t('Pictures lined up at {pd} prism dioptres', { pd: user.stats[selectedMode].slice(-1)[0].alignedPD! })}
+                  {user.stats[selectedMode].slice(-1)[0].alignedPD! >= 2 ? t(' (eyes turned in)') : user.stats[selectedMode].slice(-1)[0].alignedPD! <= -2 ? t(' (eyes turned out)') : ''}.{' '}
+                  {t('A home game, not a measurement.')}
                 </p>
               )}
               
               <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-8">
                 <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
                   <div className="text-2xl font-bold text-blue-400">+{user.stats[selectedMode].slice(-1)[0]?.score * 10}</div>
-                  <div className="text-sm text-slate-300 uppercase">Experience</div>
+                  <div className="text-sm text-slate-300 uppercase">{t('Experience')}</div>
                 </div>
                 <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
                   <div className="text-2xl font-bold text-purple-400">{user.stats[selectedMode].slice(-1)[0]?.score}</div>
-                  <div className="text-sm text-slate-300 uppercase">Score</div>
+                  <div className="text-sm text-slate-300 uppercase">{t('Score')}</div>
                 </div>
               </div>
 
               {mission && mission.index < mission.modes.length - 1 ? (
                 <div className="flex flex-col items-center gap-4">
-                  <div className="flex gap-2" aria-label={`Game ${mission.index + 1} of ${mission.modes.length} done`}>
+                  <div className="flex gap-2" aria-label={t('Game {i} of {n} done', { i: mission.index + 1, n: mission.modes.length })}>
                     {mission.modes.map((mode, i) => {
                       const tile = GAME_TILES.find(t => t.mode === mode)!;
                       return (
@@ -2021,13 +2026,13 @@ export default function App() {
                     })}
                   </div>
                   <Button size="lg" onClick={nextMissionGame} className="px-10 py-6 text-xl">
-                    <Play className="mr-2 h-6 w-6" /> Next Game
+                    <Play className="mr-2 h-6 w-6" /> {t('Next Game')}
                   </Button>
-                  <Button variant="ghost" onClick={leaveGame}>Stop for today</Button>
+                  <Button variant="ghost" onClick={leaveGame}>{t('Stop for today')}</Button>
                 </div>
               ) : (
                 <Button size="lg" onClick={() => setScreen('home')} className="px-8">
-                  Continue Journey
+                  {t('Continue Journey')}
                 </Button>
               )}
             </motion.div>
@@ -2075,17 +2080,39 @@ export default function App() {
               className="space-y-8"
             >
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">Parent's Corner</h2>
-                <Button variant="ghost" onClick={() => setScreen('home')}>Close</Button>
+                <h2 className="text-2xl font-bold">{t("Parent's Corner")}</h2>
+                <Button variant="ghost" onClick={() => setScreen('home')}>{t('Close')}</Button>
               </div>
+
+              {/* Language first, labelled in both languages so it can be found either way. */}
+              <Card className="bg-slate-900 border-slate-800">
+                <CardContent className="flex flex-wrap items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <label className="text-base font-medium">Language · Язык</label>
+                    <p className="text-sm text-slate-400">{t('Screens, games and spoken instructions.')}</p>
+                  </div>
+                  <div className="flex gap-2">
+                    {LANGUAGES.map(l => (
+                      <Button
+                        key={l.id}
+                        variant={config.language === l.id ? 'default' : 'outline'}
+                        aria-pressed={config.language === l.id}
+                        onClick={() => setConfig(c => ({ ...c, language: l.id }))}
+                      >
+                        {l.label}
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
 
               {/* The treatment plan comes first: it decides which games appear
                   and how they are set up. */}
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-slate-50">Treatment Plan</CardTitle>
+                  <CardTitle className="text-slate-50">{t('Treatment Plan')}</CardTitle>
                   <CardDescription className="text-slate-400">
-                    Match the app to the stage your eye doctor has set. Choosing a stage applies its settings once; you can still change any of them below.
+                    {t('Match the app to the stage your eye doctor has set. Choosing a stage applies its settings once; you can still change any of them below.')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -2097,32 +2124,32 @@ export default function App() {
                         aria-pressed={config.therapyPhase === p.id}
                         className={`rounded-lg border p-3 text-left transition-colors ${config.therapyPhase === p.id ? 'border-blue-500 bg-blue-500/10' : 'border-slate-800 hover:border-slate-600'}`}
                       >
-                        <div className="font-medium text-slate-50">{p.label}</div>
-                        <div className="mt-0.5 text-sm text-slate-400">{p.description}</div>
+                        <div className="font-medium text-slate-50">{t(p.label)}</div>
+                        <div className="mt-0.5 text-sm text-slate-400">{t(p.description)}</div>
                       </button>
                     ))}
                   </div>
 
                   <div className="flex items-center justify-between gap-4 border-t border-slate-800 pt-4">
                     <div className="space-y-0.5">
-                      <label className="text-base font-medium">Comfort Zone</label>
-                      <p className="text-sm text-slate-400">Keep targets out of the left part of the screen, for an eye that can't turn fully outward to the left. Ask the eye doctor whether to use it.</p>
+                      <label className="text-base font-medium">{t('Comfort Zone')}</label>
+                      <p className="text-sm text-slate-400">{t("Keep targets out of the left part of the screen, for an eye that can't turn fully outward to the left. Ask the eye doctor whether to use it.")}</p>
                     </div>
                     <Button
                       variant={config.comfortZone ? 'default' : 'outline'}
                       onClick={() => setConfig(c => ({ ...c, comfortZone: !c.comfortZone }))}
                     >
-                      {config.comfortZone ? 'On' : 'Off'}
+                      {t(config.comfortZone ? 'On' : 'Off')}
                     </Button>
                   </div>
 
                   <div className="space-y-4 border-t border-slate-800 pt-4">
                     <div className="flex justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-base font-medium">Daily Patch Goal</label>
-                        <p className="text-sm text-slate-400">The patch time your eye doctor prescribed. Patch Pal gives a sticker each day it is reached.</p>
+                        <label className="text-base font-medium">{t('Daily Patch Goal')}</label>
+                        <p className="text-sm text-slate-400">{t('The patch time your eye doctor prescribed. Patch Pal gives a sticker each day it is reached.')}</p>
                       </div>
-                      <span className="text-sm text-blue-400">{Math.floor(config.patchGoalMinutes / 60)} h {String(config.patchGoalMinutes % 60).padStart(2, '0')} min</span>
+                      <span className="text-sm text-blue-400">{t('{h} h {m} min', { h: Math.floor(config.patchGoalMinutes / 60), m: String(config.patchGoalMinutes % 60).padStart(2, '0') })}</span>
                     </div>
                     <Slider
                       value={[config.patchGoalMinutes]}
@@ -2132,17 +2159,16 @@ export default function App() {
                         setConfig(c => ({ ...c, patchGoalMinutes: val }));
                       }}
                     />
-                    <Button variant="outline" onClick={() => setScreen('patch')}>Open Patch Pal</Button>
+                    <Button variant="outline" onClick={() => setScreen('patch')}>{t('Open Patch Pal')}</Button>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-slate-50">Rescue Pups</CardTitle>
+                  <CardTitle className="text-slate-50">{t('Rescue Pups')}</CardTitle>
                   <CardDescription className="text-slate-400">
-                    Give the pups the names your child calls them. The names are used in the pup games' titles and spoken
-                    instructions, and are stored only on this device.
+                    {t("Give the pups the names your child calls them. The names are used in the pup games' titles and spoken instructions, and are stored only on this device.")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-3">
@@ -2150,13 +2176,13 @@ export default function App() {
                     <label key={role} htmlFor={`pup-${role}`} className="flex items-center gap-3">
                       <RescuePup role={role} size={52} />
                       <span className="flex min-w-0 flex-1 flex-col gap-1">
-                        <span className="text-sm text-slate-400">{DEFAULT_PUP_NAMES[role]}</span>
+                        <span className="text-sm text-slate-400">{t(DEFAULT_PUP_NAMES[role])}</span>
                         <input
                           id={`pup-${role}`}
                           type="text"
                           maxLength={20}
                           value={config.pupNames?.[role] ?? ''}
-                          placeholder={DEFAULT_PUP_NAMES[role]}
+                          placeholder={t(DEFAULT_PUP_NAMES[role])}
                           onChange={e => {
                             const value = e.target.value;
                             setConfig(c => ({ ...c, pupNames: { ...DEFAULT_CONFIG.pupNames, ...c.pupNames, [role]: value } }));
@@ -2171,32 +2197,32 @@ export default function App() {
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-slate-50">Progress Report</CardTitle>
+                  <CardTitle className="text-slate-50">{t('Progress Report')}</CardTitle>
                   <CardDescription className="text-slate-400">
-                    Patch time, home picture checks and game practice for a chosen period, on one page to show the orthoptist. Print it, save it as a PDF, or copy it as text.
+                    {t('Patch time, home picture checks and game practice for a chosen period, on one page to show the orthoptist. Print it, save it as a PDF, or copy it as text.')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Button onClick={() => setScreen('report')}>Open report</Button>
+                  <Button onClick={() => setScreen('report')}>{t('Open report')}</Button>
                 </CardContent>
               </Card>
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
                   <CardTitle className="text-slate-50 flex items-center gap-2">
-                    Monthly Picture Check
-                    {checkDue && <Badge className="bg-amber-500 text-slate-950">Due</Badge>}
+                    {t('Monthly Picture Check')}
+                    {checkDue && <Badge className="bg-amber-500 text-slate-950">{t('Due')}</Badge>}
                   </CardTitle>
                   <CardDescription className="text-slate-400">
-                    A short vision check with picture symbols, done the same way every month. It shows the trend for each eye; it is not a medical test.
+                    {t('A short vision check with picture symbols, done the same way every month. It shows the trend for each eye; it is not a medical test.')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-wrap items-center gap-4">
-                  <Button onClick={() => setScreen('check')}>{config.pxPerMm > 0 ? 'Open picture check' : 'Set up picture check'}</Button>
+                  <Button onClick={() => setScreen('check')}>{t(config.pxPerMm > 0 ? 'Open picture check' : 'Set up picture check')}</Button>
                   <span className="text-sm text-slate-400">
                     {lastCheck
-                      ? `Last check ${new Date(lastCheck.date).toLocaleDateString()}: ${lastCheck.eye} eye ${toDecimal(lastCheck.logMAR)}`
-                      : 'No checks yet.'}
+                      ? t('Last check {date}: {eye} {value}', { date: new Date(lastCheck.date).toLocaleDateString(locale()), eye: t(EYE_LABEL[lastCheck.eye]).toLowerCase(), value: toDecimal(lastCheck.logMAR) })
+                      : t('No checks yet.')}
                   </span>
                 </CardContent>
               </Card>
@@ -2204,17 +2230,17 @@ export default function App() {
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
                   <CardTitle className="text-slate-50 flex items-center gap-2">
-                    Backup
-                    {(backupAge === null || backupAge >= 30) && <Badge className="bg-amber-500 text-slate-950">Recommended</Badge>}
+                    {t('Backup')}
+                    {(backupAge === null || backupAge >= 30) && <Badge className="bg-amber-500 text-slate-950">{t('Recommended')}</Badge>}
                   </CardTitle>
                   <CardDescription className="text-slate-400">
-                    Progress lives only on this device. Save a backup file once a month, and load it on a new or reset tablet to carry on where you left off. It includes stickers, game history, the patch log, picture checks and settings.
+                    {t('Progress lives only on this device. Save a backup file once a month, and load it on a new or reset tablet to carry on where you left off. It includes stickers, game history, the patch log, picture checks and settings.')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
-                    <Button onClick={saveBackup}>Save backup file</Button>
-                    <Button variant="outline" onClick={() => restoreInput.current?.click()}>Restore from file…</Button>
+                    <Button onClick={saveBackup}>{t('Save backup file')}</Button>
+                    <Button variant="outline" onClick={() => restoreInput.current?.click()}>{t('Restore from file…')}</Button>
                     <input
                       id="restore-file"
                       ref={restoreInput}
@@ -2224,19 +2250,19 @@ export default function App() {
                       onChange={e => { pickRestoreFile(e.target.files?.[0]); e.target.value = ''; }}
                     />
                     <span className="text-sm text-slate-400">
-                      {backupAge === null ? 'Never backed up.' : backupAge === 0 ? 'Last backup: today.' : `Last backup: ${backupAge} day${backupAge === 1 ? '' : 's'} ago.`}
+                      {backupAge === null ? t('Never backed up.') : backupAge === 0 ? t('Last backup: today.') : t('Last backup: {ago}.', { ago: plural(backupAge, ['{n} day ago', '{n} days ago'], ['{n} день назад', '{n} дня назад', '{n} дней назад']) })}
                     </span>
                   </div>
                   {pendingRestore && (
                     // Restoring replaces everything, so it is confirmed here in the page.
                     <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
                       <p className="text-slate-100">
-                        Replace everything on this device with the backup from <strong>{new Date(pendingRestore.savedAt).toLocaleString()}</strong>?
-                        It has {pendingRestore.user?.stickers?.length ?? 0} stickers and {pendingRestore.user?.checks?.length ?? 0} picture checks. This screen's colour and size calibration is kept.
+                        {t('Replace everything on this device with the backup from')} <strong>{new Date(pendingRestore.savedAt).toLocaleString(locale())}</strong>?{' '}
+                        {t("Stickers in it: {stickers}. Picture checks: {checks}. This screen's colour and size calibration is kept.", { stickers: pendingRestore.user?.stickers?.length ?? 0, checks: pendingRestore.user?.checks?.length ?? 0 })}
                       </p>
                       <div className="mt-3 flex gap-3">
-                        <Button onClick={confirmRestore}>Replace and restore</Button>
-                        <Button variant="ghost" onClick={() => setPendingRestore(null)}>Cancel</Button>
+                        <Button onClick={confirmRestore}>{t('Replace and restore')}</Button>
+                        <Button variant="ghost" onClick={() => setPendingRestore(null)}>{t('Cancel')}</Button>
                       </div>
                     </div>
                   )}
@@ -2248,24 +2274,23 @@ export default function App() {
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-slate-50">Exercise Configuration</CardTitle>
-                  <CardDescription className="text-slate-400">Adjust the difficulty and duration of the training sessions.</CardDescription>
+                  <CardTitle className="text-slate-50">{t('Exercise Configuration')}</CardTitle>
+                  <CardDescription className="text-slate-400">{t('Adjust the difficulty and duration of the training sessions.')}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="space-y-4">
-                    <label className="text-base font-medium">Difficulty Level</label>
+                    <label className="text-base font-medium">{t('Difficulty Level')}</label>
                     <div className="grid grid-cols-3 gap-3">
                       {(['easy', 'medium', 'hard'] as const).map((d) => (
                         <Button
                           key={d}
                           variant={config.difficulty === d ? "default" : "outline"}
-                          className="capitalize"
                           onClick={() => {
                             const preset = DIFFICULTY_PRESETS[d];
                             setConfig(c => ({ ...c, difficulty: d, ...preset }));
                           }}
                         >
-                          {d}
+                          {t(DIFFICULTY_LABELS[d])}
                         </Button>
                       ))}
                     </div>
@@ -2273,7 +2298,7 @@ export default function App() {
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <label className="text-base font-medium">Movement Speed</label>
+                      <label className="text-base font-medium">{t('Movement Speed')}</label>
                       <span className="text-sm text-blue-400">{config.speed}</span>
                     </div>
                     <Slider 
@@ -2288,7 +2313,7 @@ export default function App() {
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <label className="text-base font-medium">Target Size (px)</label>
+                      <label className="text-base font-medium">{t('Target Size (px)')}</label>
                       <span className="text-sm text-blue-400">{config.size}px</span>
                     </div>
                     <Slider 
@@ -2303,8 +2328,8 @@ export default function App() {
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
-                      <label className="text-base font-medium">Session Duration (s)</label>
-                      <span className="text-sm text-blue-400">{config.duration}s</span>
+                      <label className="text-base font-medium">{t('Session Duration (s)')}</label>
+                      <span className="text-sm text-blue-400">{t('{n} s', { n: config.duration })}</span>
                     </div>
                     <Slider 
                       value={[config.duration]} 
@@ -2318,25 +2343,25 @@ export default function App() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
-                      <label className="text-base font-medium">Sound Effects</label>
-                      <p className="text-sm text-slate-400">Enable or disable game sounds.</p>
+                      <label className="text-base font-medium">{t('Sound Effects')}</label>
+                      <p className="text-sm text-slate-400">{t('Enable or disable game sounds.')}</p>
                     </div>
                     <Button 
                       variant={config.soundEnabled ? "default" : "outline"}
                       onClick={() => setConfig(c => ({...c, soundEnabled: !c.soundEnabled}))}
                     >
                       {config.soundEnabled ? <Volume2 className="h-4 w-4 mr-2"/> : <VolumeX className="h-4 w-4 mr-2"/>}
-                      {config.soundEnabled ? "On" : "Off"}
+                      {config.soundEnabled ? t("On") : t("Off")}
                     </Button>
                   </div>
 
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-base font-medium">Daily Mission Game Length</label>
-                        <p className="text-sm text-slate-400">Each of the three mission games runs this long.</p>
+                        <label className="text-base font-medium">{t('Daily Mission Game Length')}</label>
+                        <p className="text-sm text-slate-400">{t('Each of the three mission games runs this long.')}</p>
                       </div>
-                      <span className="text-sm text-blue-400">{config.missionSeconds}s</span>
+                      <span className="text-sm text-blue-400">{t('{n} s', { n: config.missionSeconds })}</span>
                     </div>
                     <Slider
                       value={[config.missionSeconds]}
@@ -2351,10 +2376,10 @@ export default function App() {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-base font-medium">Cartoon Cinema Length</label>
-                        <p className="text-sm text-slate-400">How long a Cartoon Cinema show runs in free play.</p>
+                        <label className="text-base font-medium">{t('Cartoon Cinema Length')}</label>
+                        <p className="text-sm text-slate-400">{t('How long a Cartoon Cinema show runs in free play.')}</p>
                       </div>
-                      <span className="text-sm text-blue-400">{config.cinemaMinutes} min</span>
+                      <span className="text-sm text-blue-400">{t('{m} min', { m: config.cinemaMinutes })}</span>
                     </div>
                     <Slider
                       value={[config.cinemaMinutes]}
@@ -2368,55 +2393,55 @@ export default function App() {
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
-                      <label className="text-base font-medium">Reading Games</label>
-                      <p className="text-sm text-slate-400">Show games that need letters (Station Hunt). Turn on once your child is learning to read.</p>
+                      <label className="text-base font-medium">{t('Reading Games')}</label>
+                      <p className="text-sm text-slate-400">{t('Show games that need letters (Station Hunt). Turn on once your child is learning to read.')}</p>
                     </div>
                     <Button
                       variant={config.readingGames ? "default" : "outline"}
                       onClick={() => setConfig(c => ({ ...c, readingGames: !c.readingGames }))}
                     >
-                      {config.readingGames ? "On" : "Off"}
+                      {config.readingGames ? t("On") : t("Off")}
                     </Button>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
-                      <label className="text-base font-medium">Spoken Instructions</label>
-                      <p className="text-sm text-slate-400">Read each game's instructions aloud, for children who can't read yet.</p>
+                      <label className="text-base font-medium">{t('Spoken Instructions')}</label>
+                      <p className="text-sm text-slate-400">{t("Read each game's instructions aloud, for children who can't read yet.")}</p>
                     </div>
                     <Button
                       variant={config.voiceEnabled ? "default" : "outline"}
                       onClick={() => setConfig(c => ({ ...c, voiceEnabled: !c.voiceEnabled }))}
                     >
                       {config.voiceEnabled ? <Mic className="h-4 w-4 mr-2" /> : <MicOff className="h-4 w-4 mr-2" />}
-                      {config.voiceEnabled ? "On" : "Off"}
+                      {config.voiceEnabled ? t("On") : t("Off")}
                     </Button>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
-                      <label className="text-base font-medium">Full Screen Exercises</label>
-                      <p className="text-sm text-slate-400">Fill the whole screen when an exercise starts.</p>
+                      <label className="text-base font-medium">{t('Full Screen Exercises')}</label>
+                      <p className="text-sm text-slate-400">{t('Fill the whole screen when an exercise starts.')}</p>
                     </div>
                     <Button
                       variant={config.autoFullscreen ? "default" : "outline"}
                       onClick={() => setConfig(c => ({ ...c, autoFullscreen: !c.autoFullscreen }))}
                     >
                       {config.autoFullscreen ? <Maximize className="h-4 w-4 mr-2" /> : <Minimize className="h-4 w-4 mr-2" />}
-                      {config.autoFullscreen ? "On" : "Off"}
+                      {config.autoFullscreen ? t("On") : t("Off")}
                     </Button>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
-                      <label className="text-base font-medium">Anaglyph Mode (Red/Cyan)</label>
-                      <p className="text-sm text-slate-400">Enable if you have Red/Cyan glasses for dichoptic training. Pop-Out Pups needs the glasses, so it only appears while this is on.</p>
+                      <label className="text-base font-medium">{t('Anaglyph Mode (Red/Cyan)')}</label>
+                      <p className="text-sm text-slate-400">{t('Enable if you have Red/Cyan glasses for dichoptic training. Pop-Out Pups needs the glasses, so it only appears while this is on.')}</p>
                     </div>
                     <Button
                       variant={config.anaglyphMode ? "default" : "outline"}
                       onClick={() => setConfig(c => ({...c, anaglyphMode: !c.anaglyphMode}))}
                     >
-                      {config.anaglyphMode ? "Enabled" : "Disabled"}
+                      {config.anaglyphMode ? t("Enabled") : t("Disabled")}
                     </Button>
                   </div>
                   {config.anaglyphMode && (
@@ -2424,8 +2449,8 @@ export default function App() {
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <div className="space-y-0.5">
-                        <label className="text-base font-medium">Cartoon Cinema: Strong-Eye Picture</label>
-                        <p className="text-sm text-slate-400">How bright the scenery-colour eye's copy of the cartoon is. Lower pushes more of the work onto the weaker eye.</p>
+                        <label className="text-base font-medium">{t('Cartoon Cinema: Strong-Eye Picture')}</label>
+                        <p className="text-sm text-slate-400">{t("How bright the scenery-colour eye's copy of the cartoon is. Lower pushes more of the work onto the weaker eye.")}</p>
                       </div>
                       <span className="text-sm text-blue-400">{config.cinemaFellowLevel}%</span>
                     </div>
@@ -2441,15 +2466,13 @@ export default function App() {
                   <div className="space-y-4 pt-6">
                     <div className="flex justify-between gap-4">
                       <div className="space-y-0.5">
-                        <label className="text-base font-medium">Eye Angle Compensation</label>
+                        <label className="text-base font-medium">{t('Eye Angle Compensation')}</label>
                         <p className="text-sm text-slate-400">
-                          For Lion in the Cage, Fusion Stars and Pop-Out Pups. Set it to the angle the orthoptist measured
-                          (prism dioptres, near), or leave it at 0. Positive: eyes turn in (esotropia); negative: out.
-                          The two eyes' pictures are drawn that far apart so they can line up. Assumes red lens on the left eye.
+                          {t("For Lion in the Cage, Fusion Stars and Pop-Out Pups. Set it to the angle the orthoptist measured (prism dioptres, near), or leave it at 0. Positive: eyes turn in (esotropia); negative: out. The two eyes' pictures are drawn that far apart so they can line up. Assumes red lens on the left eye.")}
                         </p>
                       </div>
                       <span className="shrink-0 text-sm text-blue-400">
-                        {config.deviationPD > 0 ? `${config.deviationPD} PD in` : config.deviationPD < 0 ? `${-config.deviationPD} PD out` : '0'}
+                        {config.deviationPD > 0 ? t('{n} PD in', { n: config.deviationPD }) : config.deviationPD < 0 ? t('{n} PD out', { n: -config.deviationPD }) : '0'}
                       </span>
                     </div>
                     <Slider
@@ -2470,20 +2493,18 @@ export default function App() {
                 <Card className="bg-slate-900 border-slate-800">
                   <CardHeader>
                     <CardTitle className="text-slate-50 flex items-center gap-2">
-                      <Palette className="h-5 w-5 text-blue-400" /> Display Calibration
+                      <Palette className="h-5 w-5 text-blue-400" /> {t('Display Calibration')}
                     </CardTitle>
                     <CardDescription className="text-slate-400">
-                      Screens and glasses vary, so the textbook red/cyan pair ghosts on some
-                      combinations. Tune the colours until each eye sees as little of the other's
-                      image as possible. Stored on this device only — set it up once per device.
+                      {t("Screens and glasses vary, so the textbook red/cyan pair ghosts on some combinations. Tune the colours until each eye sees as little of the other's image as possible. Stored on this device only — set it up once per device.")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-base font-medium">Preview</label>
+                        <label className="text-base font-medium">{t('Preview')}</label>
                         <Button variant="outline" onClick={() => setCalibrationTest(true)}>
-                          <Maximize className="mr-2 h-4 w-4" /> Test full screen
+                          <Maximize className="mr-2 h-4 w-4" /> {t('Test full screen')}
                         </Button>
                       </div>
                       <div className="relative flex h-28 items-center justify-center gap-10 overflow-hidden rounded-xl border-4 border-slate-800 bg-black">
@@ -2502,17 +2523,13 @@ export default function App() {
                         <span className="relative text-4xl font-bold" style={{ color: renderConfig.anaglyphTarget }}>E</span>
                       </div>
                       <p className="text-sm text-slate-400">
-                        Wearing the glasses, cover one eye at a time. Through the lens over the
-                        training eye the train and letter should look bright while the line and
-                        stations nearly disappear; through the other lens, the opposite. Judge it
-                        with <strong className="text-slate-400">Test full screen</strong> — the bright
-                        settings page around this strip reaches both eyes and hides the difference.
+                        {t('Wearing the glasses, cover one eye at a time. Through the lens over the training eye the train and letter should look bright while the line and stations nearly disappear; through the other lens, the opposite. Judge it with Test full screen: the bright settings page around this strip reaches both eyes and hides the difference.')}
                       </p>
                     </div>
 
                     <div className="space-y-4">
                       <div className="flex justify-between">
-                        <label className="text-base font-medium">Target brightness</label>
+                        <label className="text-base font-medium">{t('Target brightness')}</label>
                         <span className="text-sm text-blue-400">{config.anaglyphTargetLevel}%</span>
                       </div>
                       <Slider
@@ -2524,14 +2541,13 @@ export default function App() {
                         }}
                       />
                       <p className="text-sm text-slate-400">
-                        Turn this down until the targets stop showing as grey outlines through the
-                        scenery lens. This is the strongest fix for ghosting.
+                        {t('Turn this down until the targets stop showing as grey outlines through the scenery lens. This is the strongest fix for ghosting.')}
                       </p>
                     </div>
 
                     <div className="space-y-4">
                       <div className="flex justify-between">
-                        <label className="text-base font-medium">Scenery brightness</label>
+                        <label className="text-base font-medium">{t('Scenery brightness')}</label>
                         <span className="text-sm text-blue-400">{config.anaglyphSceneLevel}%</span>
                       </div>
                       <Slider
@@ -2543,27 +2559,27 @@ export default function App() {
                         }}
                       />
                       <p className="text-sm text-slate-400">
-                        Lower this if the scenery bleeds through the target lens instead.
+                        {t('Lower this if the scenery bleeds through the target lens instead.')}
                       </p>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <ColorField
-                        label="Target colour"
-                        hint="Targets the training eye must find — red by default."
+                        label={t('Target colour')}
+                        hint={t('Targets the training eye must find — red by default.')}
                         value={config.anaglyphTarget}
                         onChange={(hex) => setConfig(c => ({ ...c, anaglyphTarget: hex }))}
                       />
                       <ColorField
-                        label="Scenery colour"
-                        hint="Lines, grids and background the other eye sees — cyan by default."
+                        label={t('Scenery colour')}
+                        hint={t('Lines, grids and background the other eye sees — cyan by default.')}
                         value={config.anaglyphScene}
                         onChange={(hex) => setConfig(c => ({ ...c, anaglyphScene: hex }))}
                       />
                     </div>
 
                     <div className="space-y-3">
-                      <label className="text-base font-medium">Starting points</label>
+                      <label className="text-base font-medium">{t('Starting points')}</label>
                       <div className="grid gap-2 sm:grid-cols-2">
                         {ANAGLYPH_PRESETS.map(preset => {
                           const active = config.anaglyphTarget === preset.target && config.anaglyphScene === preset.scene;
@@ -2578,8 +2594,8 @@ export default function App() {
                                 <span className="h-4 w-4 rounded-full" style={{ backgroundColor: preset.scene }} />
                               </span>
                               <span>
-                                <span className="block text-sm font-medium text-slate-100">{preset.name}</span>
-                                <span className="block text-sm text-slate-400">{preset.description}</span>
+                                <span className="block text-sm font-medium text-slate-100">{t(preset.name)}</span>
+                                <span className="block text-sm text-slate-400">{t(preset.description)}</span>
                               </span>
                             </button>
                           );
@@ -2592,7 +2608,7 @@ export default function App() {
                         variant="outline"
                         onClick={() => setConfig(c => ({ ...c, anaglyphTarget: c.anaglyphScene, anaglyphScene: c.anaglyphTarget }))}
                       >
-                        <ArrowLeftRight className="mr-2 h-4 w-4" /> Swap colours
+                        <ArrowLeftRight className="mr-2 h-4 w-4" /> {t('Swap colours')}
                       </Button>
                       <Button
                         variant="outline"
@@ -2604,13 +2620,11 @@ export default function App() {
                           anaglyphSceneLevel: 100,
                         }))}
                       >
-                        <RotateCcw className="mr-2 h-4 w-4" /> Reset to classic
+                        <RotateCcw className="mr-2 h-4 w-4" /> {t('Reset to classic')}
                       </Button>
                     </div>
                     <p className="text-sm text-slate-400">
-                      Swap the colours if the glasses put the red lens over the other eye. To reuse
-                      this calibration on another device, copy the hex values and brightness levels
-                      across.
+                      {t('Swap the colours if the glasses put the red lens over the other eye. To reuse this calibration on another device, copy the hex values and brightness levels across.')}
                     </p>
                   </CardContent>
                 </Card>
@@ -2618,7 +2632,7 @@ export default function App() {
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardHeader>
-                  <CardTitle className="text-slate-50">Profile Settings</CardTitle>
+                  <CardTitle className="text-slate-50">{t('Profile Settings')}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex gap-4">
@@ -2636,7 +2650,7 @@ export default function App() {
               </Card>
 
               <div className="text-sm text-slate-400 text-center italic">
-                Disclaimer: This application is a training aid and should be used in conjunction with professional medical advice and treatment plans.
+                {t('Disclaimer: This application is a training aid and should be used in conjunction with professional medical advice and treatment plans.')}
               </div>
             </motion.div>
           )}

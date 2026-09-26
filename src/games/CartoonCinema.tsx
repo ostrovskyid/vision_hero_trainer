@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { GameHud } from '../GameHud';
 import { playSound, scaleColor } from '../feedback';
 import { GameProps, StartOverlay, finishSession } from './common';
+import { t } from '../i18n';
 
 /**
  * Passive dichoptic viewing, the idea behind clinically tested cartoon-based
@@ -469,8 +470,8 @@ export const CartoonCinema = ({ config, onComplete }: GameProps) => {
     <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-xl border-4 border-slate-800 bg-black">
       {!started && (
         <StartOverlay
-          label="Start the Show"
-          hint={config.anaglyphMode ? 'Put on your 3D glasses, watch the cartoon and tap the stars!' : 'Watch the cartoon and tap the stars!'}
+          label={t('Start the Show')}
+          hint={t(config.anaglyphMode ? 'Put on your 3D glasses, watch the cartoon and tap the stars!' : 'Watch the cartoon and tap the stars!')}
           onStart={() => setStarted(true)}
         />
       )}
