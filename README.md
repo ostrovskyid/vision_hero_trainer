@@ -315,6 +315,33 @@ a sparkle hints at a difference after 15 seconds without a find.
   drawn over scenery (the mud on the car, the bus on the road) are added on top of it, so
   the scenery eye never sees a target-shaped hole.
 
+## Treatment plan and Patch Pal
+
+Amblyopia treatment runs for years and changes along the way: patching, sometimes surgery,
+then training the weaker eye, then both eyes together. **Treatment Plan** in Parent's Corner
+lets a parent match the app to the stage the eye doctor has set. Choosing a stage applies
+its settings once; everything stays adjustable, and the app never changes stage by itself.
+
+| Stage | What the app does |
+|-------|-------------------|
+| **Free play** | No restrictions (the default) |
+| **Before surgery** | One eye with the patch on: red/cyan mode off, comfort zone on, patch check before playing |
+| **Recovery** | Games and missions are paused behind a get-well screen; Patch Pal stays available |
+| **Weaker-eye training** | Like *Before surgery*; the comfort zone can be turned off if eye movement allows |
+| **Two eyes together** | Red/cyan mode on. Start only when the eye doctor or orthoptist agrees |
+| **Keeping the gains** | Shorter (1-minute) mission games after patching is reduced or stopped |
+
+- **Patch Pal** is a patch-time companion. A pirate timer runs on the wall clock, so it keeps
+  counting with the app closed, and is credited to the day the patch went on. It shows
+  today's time against the daily goal, the last seven days, and has ±15-minute buttons for
+  a forgotten timer. Reaching the goal earns one pirate sticker per day. A forgotten timer
+  is capped at 8 hours.
+- **Patch check.** In the one-eye stages, tapping a game or the daily mission while the
+  timer is off asks "Patch on, glasses on?" first. One tap starts the timer and the game.
+- **Comfort zone** keeps the left 22% of the play area empty, so targets never ask an eye
+  with limited outward movement (as in a sixth-nerve palsy or Duane syndrome) to look far
+  to the left. Ask the eye doctor whether it applies.
+
 ## Parent's Corner
 
 <img src="docs/screenshots/parents-corner.png" alt="The Parent's Corner settings screen" width="800">
@@ -324,6 +351,7 @@ rather than to the game:
 
 | Setting | What it does |
 |---------|--------------|
+| **Treatment plan** | Stage, comfort zone and daily patch goal (see above) |
 | **Difficulty** | `easy` / `medium` / `hard` presets for speed, target size and grid density |
 | **Movement speed** | How fast targets travel — lower it for younger children |
 | **Target size** | 20–100px; larger targets suit deeper amblyopia |
