@@ -335,6 +335,9 @@ export const RU: Record<string, string> = {
   'Summer Road Trip': 'Летнее путешествие',
 
   // --- Game tiles ---
+  'Checkpoint': 'Контрольный пункт',
+  'Peripheral Patrol': 'Периферийный патруль',
+  'Metro Memory': 'Маршрут метро',
   'Rocket Tracker': 'Ракета в небе',
   'Follow the flying rocket.': 'Следи за летящей ракетой.',
   'Foggy Flight': 'Полёт в тумане',
@@ -353,8 +356,6 @@ export const RU: Record<string, string> = {
   'Trace the line to its stop.': 'Проследи линию до станции.',
   'Railway Crossing': 'Переезд',
   'Tap trains, skip the cars.': 'Жми на поезда, машины пропускай.',
-  'Metro Memory': 'Маршрут метро',
-  'Repeat the lit-up route.': 'Повтори светящийся маршрут.',
   'Night Search': 'Ночной поиск',
   'Shine the torch, find the lost toy.': 'Посвети фонариком и найди игрушку.',
   'Sky Catch': 'Лови в небе',
@@ -477,10 +478,6 @@ export const RU: Record<string, string> = {
   'with your eyes only!': 'только глазами!',
   'Tap only the trains — let the cars pass!': 'Нажимай только на поезда — машины пропускай!',
   'Open the Crossing': 'Открыть переезд',
-  'Watch which stations light up, then tap them in the same order!': 'Смотри, какие станции загораются, и нажми на них в том же порядке!',
-  'Start the Route': 'В путь',
-  '👀 Watch the route...': '👀 Смотри на маршрут...',
-  '✋ Your turn! Repeat the route': '✋ Твоя очередь! Повтори маршрут',
 
   // --- Games ---
   'Open the Garage': 'Открыть гараж',

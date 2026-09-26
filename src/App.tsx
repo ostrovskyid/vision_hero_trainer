@@ -4,7 +4,7 @@ import {
   Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship,
   Trophy, Play, Settings, ChevronLeft, Volume2, VolumeX, Eye, Maximize, Minimize,
   Radar, CloudFog, ShieldAlert, Crosshair, Target,
-  TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw,
+  TrainFront, MapPin, Route, TramFront, Palette, ArrowLeftRight, RotateCcw,
   Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
   Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch,
   Waves, Orbit, Waypoints, Paintbrush, Layers, Cat, Sparkles, Flashlight, Flame
@@ -86,7 +86,6 @@ const GAME_TILES: {
   { mode: 'station', title: 'Station Hunt', description: 'Find the right station letter.', Icon: MapPin, iconClass: 'text-emerald-400', chipClass: 'bg-emerald-500/10', hoverClass: 'hover:border-emerald-500/60', barClass: 'bg-emerald-500', needsReading: true },
   { mode: 'navigator', title: 'Line Navigator', description: 'Trace the line to its stop.', Icon: Route, iconClass: 'text-indigo-400', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-500/60', barClass: 'bg-indigo-500' },
   { mode: 'crossing', title: 'Railway Crossing', description: 'Tap trains, skip the cars.', Icon: TramFront, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
-  { mode: 'memory', title: 'Metro Memory', description: 'Repeat the lit-up route.', Icon: Brain, iconClass: 'text-fuchsia-400', chipClass: 'bg-fuchsia-500/10', hoverClass: 'hover:border-fuchsia-500/60', barClass: 'bg-fuchsia-500' },
   { mode: 'nightsearch', title: 'Night Search', description: 'Shine the torch, find the lost toy.', Icon: Flashlight, iconClass: 'text-blue-300', chipClass: 'bg-blue-500/10', hoverClass: 'hover:border-blue-400/60', barClass: 'bg-blue-400', pup: 'police' },
   { mode: 'skycatch', title: 'Sky Catch', description: 'Fly under the falling treats.', Icon: Plane, iconClass: 'text-pink-300', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-400/60', barClass: 'bg-pink-400', pup: 'pilot' },
   { mode: 'firerescue', title: 'Fire Rescue', description: 'Spot every fire and spray it out.', Icon: Flame, iconClass: 'text-red-300', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-400/60', barClass: 'bg-red-400', pup: 'fire' },
@@ -111,9 +110,15 @@ const GAME_TILES: {
 ];
 
 // Retired games stay in the list so their past results remain in the history.
-const RETIRED_MODES: GameMode[] = ['checkpoint', 'peripheral'];
+const RETIRED_MODES: GameMode[] = ['checkpoint', 'peripheral', 'memory'];
 const ALL_MODES = [...GAME_TILES.map(t => t.mode), ...RETIRED_MODES];
-const GAME_TITLES = Object.fromEntries(GAME_TILES.map(t => [t.mode, t.title])) as Record<GameMode, string>;
+// Retired games keep a title, so their results still read well in the progress report.
+const GAME_TITLES = {
+  checkpoint: 'Checkpoint',
+  peripheral: 'Peripheral Patrol',
+  memory: 'Metro Memory',
+  ...Object.fromEntries(GAME_TILES.map(t => [t.mode, t.title])),
+} as Record<GameMode, string>;
 
 /** The skill badge shown above each exercise. */
 const SKILL_LABELS: Record<GameMode, string> = {
@@ -1129,157 +1134,6 @@ const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplet
   );
 };
 
-const MEMORY_STATIONS = [
-  { x: 18, y: 28, color: '#22c55e' },
-  { x: 50, y: 16, color: '#eab308' },
-  { x: 82, y: 28, color: '#ef4444' },
-  { x: 82, y: 72, color: '#3b82f6' },
-  { x: 50, y: 84, color: '#a855f7' },
-  { x: 18, y: 72, color: '#f97316' },
-];
-
-const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(config.duration);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [phase, setPhase] = useState<'showing' | 'input'>('showing');
-  const [sequence, setSequence] = useState<number[]>([]);
-  const [inputIndex, setInputIndex] = useState(0);
-  const [litStation, setLitStation] = useState<number | null>(null);
-  const [shake, setShake] = useState(false);
-  const timeoutsRef = useRef<NodeJS.Timeout[]>([]);
-
-  const baseLength = config.difficulty === 'hard' ? 4 : (config.difficulty === 'medium' ? 3 : 2);
-  const stepMs = config.difficulty === 'hard' ? 550 : 750;
-
-  const clearTimeouts = () => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
-  };
-
-  const startRound = (length: number) => {
-    clearTimeouts();
-    const seq: number[] = [];
-    for (let i = 0; i < length; i++) {
-      let next = Math.floor(Math.random() * MEMORY_STATIONS.length);
-      // Avoid immediate repeats so every step is a visible eye jump
-      while (seq.length > 0 && next === seq[seq.length - 1]) {
-        next = Math.floor(Math.random() * MEMORY_STATIONS.length);
-      }
-      seq.push(next);
-    }
-    setSequence(seq);
-    setInputIndex(0);
-    setPhase('showing');
-    setLitStation(null);
-    seq.forEach((stationIdx, i) => {
-      timeoutsRef.current.push(setTimeout(() => setLitStation(stationIdx), 400 + i * stepMs));
-      timeoutsRef.current.push(setTimeout(() => setLitStation(null), 400 + i * stepMs + stepMs * 0.7));
-    });
-    timeoutsRef.current.push(setTimeout(() => setPhase('input'), 400 + seq.length * stepMs));
-  };
-
-  useEffect(() => {
-    if (isPlaying && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-      if (sequence.length === 0) startRound(baseLength);
-      return () => clearInterval(timer);
-    } else if (timeLeft === 0 && isPlaying) {
-      setIsPlaying(false);
-      clearTimeouts();
-      playSound('complete', config.soundEnabled);
-      onComplete({ score, timeSpent: config.duration, accuracy: score / 10, date: new Date().toISOString() });
-      confetti({ particleCount: 250, spread: 160, origin: { y: 0.5 }, colors: ['#fbbf24', '#3b82f6', '#10b981', '#ef4444'] });
-    }
-  }, [isPlaying, timeLeft, sequence]);
-
-  useEffect(() => clearTimeouts, []);
-
-  const handleStationTap = (stationIdx: number) => {
-    if (!isPlaying || phase !== 'input') return;
-    if (stationIdx === sequence[inputIndex]) {
-      playSound('hit', config.soundEnabled);
-      setLitStation(stationIdx);
-      timeoutsRef.current.push(setTimeout(() => setLitStation(null), 250));
-      if (inputIndex + 1 >= sequence.length) {
-        setScore(s => s + 1);
-        setPhase('showing');
-        // Sequence grows by one after each success
-        timeoutsRef.current.push(setTimeout(() => startRound(sequence.length + 1), 700));
-      } else {
-        setInputIndex(i => i + 1);
-      }
-    } else {
-      playSound('miss', config.soundEnabled);
-      setShake(true);
-      setTimeout(() => setShake(false), 400);
-      setPhase('showing');
-      timeoutsRef.current.push(setTimeout(() => startRound(baseLength), 700));
-    }
-  };
-
-  return (
-    <motion.div
-      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800"
-      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
-      transition={{ duration: 0.4 }}
-    >
-      {!isPlaying && timeLeft === config.duration && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
-          <div className="flex flex-col items-center gap-4">
-            <p className="text-lg text-slate-300 font-medium">{t('Watch which stations light up, then tap them in the same order!')}</p>
-            <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-              <Play className="mr-2 h-6 w-6" /> {t('Start the Route')}
-            </Button>
-          </div>
-        </div>
-      )}
-
-      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
-
-      {isPlaying && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
-          <span className="text-sm font-bold text-slate-300">
-            {t(phase === 'showing' ? '👀 Watch the route...' : '✋ Your turn! Repeat the route')}
-          </span>
-        </div>
-      )}
-
-      <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <polygon
-          points={MEMORY_STATIONS.map(s => `${s.x},${s.y}`).join(' ')}
-          fill="none"
-          stroke={config.anaglyphMode ? config.anaglyphScene : '#334155'}
-          strokeWidth={1}
-          strokeLinejoin="round"
-        />
-      </svg>
-
-      {MEMORY_STATIONS.map((st, i) => {
-        const lit = litStation === i;
-        const color = config.anaglyphMode ? config.anaglyphTarget : st.color;
-        return (
-          <motion.button
-            key={i}
-            whileHover={phase === 'input' ? { scale: 1.1 } : {}}
-            whileTap={phase === 'input' ? { scale: 0.9 } : {}}
-            onClick={() => handleStationTap(i)}
-            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-4 transition-all duration-150"
-            style={{
-              left: `${st.x}%`, top: `${st.y}%`,
-              width: config.size * 1.5, height: config.size * 1.5,
-              borderColor: color,
-              backgroundColor: lit ? color : '#0f172a',
-              boxShadow: lit ? `0 0 30px ${color}` : 'none',
-              cursor: phase === 'input' ? 'pointer' : 'default'
-            }}
-          />
-        );
-      })}
-    </motion.div>
-  );
-};
-
 const ColorField = ({ label, hint, value, onChange }: {
   label: string;
   hint: string;
@@ -1956,7 +1810,6 @@ export default function App() {
               {selectedMode === 'station' && <StationHunt config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'navigator' && <LineNavigator config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'crossing' && <RailwayCrossing config={gameConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'memory' && <MetroMemory config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'shapes' && <ShapeGarage config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'popout' && <PopOutPups config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'cinema' && <CartoonCinema config={gameConfig} onComplete={handleGameComplete} />}
