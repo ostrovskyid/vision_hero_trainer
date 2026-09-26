@@ -1,5 +1,6 @@
 export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator' | 'crossing' | 'memory' | 'shapes' | 'popout' | 'cinema'
-  | 'carriages' | 'dots' | 'zoo' | 'bus' | 'hangar' | 'carwash' | 'differences';
+  | 'carriages' | 'dots' | 'zoo' | 'bus' | 'hangar' | 'carwash' | 'differences'
+  | 'stripes' | 'docking' | 'maze' | 'paint' | 'pexeso';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 /**

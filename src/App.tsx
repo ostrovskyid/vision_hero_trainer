@@ -6,7 +6,8 @@ import {
   Radar, CloudFog, ShieldAlert, Crosshair, Target,
   TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw,
   Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
-  Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch
+  Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch,
+  Waves, Orbit, Waypoints, Paintbrush, Layers
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -35,6 +36,11 @@ import { BusDriver } from './games/BusDriver';
 import { HangarMatch } from './games/HangarMatch';
 import { CarWash } from './games/CarWash';
 import { SpotDifference } from './games/SpotDifference';
+import { ZebraStripes } from './games/ZebraStripes';
+import { RocketDocking } from './games/RocketDocking';
+import { RailMaze } from './games/RailMaze';
+import { PaintVehicle } from './games/PaintVehicle';
+import { VehiclePexeso } from './games/VehiclePexeso';
 import { AnaglyphFilters } from './games/common';
 import { scaleColor, withAlpha, playSound, speak, stopSpeaking } from './feedback';
 
@@ -77,6 +83,11 @@ const GAME_TILES: {
   { mode: 'hangar', title: 'Hangar Match', description: 'Park each plane by its shadow.', Icon: Warehouse, iconClass: 'text-violet-400', chipClass: 'bg-violet-500/10', hoverClass: 'hover:border-violet-500/60', barClass: 'bg-violet-500' },
   { mode: 'carwash', title: 'Car Wash', description: 'Rub off every mud spot.', Icon: Droplets, iconClass: 'text-cyan-400', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-500/60', barClass: 'bg-cyan-500' },
   { mode: 'differences', title: 'Spot the Difference', description: 'What changed in the zoo?', Icon: ScanSearch, iconClass: 'text-orange-400', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-500/60', barClass: 'bg-orange-500' },
+  { mode: 'stripes', title: 'Zebra Stripes', description: 'Find the zebra in the stripes.', Icon: Waves, iconClass: 'text-slate-200', chipClass: 'bg-slate-500/10', hoverClass: 'hover:border-slate-400/60', barClass: 'bg-slate-400' },
+  { mode: 'docking', title: 'Rocket Docking', description: 'Tap right inside the ring.', Icon: Orbit, iconClass: 'text-cyan-300', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-400/60', barClass: 'bg-cyan-400' },
+  { mode: 'maze', title: 'Rail Maze', description: 'Drive the train to the station.', Icon: Waypoints, iconClass: 'text-amber-300', chipClass: 'bg-amber-500/10', hoverClass: 'hover:border-amber-400/60', barClass: 'bg-amber-400' },
+  { mode: 'paint', title: 'Paint the Fire Truck', description: 'Colour every part.', Icon: Paintbrush, iconClass: 'text-red-300', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-400/60', barClass: 'bg-red-400' },
+  { mode: 'pexeso', title: 'Vehicle Pexeso', description: 'Find the matching pairs.', Icon: Layers, iconClass: 'text-indigo-300', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-400/60', barClass: 'bg-indigo-400' },
 ];
 
 const ALL_MODES = GAME_TILES.map(t => t.mode);
@@ -105,6 +116,11 @@ const SKILL_LABELS: Record<GameMode, string> = {
   hangar: 'Shape Discrimination',
   carwash: 'Visual Scanning',
   differences: 'Visual Comparison',
+  stripes: 'Contrast Perception',
+  docking: 'Localisation',
+  maze: 'Visual Tracing',
+  paint: 'Fine Eye-Hand Control',
+  pexeso: 'Visual Memory & Detail',
 };
 
 /**
@@ -134,6 +150,11 @@ const GAME_INSTRUCTIONS: Record<GameMode, string> = {
   hangar: 'Drag each plane into the hangar with its shadow!',
   carwash: 'Rub off all the mud!',
   differences: 'The two pictures are nearly the same. Find what is different!',
+  stripes: 'A zebra is hiding in the stripes. Where is it?',
+  docking: 'Tap right in the middle of the docking ring!',
+  maze: 'Drive the train to the station. Stay on the tracks!',
+  paint: 'Pick a colour, then tap a part to paint it!',
+  pexeso: 'Turn two cards. Can you find the pairs?',
 };
 
 /** Local calendar day, so the daily mission resets at the child's midnight. */
@@ -2093,6 +2114,11 @@ export default function App() {
               {selectedMode === 'hangar' && <HangarMatch config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'carwash' && <CarWash config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'differences' && <SpotDifference config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'stripes' && <ZebraStripes config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'docking' && <RocketDocking config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'maze' && <RailMaze config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'paint' && <PaintVehicle config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'pexeso' && <VehiclePexeso config={gameConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}
