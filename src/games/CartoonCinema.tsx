@@ -87,6 +87,12 @@ const drawCity = (ctx: CanvasRenderingContext2D, w: number, h: number, offset: n
   }
 };
 
+/** `roundRect` only arrived in Safari 16; fall back to square corners before that. */
+const roundedRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
+  if (typeof ctx.roundRect === 'function') ctx.roundRect(x, y, w, h, r);
+  else ctx.rect(x, y, w, h);
+};
+
 const drawRocketScene = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number, paint: Paint) => {
   drawSky(ctx, w, h, t, paint, '#0b1030');
   const u = Math.min(w, h);
@@ -202,7 +208,7 @@ const drawMetroScene = (ctx: CanvasRenderingContext2D, w: number, h: number, t: 
     const cx = x + i * (carW + 6);
     ctx.fillStyle = paint('#ef4444');
     ctx.beginPath();
-    ctx.roundRect(cx, trackY - carH - 8, carW, carH, 10);
+    roundedRect(ctx, cx, trackY - carH - 8, carW, carH, 10);
     ctx.fill();
     ctx.fillStyle = paint('#bae6fd');
     for (let j = 0; j < 3; j++) ctx.fillRect(cx + 10 + j * (carW - 20) / 3, trackY - carH, (carW - 20) / 3 - 8, carH * 0.35);
@@ -267,8 +273,10 @@ const drawPlaneScene = (ctx: CanvasRenderingContext2D, w: number, h: number, t: 
 const SCENES = [drawRocketScene, drawMetroScene, drawPlaneScene];
 
 const drawScene = (ctx: CanvasRenderingContext2D, w: number, h: number, t: number, paint: Paint) => {
-  const index = Math.floor(t / SCENE_SECONDS) % SCENES.length;
-  const local = t % SCENE_SECONDS;
+  // Clamp: a negative clock would index SCENES[-1] and stop the show.
+  const time = Math.max(0, t);
+  const index = Math.floor(time / SCENE_SECONDS) % SCENES.length;
+  const local = time % SCENE_SECONDS;
   SCENES[index](ctx, w, h, local, paint);
   // Fade through black between scenes.
   const edge = Math.min(local, SCENE_SECONDS - local);
@@ -348,10 +356,13 @@ export const CartoonCinema = ({ config, onComplete }: GameProps) => {
     let lastHud = 0;
     let frame = 0;
     let done = false;
+    let drawFailed = false;
 
     const tick = (now: number) => {
       // Cap the step so a backgrounded tab does not skip the show forward.
-      const dt = Math.min(0.1, (now - last) / 1000);
+      // Frame timestamps can be a few ms earlier than the performance.now()
+      // read when the effect started, so never let the clock step backwards.
+      const dt = Math.max(0, Math.min(0.1, (now - last) / 1000));
       last = now;
       clockRef.current += dt;
       const t = clockRef.current;
@@ -366,47 +377,54 @@ export const CartoonCinema = ({ config, onComplete }: GameProps) => {
         nextStarAt = t + 6 + Math.random() * 8;
       }
 
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      if (cfg.anaglyphMode) {
-        ctxA.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctxB.setTransform(dpr, 0, 0, dpr, 0, 0);
-        drawScene(ctxA, width, height, t, paintFor(cfg.anaglyphTarget, 1));
-        drawScene(ctxB, width, height, t, paintFor(cfg.anaglyphScene, cfg.cinemaFellowLevel / 100));
-        // Soft drifting holes in the strong eye's picture.
-        ctxB.globalCompositeOperation = 'destination-out';
-        const r = Math.min(width, height) * 0.22;
-        for (let i = 0; i < 3; i++) {
-          const bx = width * (0.5 + 0.38 * Math.sin(t * 0.13 + i * 2.1));
-          const by = height * (0.5 + 0.34 * Math.cos(t * 0.11 + i * 1.7));
-          const g = ctxB.createRadialGradient(bx, by, 0, bx, by, r);
-          g.addColorStop(0, 'rgba(0,0,0,1)');
-          g.addColorStop(0.6, 'rgba(0,0,0,0.85)');
-          g.addColorStop(1, 'rgba(0,0,0,0)');
-          ctxB.fillStyle = g;
-          ctxB.fillRect(bx - r, by - r, r * 2, r * 2);
-        }
-        ctxB.globalCompositeOperation = 'source-over';
-
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.fillStyle = '#000';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(layerA, 0, 0);
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.drawImage(layerB, 0, 0);
-        ctx.globalCompositeOperation = 'source-over';
+      // One bad frame must not freeze the show: log it once and keep going,
+      // so the clock and the progress bar still advance.
+      try {
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      } else {
-        drawScene(ctx, width, height, t, fullColour);
-      }
+        if (cfg.anaglyphMode) {
+          ctxA.setTransform(dpr, 0, 0, dpr, 0, 0);
+          ctxB.setTransform(dpr, 0, 0, dpr, 0, 0);
+          drawScene(ctxA, width, height, t, paintFor(cfg.anaglyphTarget, 1));
+          drawScene(ctxB, width, height, t, paintFor(cfg.anaglyphScene, cfg.cinemaFellowLevel / 100));
+          // Soft drifting holes in the strong eye's picture.
+          ctxB.globalCompositeOperation = 'destination-out';
+          const r = Math.min(width, height) * 0.22;
+          for (let i = 0; i < 3; i++) {
+            const bx = width * (0.5 + 0.38 * Math.sin(t * 0.13 + i * 2.1));
+            const by = height * (0.5 + 0.34 * Math.cos(t * 0.11 + i * 1.7));
+            const g = ctxB.createRadialGradient(bx, by, 0, bx, by, r);
+            g.addColorStop(0, 'rgba(0,0,0,1)');
+            g.addColorStop(0.6, 'rgba(0,0,0,0.85)');
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctxB.fillStyle = g;
+            ctxB.fillRect(bx - r, by - r, r * 2, r * 2);
+          }
+          ctxB.globalCompositeOperation = 'source-over';
 
-      const star = starRef.current;
-      if (star) {
-        const age = t - star.born;
-        const pop = Math.min(1, age * 3);
-        const r = Math.max(28, cfg.size * 0.8) * pop * (1 + 0.12 * Math.sin(age * 6));
-        // In anaglyph mode only the weaker eye can see the star.
-        drawStar(ctx, star.x * width, star.y * height, r, cfg.anaglyphMode ? cfg.anaglyphTarget : '#facc15');
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(layerA, 0, 0);
+          ctx.globalCompositeOperation = 'lighter';
+          ctx.drawImage(layerB, 0, 0);
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        } else {
+          drawScene(ctx, width, height, t, fullColour);
+        }
+
+        const star = starRef.current;
+        if (star) {
+          const age = t - star.born;
+          const pop = Math.min(1, age * 3);
+          const r = Math.max(28, cfg.size * 0.8) * pop * (1 + 0.12 * Math.sin(age * 6));
+          // In anaglyph mode only the weaker eye can see the star.
+          drawStar(ctx, star.x * width, star.y * height, r, cfg.anaglyphMode ? cfg.anaglyphTarget : '#facc15');
+        }
+      } catch (err) {
+        if (!drawFailed) console.error('Cartoon Cinema frame failed', err);
+        drawFailed = true;
       }
 
       const left = Math.max(0, cfg.duration - t);
