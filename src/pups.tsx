@@ -9,12 +9,18 @@ import { t, getLang } from './i18n';
  * pups they already love without the app itself carrying anyone's trademark.
  */
 
-export type PupRole = 'police' | 'pilot' | 'fire';
+export type PupRole = keyof GameConfig['pupNames'];
+
+export const PUP_ROLES: PupRole[] = ['police', 'pilot', 'fire', 'builder', 'recycle', 'snow', 'water'];
 
 export const DEFAULT_PUP_NAMES: Record<PupRole, string> = {
   police: 'Police Pup',
   pilot: 'Pilot Pup',
   fire: 'Fire Pup',
+  builder: 'Builder Pup',
+  recycle: 'Recycling Pup',
+  snow: 'Snow Pup',
+  water: 'Water Pup',
 };
 
 export const pupName = (config: GameConfig, role: PupRole) =>
@@ -35,6 +41,10 @@ const LOOKS: Record<PupRole, { fur: string; ear: string; hat: string; badge: str
   police: { fur: '#a16207', ear: '#78350f', hat: '#1d4ed8', badge: '#facc15' },
   pilot: { fur: '#e7c9a0', ear: '#b88a5a', hat: '#ec4899', badge: '#fde68a' },
   fire: { fur: '#f8fafc', ear: '#1e293b', hat: '#dc2626', badge: '#facc15' },
+  builder: { fur: '#c8a26b', ear: '#8a6a3f', hat: '#facc15', badge: '#f97316' },
+  recycle: { fur: '#9ca3af', ear: '#6b7280', hat: '#16a34a', badge: '#bbf7d0' },
+  snow: { fur: '#e2e8f0', ear: '#64748b', hat: '#7c3aed', badge: '#e0f2fe' },
+  water: { fur: '#7c4a2d', ear: '#4a2c1a', hat: '#f97316', badge: '#38bdf8' },
 };
 
 /** A pup's head with its job's hat and badge. Filled shapes, so it tints cleanly for red/cyan mode. */
@@ -78,6 +88,39 @@ export const RescuePup = ({ role, size, style }: { role: PupRole; size: number; 
           <path d="M44 32 H56" stroke="#9d174d" strokeWidth="3" />
         </>
       )}
+      {role === 'builder' && (
+        <>
+          {/* Hard hat with a stripe and a brim. */}
+          <path d="M20 36 Q20 8 50 8 Q80 8 80 36 Z" fill={c.hat} />
+          <rect x="46" y="8" width="8" height="28" fill={c.badge} />
+          <rect x="12" y="33" width="76" height="8" rx="4" fill={c.hat} />
+        </>
+      )}
+      {role === 'recycle' && (
+        <>
+          {/* Cap with a recycling ring. */}
+          <path d="M18 38 Q50 4 82 38 Z" fill={c.hat} />
+          <rect x="14" y="34" width="72" height="7" rx="3.5" fill="#15803d" />
+          <circle cx="50" cy="24" r="8" fill="none" stroke={c.badge} strokeWidth="3" strokeDasharray="10 4" />
+        </>
+      )}
+      {role === 'snow' && (
+        <>
+          {/* Woolly hat with a pompom and a snowflake. */}
+          <path d="M18 38 Q18 10 50 10 Q82 10 82 38 Z" fill={c.hat} />
+          <rect x="16" y="32" width="68" height="9" rx="4.5" fill="#a78bfa" />
+          <circle cx="50" cy="8" r="7" fill={c.badge} />
+          <path d="M50 16 V30 M44 19 L56 27 M56 19 L44 27" stroke={c.badge} strokeWidth="2.5" strokeLinecap="round" />
+        </>
+      )}
+      {role === 'water' && (
+        <>
+          {/* Cap with a wave. */}
+          <path d="M18 38 Q50 4 82 38 Z" fill={c.hat} />
+          <rect x="14" y="34" width="72" height="7" rx="3.5" fill="#c2410c" />
+          <path d="M36 26 Q41 20 46 26 T56 26 T66 26" fill="none" stroke={c.badge} strokeWidth="3.5" strokeLinecap="round" />
+        </>
+      )}
       {role === 'fire' && (
         <>
           <path d="M16 38 Q50 -2 84 38 L90 42 H10 Z" fill={c.hat} />
@@ -90,4 +133,4 @@ export const RescuePup = ({ role, size, style }: { role: PupRole; size: number; 
 
 /** Fills {police}, {pilot} and {fire} in a sentence with the pups' names. */
 export const withPupNames = (text: string, config: GameConfig) =>
-  text.replace(/\{(police|pilot|fire)\}/g, (_, role: PupRole) => pupName(config, role));
+  text.replace(/\{(police|pilot|fire|builder|recycle|snow|water)\}/g, (_, role: PupRole) => pupName(config, role));

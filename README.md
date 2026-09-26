@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Thirty short exercises themed around vehicles, metro maps, rockets, rescue pups and
+Thirty-four short exercises themed around vehicles, metro maps, rockets, rescue pups and
 the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,11 +34,11 @@ points, and every round finishes with confetti.
 
 ## Highlights
 
-- **Thirty exercises**, each training a different visual skill — including a 3D depth game
+- **Thirty-four exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
   sticker for the season's album
-- **Rescue pups** — four games starring original police, pilot and fire pups that a parent
+- **Rescue pups** — eight games starring seven original rescue pups that a parent
   can name after the child's favourites (stored on the device only)
 - **Treatment stages and Patch Pal** — the app follows the stage the eye doctor has set
   (weaker-eye training, recovery, two eyes together, keeping the gains),
@@ -410,6 +410,51 @@ both eyes" instead of marking it wrong. **Glasses only.**
 <td width="50%" valign="top">
 
 </td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/crane-tower.png" alt="Crane Tower" width="100%">
+
+### 🏗️ Crane Tower
+**Pursuit and timing** — a block swings to and fro on the builder pup's crane; tap to drop
+it onto the tower. The eyes follow the swinging block and the tap has to come at the right
+moment. A missed block just tumbles away; a finished tower gets a cheer and a new one starts.
+Harder levels swing faster, with narrower blocks and a taller tower.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/recycling-sort.png" alt="Recycling Sort" width="100%">
+
+### ♻️ Recycling Sort
+**Eye-hand control and shape** — rubbish arrives on the recycling pup's belt; drag each
+piece into the right bin: green for glass, blue for paper, yellow for plastic, like the
+bins at home. Easy uses two bins. A tap on a bin works too.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/snowflake-match.png" alt="Snowflake Match" width="100%">
+
+### ❄️ Snowflake Match
+**Fine detail** — the snow pup holds up a snowflake; find its twin among flakes drifting in
+the sky. The flakes differ only in small details (side branches, tips, centre): two
+details on easy, one on harder levels, where the flakes are also smaller.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/bubble-rescue.png" alt="Bubble Rescue" width="100%">
+
+### 🐢 Bubble Rescue
+**Pursuit and discrimination** — bubbles rise and sway from the sea floor, each carrying a
+sea creature. Pop only the ones with a lost baby turtle and let the others float away.
+Harder levels send more, smaller bubbles with more sway.
+
+</td>
 </tr>
 </table>
 
@@ -432,8 +477,9 @@ both eyes" instead of marking it wrong. **Glasses only.**
 
 ## Rescue pups
 
-Four games star original rescue pups: a police pup (Night Search, Lookout), a pilot pup
-(Sky Catch) and a fire pup (Fire Rescue). In **Parent's Corner → Rescue Pups** a parent can
+Eight games star original rescue pups: a police pup (Night Search, Lookout), a pilot pup
+(Sky Catch), a fire pup (Fire Rescue), a builder pup (Crane Tower), a recycling pup
+(Recycling Sort), a snow pup (Snowflake Match) and a water pup (Bubble Rescue). In **Parent's Corner → Rescue Pups** a parent can
 give them the names the child uses. The names appear in the game titles and spoken
 instructions, and are stored only on that device, so the public app carries no one else's
 characters or trademarks.
@@ -540,7 +586,7 @@ rather than to the game:
 | Setting | What it does |
 |---------|--------------|
 | **Treatment plan** | Stage and daily patch goal (see above) |
-| **Rescue Pups** | Names for the police, pilot and fire pups, stored on this device only |
+| **Rescue Pups** | Names for the seven rescue pups, stored on this device only |
 | **Reading games** | Show games that need letters (Station Hunt); off by default |
 | **Picture check / Backup / Report** | Monthly picture check, backup file and progress report (see above) |
 | **Difficulty** | `easy` / `medium` / `hard` presets for speed, target size and grid density |

@@ -2,7 +2,8 @@ export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'periph
   | 'carriages' | 'dots' | 'zoo' | 'bus' | 'hangar' | 'carwash' | 'differences'
   | 'stripes' | 'docking' | 'maze' | 'paint' | 'pexeso'
   | 'cage' | 'fusion'
-  | 'nightsearch' | 'skycatch' | 'firerescue' | 'lookout';
+  | 'nightsearch' | 'skycatch' | 'firerescue' | 'lookout'
+  | 'crane' | 'recycle' | 'snowflakes' | 'bubbles';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Lang = 'en' | 'ru';
 
@@ -106,7 +107,7 @@ export interface GameConfig {
    */
   deviationPD: number;
   /** Names a parent gives the rescue pups, stored only on this device. */
-  pupNames: { police: string; pilot: string; fire: string };
+  pupNames: { police: string; pilot: string; fire: string; builder: string; recycle: string; snow: string; water: string };
   /** Show games that need reading letters (for when the child starts reading). */
   readingGames: boolean;
   /** Interface and speech language. */
