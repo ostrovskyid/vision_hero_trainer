@@ -7,7 +7,7 @@ import {
   TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw,
   Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
   Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch,
-  Waves, Orbit, Waypoints, Paintbrush, Layers, Cat, Sparkles
+  Waves, Orbit, Waypoints, Paintbrush, Layers, Cat, Sparkles, Flashlight, Flame
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -46,6 +46,11 @@ import { PaintVehicle } from './games/PaintVehicle';
 import { VehiclePexeso } from './games/VehiclePexeso';
 import { LionCage } from './games/LionCage';
 import { FusionStars } from './games/FusionStars';
+import { NightSearch } from './games/NightSearch';
+import { SkyCatch } from './games/SkyCatch';
+import { FireRescue } from './games/FireRescue';
+import { LookoutAlert } from './games/LookoutAlert';
+import { PupRole, pupName, possessive, withPupNames, RescuePup, DEFAULT_PUP_NAMES } from './pups';
 import { AnaglyphFilters } from './games/common';
 import { scaleColor, withAlpha, playSound, speak, stopSpeaking } from './feedback';
 
@@ -65,19 +70,25 @@ const GAME_TILES: {
   barClass: string;
   /** Only makes sense with red/cyan glasses, so hidden when anaglyph mode is off. */
   requiresAnaglyph?: boolean;
+  /** Needs letters; hidden until a parent turns on reading games. */
+  needsReading?: boolean;
+  /** A rescue-pup game: the title is prefixed with this pup's name. */
+  pup?: PupRole;
 }[] = [
   { mode: 'tracking', title: 'Rocket Tracker', description: 'Follow the flying rocket.', Icon: Rocket, iconClass: 'text-blue-400', chipClass: 'bg-blue-500/10', hoverClass: 'hover:border-blue-500/60', barClass: 'bg-blue-500' },
   { mode: 'contrast', title: 'Foggy Flight', description: 'Find planes in the fog.', Icon: Plane, iconClass: 'text-purple-400', chipClass: 'bg-purple-500/10', hoverClass: 'hover:border-purple-500/60', barClass: 'bg-purple-500' },
   { mode: 'detail', title: 'Traffic Jam', description: 'Spot the odd one out.', Icon: Car, iconClass: 'text-orange-400', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-500/60', barClass: 'bg-orange-500' },
   { mode: 'saccades', title: 'Speedway Saccades', description: 'Catch the jumping car.', Icon: Train, iconClass: 'text-red-400', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-500/60', barClass: 'bg-red-500' },
-  { mode: 'peripheral', title: 'Peripheral Patrol', description: 'Catch targets at the edges.', Icon: Radar, iconClass: 'text-green-400', chipClass: 'bg-green-500/10', hoverClass: 'hover:border-green-500/60', barClass: 'bg-green-500' },
   { mode: 'spotter', title: 'Foggy Spotter', description: 'Find the faded shape.', Icon: CloudFog, iconClass: 'text-yellow-400', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-500/60', barClass: 'bg-yellow-500' },
-  { mode: 'checkpoint', title: 'Checkpoint', description: 'Tap the matching vehicle.', Icon: ShieldAlert, iconClass: 'text-cyan-400', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-500/60', barClass: 'bg-cyan-500' },
   { mode: 'metro', title: 'Metro Tracker', description: 'Follow the metro train.', Icon: TrainFront, iconClass: 'text-rose-400', chipClass: 'bg-rose-500/10', hoverClass: 'hover:border-rose-500/60', barClass: 'bg-rose-500' },
-  { mode: 'station', title: 'Station Hunt', description: 'Find the right station letter.', Icon: MapPin, iconClass: 'text-emerald-400', chipClass: 'bg-emerald-500/10', hoverClass: 'hover:border-emerald-500/60', barClass: 'bg-emerald-500' },
+  { mode: 'station', title: 'Station Hunt', description: 'Find the right station letter.', Icon: MapPin, iconClass: 'text-emerald-400', chipClass: 'bg-emerald-500/10', hoverClass: 'hover:border-emerald-500/60', barClass: 'bg-emerald-500', needsReading: true },
   { mode: 'navigator', title: 'Line Navigator', description: 'Trace the line to its stop.', Icon: Route, iconClass: 'text-indigo-400', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-500/60', barClass: 'bg-indigo-500' },
   { mode: 'crossing', title: 'Railway Crossing', description: 'Tap trains, skip the cars.', Icon: TramFront, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
   { mode: 'memory', title: 'Metro Memory', description: 'Repeat the lit-up route.', Icon: Brain, iconClass: 'text-fuchsia-400', chipClass: 'bg-fuchsia-500/10', hoverClass: 'hover:border-fuchsia-500/60', barClass: 'bg-fuchsia-500' },
+  { mode: 'nightsearch', title: 'Night Search', description: 'Shine the torch, find the lost toy.', Icon: Flashlight, iconClass: 'text-blue-300', chipClass: 'bg-blue-500/10', hoverClass: 'hover:border-blue-400/60', barClass: 'bg-blue-400', pup: 'police' },
+  { mode: 'skycatch', title: 'Sky Catch', description: 'Fly under the falling treats.', Icon: Plane, iconClass: 'text-pink-300', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-400/60', barClass: 'bg-pink-400', pup: 'pilot' },
+  { mode: 'firerescue', title: 'Fire Rescue', description: 'Spot every fire and spray it out.', Icon: Flame, iconClass: 'text-red-300', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-400/60', barClass: 'bg-red-400', pup: 'fire' },
+  { mode: 'lookout', title: 'Lookout', description: 'Eyes on the pup, spot the side lights.', Icon: Radar, iconClass: 'text-green-400', chipClass: 'bg-green-500/10', hoverClass: 'hover:border-green-500/60', barClass: 'bg-green-500', pup: 'police' },
   { mode: 'shapes', title: 'Shape Garage', description: 'Find the wheel with the same shape.', Icon: Shapes, iconClass: 'text-amber-400', chipClass: 'bg-amber-500/10', hoverClass: 'hover:border-amber-500/60', barClass: 'bg-amber-500' },
   { mode: 'popout', title: 'Pop-Out Pups', description: 'Tap the pup that floats out.', Icon: Dog, iconClass: 'text-pink-400', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-500/60', barClass: 'bg-pink-500', requiresAnaglyph: true },
   { mode: 'cinema', title: 'Cartoon Cinema', description: 'Watch the show, tap the stars.', Icon: Clapperboard, iconClass: 'text-teal-400', chipClass: 'bg-teal-500/10', hoverClass: 'hover:border-teal-500/60', barClass: 'bg-teal-500' },
@@ -97,7 +108,9 @@ const GAME_TILES: {
   { mode: 'pexeso', title: 'Vehicle Pexeso', description: 'Find the matching pairs.', Icon: Layers, iconClass: 'text-indigo-300', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-400/60', barClass: 'bg-indigo-400' },
 ];
 
-const ALL_MODES = GAME_TILES.map(t => t.mode);
+// Retired games stay in the list so their past results remain in the history.
+const RETIRED_MODES: GameMode[] = ['checkpoint', 'peripheral'];
+const ALL_MODES = [...GAME_TILES.map(t => t.mode), ...RETIRED_MODES];
 const GAME_TITLES = Object.fromEntries(GAME_TILES.map(t => [t.mode, t.title])) as Record<GameMode, string>;
 
 /** The skill badge shown above each exercise. */
@@ -131,6 +144,10 @@ const SKILL_LABELS: Record<GameMode, string> = {
   pexeso: 'Visual Memory & Detail',
   cage: 'Simultaneous Perception',
   fusion: 'Fusion',
+  nightsearch: 'Visual Scanning',
+  skycatch: 'Pursuit & Eye-Hand',
+  firerescue: 'Visual Discrimination',
+  lookout: 'Peripheral Awareness',
 };
 
 /**
@@ -167,6 +184,10 @@ const GAME_INSTRUCTIONS: Record<GameMode, string> = {
   pexeso: 'Turn two cards. Can you find the pairs?',
   cage: 'Glasses on! Drag the cage so the lion is inside it.',
   fusion: 'Glasses on! How many stars can you see?',
+  nightsearch: "It's dark! Slide the torch around and help {police} find the lost toy!",
+  skycatch: 'Fly with {pilot}! Catch the treats!',
+  firerescue: '{fire} needs help! Tap every fire!',
+  lookout: 'Look at {police}! When a light flashes at the side, tap {police}!',
 };
 
 /** Local calendar day, so the daily mission resets at the child's midnight. */
@@ -180,13 +201,13 @@ const todayKey = () => {
  * then Cartoon Cinema to wind down. Ties are broken by a seed from the date,
  * so the choice stays the same all day and rotates from one day to the next.
  */
-const pickMission = (user: UserProfile, anaglyph: boolean): GameMode[] => {
+const pickMission = (user: UserProfile, anaglyph: boolean, reading = false): GameMode[] => {
   const day = todayKey();
   let seed = 0;
   for (const ch of day) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
   const lastPlayed = (mode: GameMode) => user.stats[mode].slice(-1)[0]?.date ?? '';
   const candidates = GAME_TILES
-    .filter(t => t.mode !== 'cinema' && (anaglyph || !t.requiresAnaglyph))
+    .filter(t => t.mode !== 'cinema' && (anaglyph || !t.requiresAnaglyph) && (reading || !t.needsReading))
     .map((t, i) => ({ mode: t.mode, last: lastPlayed(t.mode), tie: ((seed + i * 2654435761) >>> 0) % 997 }))
     .sort((a, b) => (a.last < b.last ? -1 : a.last > b.last ? 1 : a.tie - b.tie));
   return [candidates[0].mode, candidates[1].mode, 'cinema'];
@@ -202,6 +223,8 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
   const [targetPos, setTargetPos] = useState({ x: 50, y: 50 });
   const [shake, setShake] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // Placed once: re-randomising on every frame made the sky flicker.
+  const stars = useMemo(() => Array.from({ length: 20 }, () => ({ size: 1 + Math.random() * 2, x: Math.random() * 100, y: Math.random() * 100 })), []);
 
   const moveTarget = () => {
     const time = Date.now() / 1000;
@@ -249,7 +272,6 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
     playSound('miss', config.soundEnabled);
     setShake(true);
     setTimeout(() => setShake(false), 400);
-    setScore(s => Math.max(0, s - 1));
   };
 
   return (
@@ -284,8 +306,8 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
       </AnimatePresence>
 
       <div className="absolute inset-0 opacity-20 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div key={i} className="absolute rounded-full" style={{ width: Math.random() * 3, height: Math.random() * 3, left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, backgroundColor: config.anaglyphMode ? config.anaglyphScene : '#FFFFFF' }} />
+        {stars.map((st, i) => (
+          <div key={i} className="absolute rounded-full" style={{ width: st.size, height: st.size, left: `${st.x}%`, top: `${st.y}%`, backgroundColor: config.anaglyphMode ? config.anaglyphScene : '#FFFFFF' }} />
         ))}
       </div>
     </motion.div>
@@ -341,7 +363,6 @@ const FoggyFlight = ({ config, onComplete }: { config: GameConfig; onComplete: (
     playSound('miss', config.soundEnabled);
     setShake(true);
     setTimeout(() => setShake(false), 400);
-    setScore(s => Math.max(0, s - 1));
   };
 
   return (
@@ -423,7 +444,6 @@ const TrafficJam = ({ config, onComplete }: { config: GameConfig; onComplete: (s
       playSound('miss', config.soundEnabled);
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      setScore(s => Math.max(0, s - 1));
     }
   };
 
@@ -497,7 +517,6 @@ const SpeedwaySaccades = ({ config, onComplete }: { config: GameConfig; onComple
     playSound('miss', config.soundEnabled);
     setShake(true);
     setTimeout(() => setShake(false), 400);
-    setScore(s => Math.max(0, s - 1));
   };
 
   return (
@@ -525,88 +544,6 @@ const SpeedwaySaccades = ({ config, onComplete }: { config: GameConfig; onComple
           onClick={handleHit}
         >
           <Car className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)]' : targetPos.color}`} />
-        </motion.div>
-      )}
-    </motion.div>
-  );
-};
-
-const PeripheralPatrol = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(config.duration);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [targetPos, setTargetPos] = useState({ x: 10, y: 10 });
-  const [shake, setShake] = useState(false);
-
-  const spawnTarget = () => {
-    const isTopBottom = Math.random() > 0.5;
-    let x, y;
-    if (isTopBottom) {
-      x = Math.random() * 80 + 10;
-      y = Math.random() > 0.5 ? Math.random() * 10 + 5 : Math.random() * 10 + 85;
-    } else {
-      y = Math.random() * 80 + 10;
-      x = Math.random() > 0.5 ? Math.random() * 10 + 5 : Math.random() * 10 + 85;
-    }
-    setTargetPos({ x, y });
-  };
-
-  useEffect(() => {
-    if (isPlaying && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-      if (score === 0 && timeLeft === config.duration) spawnTarget();
-      return () => clearInterval(timer);
-    } else if (timeLeft === 0 && isPlaying) {
-      setIsPlaying(false);
-      playSound('complete', config.soundEnabled);
-      onComplete({ score, timeSpent: config.duration, accuracy: score / config.duration, date: new Date().toISOString() });
-      confetti({ particleCount: 150, spread: 100 });
-    }
-  }, [isPlaying, timeLeft]);
-
-  const handleHit = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    playSound('hit', config.soundEnabled);
-    setScore(s => s + 1);
-    spawnTarget();
-  };
-
-  const handleMiss = () => {
-    if (!isPlaying) return;
-    playSound('miss', config.soundEnabled);
-    setShake(true);
-    setTimeout(() => setShake(false), 400);
-    setScore(s => Math.max(0, s - 1));
-  };
-
-  return (
-    <motion.div 
-      className="relative w-full h-full min-h-[420px] bg-slate-950 rounded-xl overflow-hidden border-4 border-slate-800 cursor-crosshair"
-      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
-      transition={{ duration: 0.4 }}
-      onClick={handleMiss}
-    >
-      {!isPlaying && timeLeft === config.duration && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
-          <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Patrol
-          </Button>
-        </div>
-      )}
-
-      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
-
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-50">
-        <Crosshair className="w-16 h-16 text-blue-500 animate-pulse" />
-      </div>
-
-      {isPlaying && (
-        <motion.div
-          className="absolute cursor-pointer -translate-x-1/2 -translate-y-1/2"
-          style={{ left: `${targetPos.x}%`, top: `${targetPos.y}%`, width: config.size, height: config.size }}
-          onClick={handleHit}
-        >
-          <Radar className={`w-full h-full ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-green-400'}`} />
         </motion.div>
       )}
     </motion.div>
@@ -650,7 +587,6 @@ const FoggySpotter = ({ config, onComplete }: { config: GameConfig; onComplete: 
       playSound('miss', config.soundEnabled);
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      setScore(s => Math.max(0, s - 1));
     }
   };
 
@@ -687,138 +623,6 @@ const FoggySpotter = ({ config, onComplete }: { config: GameConfig; onComplete: 
         ))}
       </motion.div>
     </div>
-  );
-};
-
-const Checkpoint = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(config.duration);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [shake, setShake] = useState(false);
-  const icons = [Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship];
-  
-  const [targetIcon, setTargetIcon] = useState<any>(null);
-  const [currentIcon, setCurrentIcon] = useState<any>(null);
-  const [isTarget, setIsTarget] = useState(false);
-  const [turn, setTurn] = useState(0);
-
-  const spawnNext = (keepTarget: boolean = true) => {
-    const tIcon = (keepTarget && targetIcon) ? targetIcon : icons[Math.floor(Math.random() * icons.length)];
-    
-    // 50% chance to be the target
-    const isT = Math.random() > 0.5;
-    
-    let cIcon;
-    if (isT) {
-      cIcon = tIcon;
-    } else {
-      cIcon = icons[Math.floor(Math.random() * icons.length)];
-      // Ensure it's definitely NOT the target if isT is false
-      while (cIcon === tIcon) {
-        cIcon = icons[Math.floor(Math.random() * icons.length)];
-      }
-    }
-    
-    setTargetIcon(() => tIcon);
-    setCurrentIcon(() => cIcon);
-    setIsTarget(isT);
-  };
-
-  useEffect(() => {
-    if (isPlaying && timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-      return () => clearInterval(timer);
-    } else if (timeLeft === 0 && isPlaying) {
-      setIsPlaying(false);
-      playSound('complete', config.soundEnabled);
-      onComplete({ score, timeSpent: config.duration, accuracy: score / config.duration, date: new Date().toISOString() });
-      confetti({ particleCount: 150, spread: 100 });
-    }
-  }, [isPlaying, timeLeft]);
-
-  useEffect(() => {
-    if (!isPlaying || timeLeft === 0) return;
-
-    if (!targetIcon) {
-      spawnNext(false);
-      return;
-    }
-
-    const speedMs = config.difficulty === 'hard' ? 2000 : (config.difficulty === 'medium' ? 3000 : 4500);
-    
-    const timeout = setTimeout(() => {
-      // If they missed a target, penalize
-      if (isTarget) {
-        playSound('miss', config.soundEnabled);
-        setShake(true);
-        setTimeout(() => setShake(false), 400);
-        setScore(s => Math.max(0, s - 1));
-      }
-      spawnNext(true);
-      setTurn(t => t + 1);
-    }, speedMs);
-
-    return () => clearTimeout(timeout);
-  }, [isPlaying, turn, targetIcon, isTarget]);
-
-  const handleAction = (clicked: boolean) => {
-    if (!isPlaying) return;
-    
-    if (clicked && isTarget) {
-      playSound('hit', config.soundEnabled);
-      setScore(s => s + 1);
-      spawnNext(true);
-      setTurn(t => t + 1);
-    } else if (clicked && !isTarget) {
-      playSound('miss', config.soundEnabled);
-      setShake(true);
-      setTimeout(() => setShake(false), 400);
-      setScore(s => Math.max(0, s - 1));
-      spawnNext(true);
-      setTurn(t => t + 1);
-    }
-  };
-
-  return (
-    <motion.div 
-      className="relative w-full h-full min-h-[420px] bg-slate-900 rounded-xl overflow-hidden border-4 border-slate-800 flex flex-col items-center justify-center"
-      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
-      transition={{ duration: 0.4 }}
-    >
-      {!isPlaying && timeLeft === config.duration && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-50">
-          <Button size="lg" onClick={() => setIsPlaying(true)} className="text-xl px-8 py-6">
-            <Play className="mr-2 h-6 w-6" /> Start Checkpoint
-          </Button>
-        </div>
-      )}
-
-      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
-
-      {isPlaying && targetIcon && currentIcon && (
-        <div className="flex flex-col items-center gap-12">
-          <div className="flex flex-col items-center gap-2 bg-slate-800 p-4 rounded-xl border border-slate-700">
-            <span className="text-sm text-slate-400 uppercase tracking-wider font-bold">Target Vehicle</span>
-            {React.createElement(targetIcon, { className: `w-12 h-12 ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-blue-400'}` })}
-          </div>
-
-          <div className="flex flex-col items-center gap-8">
-            <motion.button
-              key={`turn-${turn}`}
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-              onClick={() => handleAction(true)}
-              className="w-32 h-32 bg-slate-800 rounded-full flex items-center justify-center border-4 border-slate-700 hover:border-blue-500 transition-colors"
-            >
-              {React.createElement(currentIcon, { className: `w-16 h-16 ${config.anaglyphMode ? 'text-[var(--ag-target)]' : 'text-slate-100'}` })}
-            </motion.button>
-            <span className="text-slate-400">Tap if it matches the target!</span>
-          </div>
-        </div>
-      )}
-    </motion.div>
   );
 };
 
@@ -896,7 +700,6 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
     playSound('miss', config.soundEnabled);
     setShake(true);
     setTimeout(() => setShake(false), 400);
-    setScore(s => Math.max(0, s - 1));
   };
 
   const lineColor = config.anaglyphMode ? config.anaglyphScene : '#eab308';
@@ -1007,7 +810,6 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
       playSound('miss', config.soundEnabled);
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      setScore(s => Math.max(0, s - 1));
     }
   };
 
@@ -1128,7 +930,6 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
       playSound('miss', config.soundEnabled);
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      setScore(s => Math.max(0, s - 1));
     }
   };
 
@@ -1277,7 +1078,6 @@ const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplet
       playSound('miss', config.soundEnabled);
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      setScore(s => Math.max(0, s - 1));
     }
     setVehicles(prev => prev.filter(x => x.id !== v.id));
   };
@@ -1408,7 +1208,6 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
       playSound('miss', config.soundEnabled);
       setShake(true);
       setTimeout(() => setShake(false), 400);
-      setScore(s => Math.max(0, s - 1));
       setPhase('showing');
       timeoutsRef.current.push(setTimeout(() => startRound(baseLength), 700));
     }
@@ -1584,7 +1383,8 @@ export default function App() {
   // today's sticker was already collected.
   const [missionReward, setMissionReward] = useState<string | null | undefined>(undefined);
 
-  const visibleTiles = GAME_TILES.filter(t => config.anaglyphMode || !t.requiresAnaglyph);
+  const visibleTiles = GAME_TILES.filter(t => (config.anaglyphMode || !t.requiresAnaglyph) && (config.readingGames || !t.needsReading));
+  const tileTitle = (tile: (typeof GAME_TILES)[number]) => (tile.pup ? `${possessive(pupName(config, tile.pup))} ${tile.title}` : tile.title);
   const phase = phaseInfo(config.therapyPhase);
   const patchRunning = user.patch.startedAt !== null;
   // A game that is waiting for the "patch on?" answer before it starts.
@@ -1760,7 +1560,7 @@ export default function App() {
     setScreen('game');
     setMissionReward(undefined);
     // Spoken from the tap itself: iOS only lets a page start speech from a gesture.
-    speak(GAME_INSTRUCTIONS[mode], config.voiceEnabled);
+    speak(withPupNames(GAME_INSTRUCTIONS[mode], config), config.voiceEnabled);
     if (config.autoFullscreen && !document.fullscreenElement) {
       document.documentElement.requestFullscreen?.().catch(() => {
         // Refused (unsupported, or iPhone Safari): the in-app layout still
@@ -1770,7 +1570,7 @@ export default function App() {
   };
 
   const startMission = () => {
-    const modes = pickMission(user, config.anaglyphMode);
+    const modes = pickMission(user, config.anaglyphMode, config.readingGames);
     setMission({ modes, index: 0 });
     startGame(modes[0]);
   };
@@ -2019,7 +1819,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="flex shrink-0 gap-1.5">
-                  {pickMission(user, config.anaglyphMode).map((mode, i) => {
+                  {pickMission(user, config.anaglyphMode, config.readingGames).map((mode, i) => {
                     const tile = GAME_TILES.find(t => t.mode === mode)!;
                     return (
                       <div key={i} className={`flex h-10 w-10 items-center justify-center rounded-lg ${tile.chipClass}`}>
@@ -2049,7 +1849,7 @@ export default function App() {
                         <tile.Icon className={`h-6 w-6 ${tile.iconClass}`} />
                       </div>
                       <div className="min-w-0">
-                        <CardTitle className="truncate text-base leading-tight text-slate-50 md:text-lg">{tile.title}</CardTitle>
+                        <CardTitle className="truncate text-base leading-tight text-slate-50 md:text-lg">{tileTitle(tile)}</CardTitle>
                         <CardDescription className="mt-0.5 hidden truncate text-sm text-slate-300 lg:block">{tile.description}</CardDescription>
                       </div>
                     </div>
@@ -2124,9 +1924,7 @@ export default function App() {
               {selectedMode === 'contrast' && <FoggyFlight config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'detail' && <TrafficJam config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'saccades' && <SpeedwaySaccades config={gameConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'peripheral' && <PeripheralPatrol config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'spotter' && <FoggySpotter config={gameConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'checkpoint' && <Checkpoint config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'metro' && <MetroTracker config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'station' && <StationHunt config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'navigator' && <LineNavigator config={gameConfig} onComplete={handleGameComplete} />}
@@ -2149,6 +1947,10 @@ export default function App() {
               {selectedMode === 'pexeso' && <VehiclePexeso config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'cage' && <LionCage config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'fusion' && <FusionStars config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'nightsearch' && <NightSearch config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'skycatch' && <SkyCatch config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'firerescue' && <FireRescue config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'lookout' && <LookoutAlert config={gameConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}
@@ -2332,6 +2134,38 @@ export default function App() {
                     />
                     <Button variant="outline" onClick={() => setScreen('patch')}>Open Patch Pal</Button>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-slate-50">Rescue Pups</CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Give the pups the names your child calls them. The names are used in the pup games' titles and spoken
+                    instructions, and are stored only on this device.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="grid gap-4 sm:grid-cols-3">
+                  {(['police', 'pilot', 'fire'] as PupRole[]).map(role => (
+                    <label key={role} htmlFor={`pup-${role}`} className="flex items-center gap-3">
+                      <RescuePup role={role} size={52} />
+                      <span className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="text-sm text-slate-400">{DEFAULT_PUP_NAMES[role]}</span>
+                        <input
+                          id={`pup-${role}`}
+                          type="text"
+                          maxLength={20}
+                          value={config.pupNames?.[role] ?? ''}
+                          placeholder={DEFAULT_PUP_NAMES[role]}
+                          onChange={e => {
+                            const value = e.target.value;
+                            setConfig(c => ({ ...c, pupNames: { ...DEFAULT_CONFIG.pupNames, ...c.pupNames, [role]: value } }));
+                          }}
+                          className="h-10 w-full rounded-md border border-slate-700 bg-slate-950 px-3 text-base text-slate-50"
+                        />
+                      </span>
+                    </label>
+                  ))}
                 </CardContent>
               </Card>
 
@@ -2530,6 +2364,19 @@ export default function App() {
                         setConfig(c => ({ ...c, cinemaMinutes: val }));
                       }}
                     />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+                    <div className="space-y-0.5">
+                      <label className="text-base font-medium">Reading Games</label>
+                      <p className="text-sm text-slate-400">Show games that need letters (Station Hunt). Turn on once your child is learning to read.</p>
+                    </div>
+                    <Button
+                      variant={config.readingGames ? "default" : "outline"}
+                      onClick={() => setConfig(c => ({ ...c, readingGames: !c.readingGames }))}
+                    >
+                      {config.readingGames ? "On" : "Off"}
+                    </Button>
                   </div>
 
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">

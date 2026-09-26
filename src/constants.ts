@@ -25,6 +25,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   patchGoalMinutes: 120,
   pxPerMm: 0,
   deviationPD: 0,
+  pupNames: { police: '', pilot: '', fire: '' },
+  readingGames: false,
 };
 
 /** One sticker per day the patch-time goal is reached. */
