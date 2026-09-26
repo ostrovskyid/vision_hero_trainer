@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Twenty-two short exercises themed around vehicles, metro maps, rockets, rescue pups and
+Twenty-seven short exercises themed around vehicles, metro maps, rockets, rescue pups and
 the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,7 +34,7 @@ point rather than ending the game, and every round finishes with confetti.
 
 ## Highlights
 
-- **Twenty-two exercises**, each training a different visual skill — including a 3D depth game
+- **Twenty-seven exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
   vehicle sticker for the day
@@ -296,6 +296,66 @@ a sparkle hints at a difference after 15 seconds without a find.
 
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/zebra-stripes.png" alt="Zebra Stripes" width="100%">
+
+### 🦓 Zebra Stripes
+**Contrast perception (perceptual learning)** — two grey windows; a zebra hides in the one
+with faint stripes (a Gabor patch). The stripes fade after two finds in a row and return after
+a miss (a 2-down/1-up staircase), so play settles near the faintest stripes the child can see.
+Stripe size is set in cycles per degree for a tablet at 40 cm, using the picture-check screen
+calibration.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/rocket-docking.png" alt="Rocket Docking" width="100%">
+
+### 🚀 Rocket Docking
+**Localisation** — tap exactly inside a docking ring and the rocket flies in to dock. The
+ring shrinks after each docking and grows after a miss, training *where* things are, which
+amblyopic eyes are unsure of. The tablet version of the "poke the dot" pleoptic exercise.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/rail-maze.png" alt="Rail Maze" width="100%">
+
+### 🚂 Rail Maze
+**Visual tracing** — drive a train through a random maze to the station with a finger.
+The train won't cross a fence; it stops until the finger comes back to it. Bigger mazes and
+thinner fences on harder levels.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/paint-the-fire-truck.png" alt="Paint the Fire Truck" width="100%">
+
+### 🎨 Paint the Fire Truck
+**Fine eye-hand control** — pick a paint pot and tap each part of a rocket, fire truck or
+bus to colour it. Harder pictures have more, smaller parts (lights, hubcaps, windows) and
+thinner outlines. Calm, so it suits long patching sessions.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/vehicle-pexeso.png" alt="Vehicle Pexeso" width="100%">
+
+### 🃏 Vehicle Pexeso
+**Visual memory and detail** — the pairs memory game. Harder levels have more, smaller
+cards and look-alike vehicles (car / taxi / SUV, bus / trolleybus / minibus).
+
+</td>
+<td width="50%" valign="top">
+
+</td>
+</tr>
 </table>
 
 ## Made for five-year-olds
@@ -519,7 +579,7 @@ updating that value.
 
 Components follow the [shadcn/ui](https://ui.shadcn.com) conventions and live in
 [`components/ui`](components/ui). Screens and the original twelve games are in
-[`src/App.tsx`](src/App.tsx); the ten newer games live in [`src/games`](src/games),
+[`src/App.tsx`](src/App.tsx); the fifteen newer games live in [`src/games`](src/games),
 together with their shared timer, start screen and anaglyph tint helpers
 ([`src/games/common.tsx`](src/games/common.tsx)). Sound, speech and colour helpers are in
 [`src/feedback.ts`](src/feedback.ts), the in-game progress bar in

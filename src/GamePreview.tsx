@@ -483,6 +483,88 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
 
+    case 'stripes':
+      return (
+        <Frame className="flex items-center justify-center gap-4 bg-slate-950">
+          {[0, 1].map(i => (
+            <div
+              key={i}
+              className="h-14 w-14 rounded-xl bg-[#808080]"
+              style={i === 1 ? {
+                backgroundImage: 'repeating-linear-gradient(90deg, rgba(0,0,0,0.25) 0 4px, rgba(255,255,255,0.25) 4px 8px)',
+                maskImage: 'radial-gradient(circle, #000 45%, transparent 75%)',
+                WebkitMaskImage: 'radial-gradient(circle, #000 45%, transparent 75%)',
+              } : undefined}
+            />
+          ))}
+        </Frame>
+      );
+
+    case 'docking':
+      return (
+        <Frame>
+          <div className="absolute left-0 right-0 top-[38%] h-1 bg-slate-700" />
+          <motion.div
+            className="absolute left-[62%] top-[38%] h-8 w-8 -translate-x-1/2 -translate-y-1/2 rounded-full border-[3px] border-cyan-300"
+            animate={move({ scale: [1, 0.7, 1] }, { scale: 0.85 })}
+            transition={loop(2.6)}
+          />
+          <motion.span
+            className="absolute left-[62%] -ml-3 text-2xl leading-none"
+            animate={move({ top: ['90%', '26%', '90%'] }, { top: '60%' })}
+            transition={{ duration: 2.6, repeat: Infinity, times: [0, 0.6, 1] }}
+          >
+            🚀
+          </motion.span>
+        </Frame>
+      );
+
+    case 'maze':
+      return (
+        <Frame className="flex items-center justify-center">
+          <svg viewBox="0 0 100 60" className="h-[80%]" aria-hidden="true">
+            <path d="M5 5 H95 V55 H5 Z M35 5 V35 M65 25 V55 M35 35 H55" fill="none" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" />
+            <motion.path
+              d="M18 15 V48 H50 V45 M50 45 H80 V15"
+              fill="none" stroke="#f59e0b" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+              animate={move({ pathLength: [0, 1, 1] }, { pathLength: 0.6 })}
+              transition={{ duration: 3.5, repeat: Infinity, times: [0, 0.8, 1] }}
+            />
+          </svg>
+        </Frame>
+      );
+
+    case 'paint':
+      return (
+        <Frame className="flex items-center justify-center">
+          <svg viewBox="0 0 220 120" className="w-[75%]" aria-hidden="true">
+            <motion.path d="M60 40 H205 V90 H60 Z" stroke="#f8fafc" strokeWidth="3"
+              animate={move({ fill: ['#000000', '#ef4444', '#ef4444'] }, { fill: '#ef4444' })}
+              transition={{ duration: 3, repeat: Infinity, times: [0, 0.3, 1] }} />
+            <path d="M18 90 L18 56 L34 34 L60 34 L60 90 Z" fill="#000" stroke="#f8fafc" strokeWidth="3" />
+            <path d="M70 22 H198 V32 H70 Z" fill="#facc15" stroke="#f8fafc" strokeWidth="3" />
+            <circle cx="48" cy="92" r="15" fill="#000" stroke="#f8fafc" strokeWidth="3" />
+            <circle cx="170" cy="92" r="15" fill="#000" stroke="#f8fafc" strokeWidth="3" />
+          </svg>
+        </Frame>
+      );
+
+    case 'pexeso':
+      return (
+        <Frame className="flex items-center justify-center gap-2">
+          {['🚌', null, '🚌', null].map((e, i) => (
+            <motion.div
+              key={i}
+              className={`flex h-12 w-10 items-center justify-center rounded-md border-2 border-slate-600 ${e ? 'bg-black' : 'bg-blue-900'}`}
+              animate={e ? move({ rotateY: [180, 0, 0, 180] }, { rotateY: 0 }) : undefined}
+              transition={{ duration: 3, repeat: Infinity, delay: i * 0.3, times: [0, 0.2, 0.8, 1] }}
+            >
+              {e && <span className="text-xl leading-none">{e}</span>}
+            </motion.div>
+          ))}
+        </Frame>
+      );
+
     default:
       return <Frame />;
   }
