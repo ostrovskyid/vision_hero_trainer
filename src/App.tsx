@@ -22,6 +22,8 @@ import {
 import { GamePreview } from './GamePreview';
 import { GameHud } from './GameHud';
 import { PatchPalBar, PatchPalScreen, PatchPrompt, todayPatchMinutes } from './PatchPal';
+import { PictureCheckScreen, toDecimal } from './PictureCheck';
+import { buildBackup, saveBackupFile, parseBackup, daysSince, BackupFile } from './backup';
 import { PHASES, PATCH_PHASES, COMFORT_ZONE_GUTTER, phaseInfo, dayKey, runningMinutes } from './therapy';
 import { ShapeGarage } from './games/ShapeGarage';
 import { PopOutPups } from './games/PopOutPups';
@@ -1484,10 +1486,35 @@ const ColorField = ({ label, hint, value, onChange }: {
   );
 };
 
+/**
+ * Builds a complete profile from stored or restored data, filling anything
+ * missing (older saves, older backups) with defaults.
+ */
+const normalizeUser = (parsed: any): UserProfile => {
+  return {
+    name: parsed?.name || 'Hero',
+    avatar: parsed?.avatar || '🚀',
+    level: parsed?.level || 1,
+    experience: parsed?.experience || 0,
+    stats: Object.fromEntries(
+      ALL_MODES.map(mode => [mode, parsed?.stats?.[mode] || []])
+    ) as Record<GameMode, GameStats[]>,
+    stickers: Array.isArray(parsed?.stickers) ? parsed.stickers : [],
+    lastMissionDate: parsed?.lastMissionDate,
+    patch: {
+      log: parsed?.patch?.log && typeof parsed.patch.log === 'object' ? parsed.patch.log : {},
+      startedAt: typeof parsed?.patch?.startedAt === 'number' ? parsed.patch.startedAt : null,
+      lastStickerDate: parsed?.patch?.lastStickerDate,
+    },
+    checks: Array.isArray(parsed?.checks) ? parsed.checks : [],
+    lastBackupAt: typeof parsed?.lastBackupAt === 'string' ? parsed.lastBackupAt : undefined,
+  };
+};
+
 // --- Main App ---
 
 export default function App() {
-  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats' | 'patch'>('home');
+  const [screen, setScreen] = useState<'home' | 'game' | 'settings' | 'stats' | 'patch' | 'check'>('home');
   const [selectedMode, setSelectedMode] = useState<GameMode>('tracking');
   const [config, setConfig] = useState<GameConfig>(() => {
     // Exercise settings and the display calibration are stored separately:
@@ -1507,29 +1534,12 @@ export default function App() {
   });
   const [user, setUser] = useState<UserProfile>(() => {
     // Storage can be blocked (private mode, embedded frames); start fresh then.
-    let parsed: any = null;
     try {
       const saved = localStorage.getItem('eyequest_user');
-      parsed = saved ? JSON.parse(saved) : null;
+      return normalizeUser(saved ? JSON.parse(saved) : null);
     } catch {
-      parsed = null;
+      return normalizeUser(null);
     }
-    return {
-      name: parsed?.name || 'Hero',
-      avatar: parsed?.avatar || '🚀',
-      level: parsed?.level || 1,
-      experience: parsed?.experience || 0,
-      stats: Object.fromEntries(
-        ALL_MODES.map(mode => [mode, parsed?.stats?.[mode] || []])
-      ) as Record<GameMode, GameStats[]>,
-      stickers: Array.isArray(parsed?.stickers) ? parsed.stickers : [],
-      lastMissionDate: parsed?.lastMissionDate,
-      patch: {
-        log: parsed?.patch?.log && typeof parsed.patch.log === 'object' ? parsed.patch.log : {},
-        startedAt: typeof parsed?.patch?.startedAt === 'number' ? parsed.patch.startedAt : null,
-        lastStickerDate: parsed?.patch?.lastStickerDate,
-      },
-    };
   });
 
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -1610,6 +1620,52 @@ export default function App() {
     play();
   };
 
+  // Backup and restore.
+  const [backupMessage, setBackupMessage] = useState<{ kind: 'ok' | 'error'; text: string } | null>(null);
+  const [pendingRestore, setPendingRestore] = useState<BackupFile | null>(null);
+  const restoreInput = useRef<HTMLInputElement | null>(null);
+
+  const saveBackup = async () => {
+    const savedAt = new Date().toISOString();
+    const saved = await saveBackupFile(buildBackup({ ...user, lastBackupAt: savedAt }, config));
+    if (saved) {
+      setUser(prev => ({ ...prev, lastBackupAt: savedAt }));
+      setBackupMessage({ kind: 'ok', text: 'Backup saved. Keep the file somewhere safe, like Google Drive or email.' });
+    }
+  };
+
+  const pickRestoreFile = async (file: File | undefined) => {
+    if (!file) return;
+    const parsed = parseBackup(await file.text());
+    if ('error' in parsed) {
+      setBackupMessage({ kind: 'error', text: parsed.error });
+      return;
+    }
+    setBackupMessage(null);
+    setPendingRestore(parsed.backup);
+  };
+
+  const confirmRestore = () => {
+    if (!pendingRestore) return;
+    setUser(normalizeUser(pendingRestore.user));
+    // Keep this screen's own calibration: the backup's came from another screen.
+    setConfig(c => ({
+      ...DEFAULT_CONFIG,
+      ...pendingRestore.config,
+      anaglyphTarget: c.anaglyphTarget,
+      anaglyphScene: c.anaglyphScene,
+      anaglyphTargetLevel: c.anaglyphTargetLevel,
+      anaglyphSceneLevel: c.anaglyphSceneLevel,
+      pxPerMm: c.pxPerMm,
+    }));
+    setPendingRestore(null);
+    setBackupMessage({ kind: 'ok', text: `Restored the backup from ${new Date(pendingRestore.savedAt).toLocaleDateString()}.` });
+  };
+
+  const lastCheck = user.checks[user.checks.length - 1];
+  const checkDue = !lastCheck || (daysSince(lastCheck.date) ?? 0) >= 30;
+  const backupAge = daysSince(user.lastBackupAt);
+
   const choosePhase = (id: GameConfig['therapyPhase']) => {
     const info = phaseInfo(id);
     setConfig(c => ({ ...c, ...info.apply, therapyPhase: id }));
@@ -1637,12 +1693,12 @@ export default function App() {
   }, [user]);
 
   useEffect(() => {
-    const { anaglyphTarget, anaglyphScene, anaglyphTargetLevel, anaglyphSceneLevel, ...exerciseConfig } = config;
+    const { anaglyphTarget, anaglyphScene, anaglyphTargetLevel, anaglyphSceneLevel, pxPerMm, ...exerciseConfig } = config;
     try {
       localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(exerciseConfig));
       // Kept under its own key: one calibration per device, set up once.
       localStorage.setItem(DISPLAY_STORAGE_KEY, JSON.stringify({
-        anaglyphTarget, anaglyphScene, anaglyphTargetLevel, anaglyphSceneLevel,
+        anaglyphTarget, anaglyphScene, anaglyphTargetLevel, anaglyphSceneLevel, pxPerMm,
       }));
     } catch {
       // Storage can be unavailable (private mode); settings just won't persist.
@@ -2123,6 +2179,16 @@ export default function App() {
             />
           )}
 
+          {screen === 'check' && (
+            <PictureCheckScreen
+              checks={user.checks}
+              pxPerMm={config.pxPerMm}
+              onCalibrate={px => setConfig(c => ({ ...c, pxPerMm: px }))}
+              onSave={check => setUser(prev => ({ ...prev, checks: [...prev.checks, check] }))}
+              onClose={() => setScreen('settings')}
+            />
+          )}
+
           {screen === 'settings' && (
             <motion.div
               key="settings"
@@ -2190,6 +2256,71 @@ export default function App() {
                     />
                     <Button variant="outline" onClick={() => setScreen('patch')}>Open Patch Pal</Button>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-slate-50 flex items-center gap-2">
+                    Monthly Picture Check
+                    {checkDue && <Badge className="bg-amber-500 text-slate-950">Due</Badge>}
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    A short vision check with picture symbols, done the same way every month. It shows the trend for each eye; it is not a medical test.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-wrap items-center gap-4">
+                  <Button onClick={() => setScreen('check')}>{config.pxPerMm > 0 ? 'Open picture check' : 'Set up picture check'}</Button>
+                  <span className="text-sm text-slate-400">
+                    {lastCheck
+                      ? `Last check ${new Date(lastCheck.date).toLocaleDateString()}: ${lastCheck.eye} eye ${toDecimal(lastCheck.logMAR)}`
+                      : 'No checks yet.'}
+                  </span>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-slate-900 border-slate-800">
+                <CardHeader>
+                  <CardTitle className="text-slate-50 flex items-center gap-2">
+                    Backup
+                    {(backupAge === null || backupAge >= 30) && <Badge className="bg-amber-500 text-slate-950">Recommended</Badge>}
+                  </CardTitle>
+                  <CardDescription className="text-slate-400">
+                    Progress lives only on this device. Save a backup file once a month, and load it on a new or reset tablet to carry on where you left off. It includes stickers, game history, the patch log, picture checks and settings.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Button onClick={saveBackup}>Save backup file</Button>
+                    <Button variant="outline" onClick={() => restoreInput.current?.click()}>Restore from file…</Button>
+                    <input
+                      id="restore-file"
+                      ref={restoreInput}
+                      type="file"
+                      accept="application/json,.json"
+                      className="hidden"
+                      onChange={e => { pickRestoreFile(e.target.files?.[0]); e.target.value = ''; }}
+                    />
+                    <span className="text-sm text-slate-400">
+                      {backupAge === null ? 'Never backed up.' : backupAge === 0 ? 'Last backup: today.' : `Last backup: ${backupAge} day${backupAge === 1 ? '' : 's'} ago.`}
+                    </span>
+                  </div>
+                  {pendingRestore && (
+                    // Restoring replaces everything, so it is confirmed here in the page.
+                    <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+                      <p className="text-slate-100">
+                        Replace everything on this device with the backup from <strong>{new Date(pendingRestore.savedAt).toLocaleString()}</strong>?
+                        It has {pendingRestore.user?.stickers?.length ?? 0} stickers and {pendingRestore.user?.checks?.length ?? 0} picture checks. This screen's colour and size calibration is kept.
+                      </p>
+                      <div className="mt-3 flex gap-3">
+                        <Button onClick={confirmRestore}>Replace and restore</Button>
+                        <Button variant="ghost" onClick={() => setPendingRestore(null)}>Cancel</Button>
+                      </div>
+                    </div>
+                  )}
+                  {backupMessage && (
+                    <p className={`text-sm ${backupMessage.kind === 'ok' ? 'text-emerald-300' : 'text-red-300'}`} role="status">{backupMessage.text}</p>
+                  )}
                 </CardContent>
               </Card>
 
