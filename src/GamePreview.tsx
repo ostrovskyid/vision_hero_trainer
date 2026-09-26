@@ -688,6 +688,65 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
 
+    case 'jungle':
+      return (
+        <Frame className="bg-gradient-to-br from-emerald-950 to-slate-950">
+          {[{ l: 18, t: 62 }, { l: 32, t: 48 }, { l: 46, t: 56 }, { l: 60, t: 40 }].map((p, i) => (
+            <motion.span
+              key={i}
+              className="absolute text-base leading-none text-amber-300"
+              style={{ left: `${p.l}%`, top: `${p.t}%` }}
+              animate={move({ opacity: [0.3, 1, 0.3] }, { opacity: i < 2 ? 1 : 0.4 })}
+              transition={{ duration: 2.4, repeat: Infinity, delay: i * 0.4 }}
+            >
+              🐾
+            </motion.span>
+          ))}
+          <span className="absolute right-[8%] top-[22%] text-2xl leading-none">🐒</span>
+          <div className="absolute bottom-1 left-1"><RescuePup role="jungle" size={34} /></div>
+        </Frame>
+      );
+
+    case 'scooter':
+      return (
+        <Frame className="flex items-center justify-center gap-3 bg-gradient-to-b from-violet-950 to-slate-950">
+          <div className="flex flex-col items-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full border-4 border-blue-600 bg-slate-50">
+              <motion.svg
+                viewBox="0 0 5 5" width="20" height="20"
+                animate={move({ rotate: [0, 90, 90, 180, 180, 270, 270, 360] }, { rotate: 90 })}
+                transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <path d="M2 5 V2 H0 L2.5 0 L5 2 H3 V5 Z" fill="#0f172a" />
+              </motion.svg>
+            </div>
+            <div className="h-3 w-1 bg-blue-600" />
+          </div>
+          <div className="flex items-end">
+            <RescuePup role="city" size={32} />
+            <span className="-ml-1 text-2xl leading-none">🛴</span>
+          </div>
+        </Frame>
+      );
+
+    case 'dinos':
+      return (
+        <Frame className="flex items-center justify-center gap-3 bg-gray-500">
+          {['🦕', '🦖', '🐢'].map((d, i) => (
+            <motion.span
+              key={i}
+              className="text-3xl leading-none"
+              style={{ filter: 'grayscale(1)' }}
+              animate={move({ opacity: [0.6, 0.25, 0.6] }, { opacity: 0.45 })}
+              transition={loop(4, i * 0.5)}
+            >
+              {d}
+            </motion.span>
+          ))}
+          <div className="absolute left-1 top-1"><RescuePup role="dino" size={30} /></div>
+        </Frame>
+      );
+
     default:
       return <Frame />;
   }

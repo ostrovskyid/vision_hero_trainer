@@ -176,3 +176,17 @@ export const pxPerPrismDioptre = (config: GameConfig) =>
  * half each.
  */
 export const compensationPx = (config: GameConfig) => config.deviationPD * pxPerPrismDioptre(config);
+
+/**
+ * For `count` square items in a `width` × `height` space, the column count
+ * that gives the biggest cells, and that cell size (gaps are 12% of a cell).
+ */
+export const bestFit = (width: number, height: number, count: number) => {
+  let best = { cols: count, cell: 0 };
+  for (let cols = 1; cols <= count; cols++) {
+    const rows = Math.ceil(count / cols);
+    const cell = Math.min(width / (cols + (cols - 1) * 0.12), height / (rows + (rows - 1) * 0.12));
+    if (cell > best.cell) best = { cols, cell };
+  }
+  return best;
+};
