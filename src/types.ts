@@ -95,8 +95,6 @@ export interface GameConfig {
   cinemaFellowLevel: number;
   /** Treatment phase chosen in Parent's Corner. */
   therapyPhase: TherapyPhase;
-  /** Keep game targets out of the left part of the screen. */
-  comfortZone: boolean;
   /** Daily patch-time goal in minutes. */
   patchGoalMinutes: number;
   /** CSS pixels per millimetre on this screen, from the card calibration; 0 = not calibrated. */

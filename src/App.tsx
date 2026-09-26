@@ -28,7 +28,7 @@ import { ProgressReport } from './ProgressReport';
 import { StickerAlbum } from './StickerAlbum';
 import { nextSticker, withSticker, currentAlbum, albumKey } from './stickers';
 import { buildBackup, saveBackupFile, parseBackup, daysSince, BackupFile } from './backup';
-import { PHASES, PATCH_PHASES, COMFORT_ZONE_GUTTER, phaseInfo, dayKey, runningMinutes } from './therapy';
+import { PHASES, PATCH_PHASES, phaseInfo, dayKey, runningMinutes } from './therapy';
 import { ShapeGarage } from './games/ShapeGarage';
 import { PopOutPups } from './games/PopOutPups';
 import { CartoonCinema } from './games/CartoonCinema';
@@ -1918,13 +1918,7 @@ export default function App() {
                 </div>
               </div>
 
-              {/* The comfort zone keeps the left part of the play area empty, so
-                  targets never ask an eye with limited outward movement to look
-                  far to the left. */}
-              <div
-                className="flex-1 min-h-0 overflow-y-auto"
-                style={config.comfortZone ? { paddingLeft: COMFORT_ZONE_GUTTER } : undefined}
-              >
+              <div className="flex-1 min-h-0 overflow-y-auto">
               {selectedMode === 'tracking' && <RocketTracker config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'contrast' && <FoggyFlight config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'detail' && <TrafficJam config={gameConfig} onComplete={handleGameComplete} />}
@@ -2128,19 +2122,6 @@ export default function App() {
                         <div className="mt-0.5 text-sm text-slate-400">{t(p.description)}</div>
                       </button>
                     ))}
-                  </div>
-
-                  <div className="flex items-center justify-between gap-4 border-t border-slate-800 pt-4">
-                    <div className="space-y-0.5">
-                      <label className="text-base font-medium">{t('Comfort Zone')}</label>
-                      <p className="text-sm text-slate-400">{t("Keep targets out of the left part of the screen, for an eye that can't turn fully outward to the left. Ask the eye doctor whether to use it.")}</p>
-                    </div>
-                    <Button
-                      variant={config.comfortZone ? 'default' : 'outline'}
-                      onClick={() => setConfig(c => ({ ...c, comfortZone: !c.comfortZone }))}
-                    >
-                      {t(config.comfortZone ? 'On' : 'Off')}
-                    </Button>
                   </div>
 
                   <div className="space-y-4 border-t border-slate-800 pt-4">
