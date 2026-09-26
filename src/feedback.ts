@@ -1,5 +1,7 @@
 /** Shared colour, sound and speech helpers used by every exercise. */
 
+import { getLang, speechLang } from './i18n';
+
 /**
  * Scales a colour's brightness. Cheap cyan filters never block red completely,
  * so a full-intensity red still ghosts through as a grey outline; dimming the
@@ -105,8 +107,11 @@ export const speak = (text: string, enabled: boolean) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 0.9;
     utterance.pitch = 1.15;
-    const english = synth.getVoices().find(v => v.lang.startsWith('en'));
-    if (english) utterance.voice = english;
+    // A voice for the app's language; the lang tag alone lets the browser
+    // pick one when the voice list has not loaded yet.
+    utterance.lang = speechLang();
+    const voice = synth.getVoices().find(v => v.lang.toLowerCase().startsWith(getLang()));
+    if (voice) utterance.voice = voice;
     synth.speak(utterance);
   } catch {
     // Speech is a nicety; the game still shows the instruction on screen.

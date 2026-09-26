@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, tintStyle, sceneColor, targetColor, useLater } from './common';
+import { t } from '../i18n';
 
 /**
  * Eye-hand coordination while following a path: drive the bus along a winding
@@ -84,7 +85,7 @@ export const BusDriver = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     setTrip(1);
-    speak('Drive the bus along the road. Pick everybody up!', config.voiceEnabled);
+    speak(t('Drive the bus along the road. Pick everybody up!'), config.voiceEnabled);
   };
 
   const roadWidth = Math.max(36, config.size * 1.3) * (config.difficulty === 'hard' ? 0.8 : 1);
@@ -119,7 +120,7 @@ export const BusDriver = ({ config, onComplete }: GameProps) => {
       dragging.current = false;
       playSound('honk', config.soundEnabled);
       setScore(s => s + 1);
-      speak('All aboard! Great driving!', config.voiceEnabled);
+      speak(t('All aboard! Great driving!'), config.voiceEnabled);
       later(() => setTrip(t => t + 1), 1800);
     }
   };
@@ -161,7 +162,7 @@ export const BusDriver = ({ config, onComplete }: GameProps) => {
       onPointerCancel={onUp}
     >
       {!started && (
-        <StartOverlay label="Start the Bus" hint="Put your finger on the bus and drive it along the road!" onStart={start}>
+        <StartOverlay label={t('Start the Bus')} hint={t('Put your finger on the bus and drive it along the road!')} onStart={start}>
           <div className="text-6xl" style={tintStyle(config, 'target')}>🚌</div>
         </StartOverlay>
       )}

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { GameConfig } from './types';
+import { t, getLang } from './i18n';
 
 /**
  * The rescue pups: original characters (a police pup, a pilot pup and a fire
@@ -17,10 +18,18 @@ export const DEFAULT_PUP_NAMES: Record<PupRole, string> = {
 };
 
 export const pupName = (config: GameConfig, role: PupRole) =>
-  config.pupNames?.[role]?.trim() || DEFAULT_PUP_NAMES[role];
+  config.pupNames?.[role]?.trim() || t(DEFAULT_PUP_NAMES[role]);
 
 /** "Chase's" / "Police Pup's": for titles like "Chase's Night Search". */
 export const possessive = (name: string) => (name.endsWith('s') ? `${name}'` : `${name}'s`);
+
+/**
+ * A pup game's title with the pup's name: "Chase's Night Search", or
+ * "Гонщик: Ночной поиск" in Russian, where a possessive would need the name
+ * declined.
+ */
+export const pupTitle = (name: string, title: string) =>
+  getLang() === 'ru' ? `${name}: ${t(title)}` : `${possessive(name)} ${title}`;
 
 const LOOKS: Record<PupRole, { fur: string; ear: string; hat: string; badge: string }> = {
   police: { fur: '#a16207', ear: '#78350f', hat: '#1d4ed8', badge: '#facc15' },

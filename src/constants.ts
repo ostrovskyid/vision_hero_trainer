@@ -1,4 +1,5 @@
 import { AnaglyphPreset, GameConfig } from './types';
+import { detectLang } from './i18n';
 
 export const ANAGLYPH_TARGET_DEFAULT = '#FF0000';
 export const ANAGLYPH_SCENE_DEFAULT = '#00FFFF';
@@ -28,6 +29,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   deviationPD: 0,
   pupNames: { police: '', pilot: '', fire: '' },
   readingGames: false,
+  // The device language on a first start; changed in Parent's Corner.
+  language: detectLang(),
 };
 
 /** One sticker per day the patch-time goal is reached. */

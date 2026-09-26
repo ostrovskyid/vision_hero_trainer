@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, targetColor, sceneColor, useLater } from './common';
+import { t } from '../i18n';
 
 /**
  * Brief-exposure counting. A metro train rushes past a window and the child
@@ -76,7 +77,7 @@ export const CountCarriages = ({ config, onComplete }: GameProps) => {
 
   const onPassed = () => {
     setAsking(true);
-    speak('How many carriages?', config.voiceEnabled);
+    speak(t('How many carriages?'), config.voiceEnabled);
   };
 
   const answer = (n: number) => {
@@ -86,14 +87,14 @@ export const CountCarriages = ({ config, onComplete }: GameProps) => {
       playSound('hit', config.soundEnabled);
       setScore(s => s + 1);
       setRight(n);
-      speak(`Yes! ${n}!`, config.voiceEnabled);
+      speak(t('Yes! {n}!', { n }), config.voiceEnabled);
       later(newRound, 1100);
     } else {
       replaying.current = true;
       playSound('miss', config.soundEnabled);
       setWrong(n);
       later(() => setWrong(null), 400);
-      speak("Let's look again!", config.voiceEnabled);
+      speak(t("Let's look again!"), config.voiceEnabled);
       // Same train again: a second look, never a penalty.
       later(() => sendTrain(count), 900);
     }
@@ -107,7 +108,7 @@ export const CountCarriages = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full flex-col items-center justify-center gap-6 overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8">
       {!started && (
-        <StartOverlay label="Watch the Trains" hint="Count the carriages as the train goes by!" onStart={start}>
+        <StartOverlay label={t('Watch the Trains')} hint={t('Count the carriages as the train goes by!')} onStart={start}>
           <div className="flex gap-1">{[0, 1, 2].map(i => <span key={i}><Carriage color={carColor} width={56} /></span>)}</div>
         </StartOverlay>
       )}

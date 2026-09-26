@@ -4,6 +4,7 @@ import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
 import { ShapeIcon, ShapeKind, SHAPE_FAMILIES, SHAPE_NAMES, ALL_SHAPES } from '../shapes';
 import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater } from './common';
+import { t } from '../i18n';
 
 interface Tire {
   kind: ShapeKind;
@@ -55,7 +56,7 @@ export const ShapeGarage = ({ config, onComplete }: GameProps) => {
     setTires(rack);
     setFitted(false);
     setRound(r => r + 1);
-    speak(`Find the ${SHAPE_NAMES[next]} wheel!`, config.voiceEnabled);
+    speak(t(`Find the ${SHAPE_NAMES[next]} wheel!`), config.voiceEnabled);
   };
 
   const start = () => {
@@ -95,7 +96,7 @@ export const ShapeGarage = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative flex h-full min-h-[420px] w-full flex-col items-center justify-center gap-4 overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950 pb-8">
       {!started && (
-        <StartOverlay label="Open the Garage" hint="Find the wheel with the same shape!" onStart={start}>
+        <StartOverlay label={t('Open the Garage')} hint={t('Find the wheel with the same shape!')} onStart={start}>
           <div className="flex gap-3">
             {(['circle', 'house', 'heart'] as ShapeKind[]).map(k => (
               <span key={k}><ShapeIcon kind={k} size={40} color={ag ? config.anaglyphTarget : '#f8fafc'} /></span>
@@ -147,7 +148,7 @@ export const ShapeGarage = ({ config, onComplete }: GameProps) => {
                 animate={wrongIndex === i ? { x: [-8, 8, -8, 8, 0], scale: 1, opacity: 1 } : { scale: fitted && tire.isTarget ? 1.2 : 1, opacity: 1 }}
                 transition={{ duration: 0.35 }}
                 onClick={() => choose(tire, i)}
-                aria-label={`${SHAPE_NAMES[tire.kind]} wheel`}
+                aria-label={t(`${SHAPE_NAMES[tire.kind]} wheel`)}
                 className="flex items-center justify-center rounded-full"
                 style={{
                   width: tireSize,

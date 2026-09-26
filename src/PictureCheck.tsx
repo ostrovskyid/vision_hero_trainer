@@ -4,6 +4,7 @@ import { ChevronLeft, CreditCard, Minus, Plus, Glasses } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ShapeIcon, ShapeKind, SHAPE_NAMES } from './shapes';
 import { VisionCheck } from './types';
+import { t, locale } from './i18n';
 
 /**
  * The monthly picture check: a parent-run home test with picture symbols
@@ -150,7 +151,7 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
 
   const header = (title: string, back: () => void) => (
     <div className="flex w-full items-center justify-between">
-      <Button variant="ghost" onClick={back}><ChevronLeft className="mr-2 h-4 w-4" /> Back</Button>
+      <Button variant="ghost" onClick={back}><ChevronLeft className="mr-2 h-4 w-4" /> {t('Back')}</Button>
       <h2 className="text-xl font-bold md:text-2xl">{title}</h2>
       <div className="w-20" />
     </div>
@@ -159,10 +160,9 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
   if (step === 'calibrate') {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 py-4">
-        {header('Screen size', () => (pxPerMm > 0 ? setStep('setup') : onClose()))}
+        {header(t('Screen size'), () => (pxPerMm > 0 ? setStep('setup') : onClose()))}
         <p className="max-w-lg text-center text-slate-300">
-          Pictures must be a real size in millimetres, and every screen is different. Hold a bank card
-          (or any ID-size card) flat against the screen and make the box exactly as wide as the card.
+          {t('Pictures must be a real size in millimetres, and every screen is different. Hold a bank card (or any ID-size card) flat against the screen and make the box exactly as wide as the card.')}
         </p>
         <div className="w-full overflow-x-auto">
           <div
@@ -173,17 +173,17 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="lg" onClick={() => setCardPx(p => Math.max(2, p - 0.02))} aria-label="Smaller"><Minus className="h-5 w-5" /></Button>
+          <Button variant="outline" size="lg" onClick={() => setCardPx(p => Math.max(2, p - 0.02))} aria-label={t('Smaller')}><Minus className="h-5 w-5" /></Button>
           <input
             type="range" min={2} max={9} step={0.01} value={cardPx}
             onChange={e => setCardPx(Number(e.target.value))}
             className="w-56 accent-sky-400"
-            aria-label="Card box width"
+            aria-label={t('Card box width')}
           />
-          <Button variant="outline" size="lg" onClick={() => setCardPx(p => Math.min(9, p + 0.02))} aria-label="Bigger"><Plus className="h-5 w-5" /></Button>
+          <Button variant="outline" size="lg" onClick={() => setCardPx(p => Math.min(9, p + 0.02))} aria-label={t('Bigger')}><Plus className="h-5 w-5" /></Button>
         </div>
-        <Button size="lg" onClick={() => { onCalibrate(cardPx); setStep('setup'); }}>The box matches the card</Button>
-        <p className="text-sm text-slate-500">Done once per device. Page zoom must stay at 100%.</p>
+        <Button size="lg" onClick={() => { onCalibrate(cardPx); setStep('setup'); }}>{t('The box matches the card')}</Button>
+        <p className="text-sm text-slate-500">{t('Done once per device. Page zoom must stay at 100%.')}</p>
       </div>
     );
   }
@@ -195,9 +195,9 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
       // A white page with black pictures, like a printed chart.
       <div className="fixed inset-0 z-[80] flex flex-col bg-white text-slate-900">
         <div className="flex items-center justify-between px-4 py-3 text-sm text-slate-500">
-          <button onClick={() => { setTest(null); setStep('setup'); }} className="rounded px-3 py-2 hover:bg-slate-100">Stop</button>
+          <button onClick={() => { setTest(null); setStep('setup'); }} className="rounded px-3 py-2 hover:bg-slate-100">{t('Stop')}</button>
           {/* Parent-only progress, small and grey so it does not distract. */}
-          <span className="tabular-nums">{EYE_LABEL[eye]} · {distanceCm} cm · line {toDecimal(test.line)} · {test.shown}/5</span>
+          <span className="tabular-nums">{t(EYE_LABEL[eye])} · {t('{n} cm', { n: distanceCm })} · {t('line {value}', { value: toDecimal(test.line) })} · {test.shown}/5</span>
         </div>
         <div className="flex flex-1 items-center justify-center">
           <motion.div
@@ -216,14 +216,14 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
         </div>
         <div className="border-t border-slate-200 bg-slate-50 px-4 pb-6 pt-3">
           <p className="mb-3 text-center text-sm text-slate-500">
-            {near ? 'Tap the same picture.' : 'Parent: tap the picture your child names or points to.'}
+            {t(near ? 'Tap the same picture.' : 'Parent: tap the picture your child names or points to.')}
           </p>
           <div className="mx-auto flex max-w-lg flex-wrap justify-center gap-3">
             {SYMBOLS.map(s => (
               <button
                 key={s}
                 onClick={() => answer(s)}
-                aria-label={SHAPE_NAMES[s]}
+                aria-label={t(SHAPE_NAMES[s])}
                 className="flex h-16 w-16 items-center justify-center rounded-xl border-2 border-slate-300 bg-white hover:border-slate-500 active:scale-95"
               >
                 <ShapeIcon kind={s} size={36} color="#0f172a" />
@@ -233,7 +233,7 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
               onClick={() => answer(null)}
               className="h-16 rounded-xl border-2 border-slate-300 bg-white px-4 text-base font-medium text-slate-600 hover:border-slate-500"
             >
-              Not sure
+              {t('Not sure')}
             </button>
           </div>
         </div>
@@ -245,10 +245,10 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
     const previous = [...checks].reverse().find(c => c.eye === result.eye && c.distanceCm === result.distanceCm);
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-6 py-4 text-center">
-        {header('Picture check', () => setStep('setup'))}
+        {header(t('Picture check'), () => setStep('setup'))}
         <div className="text-6xl">⭐</div>
         <div>
-          <div className="text-sm uppercase tracking-wider text-slate-400">{EYE_LABEL[result.eye]} · {result.distanceCm} cm{result.glasses ? ' · with glasses' : ''}</div>
+          <div className="text-sm uppercase tracking-wider text-slate-400">{t(EYE_LABEL[result.eye])} · {t('{n} cm', { n: result.distanceCm })}{result.glasses ? ` · ${t('with glasses')}` : ''}</div>
           <div className="mt-1 text-5xl font-bold tabular-nums">
             {result.belowChart ? `< ${toDecimal(LARGEST)}` : `${result.atLimit ? '≥ ' : ''}${toDecimal(result.logMAR)}`}
           </div>
@@ -256,18 +256,18 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
         </div>
         {previous && (
           <p className="text-slate-300">
-            Last time ({new Date(previous.date).toLocaleDateString()}): {toDecimal(previous.logMAR)}
+            {t('Last time ({date}): {value}', { date: new Date(previous.date).toLocaleDateString(locale()), value: toDecimal(previous.logMAR) })}
           </p>
         )}
         {result.atLimit && (
-          <p className="max-w-md text-sm text-amber-300">This is the smallest picture this screen can draw at {result.distanceCm} cm. Test from further away to see smaller lines.</p>
+          <p className="max-w-md text-sm text-amber-300">{t('This is the smallest picture this screen can draw at {n} cm. Test from further away to see smaller lines.', { n: result.distanceCm })}</p>
         )}
         <p className="max-w-md text-sm text-slate-500">
-          A home trend check, not a medical test. Compare it with earlier checks done the same way, and bring the history to checkups.
+          {t('A home trend check, not a medical test. Compare it with earlier checks done the same way, and bring the history to checkups.')}
         </p>
         <div className="flex gap-3">
-          <Button size="lg" onClick={() => { onSave(result); setStep('history'); }}>Save result</Button>
-          <Button size="lg" variant="outline" onClick={() => setStep('setup')}>Discard</Button>
+          <Button size="lg" onClick={() => { onSave(result); setStep('history'); }}>{t('Save result')}</Button>
+          <Button size="lg" variant="outline" onClick={() => setStep('setup')}>{t('Discard')}</Button>
         </div>
       </div>
     );
@@ -276,7 +276,7 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
   if (step === 'history') {
     return (
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 py-4">
-        {header('Picture check history', () => setStep('setup'))}
+        {header(t('Picture check history'), () => setStep('setup'))}
         <HistoryChart checks={checks} />
         <HistoryTable checks={checks} />
       </div>
@@ -289,55 +289,54 @@ export const PictureCheckScreen = ({ checks, pxPerMm, onCalibrate, onSave, onClo
   const lastCheck = checks[checks.length - 1];
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-6 py-4">
-      {header('Monthly picture check', onClose)}
+      {header(t('Monthly picture check'), onClose)}
       <p className="text-slate-300">
-        Do it the same way each month: same room, good light, glasses on as usual. Cover the other eye
-        with the patch. For 1 m, measure the distance from the screen to your child's eyes.
+        {t("Do it the same way each month: same room, good light, glasses on as usual. Cover the other eye with the patch. For 1 m, measure the distance from the screen to your child's eyes.")}
       </p>
 
       <section className="space-y-2">
-        <div className="text-sm font-semibold uppercase tracking-wider text-slate-400">Eye</div>
+        <div className="text-sm font-semibold uppercase tracking-wider text-slate-400">{t('Eye')}</div>
         <div className="grid gap-2 sm:grid-cols-3">
           {(['left', 'right', 'both'] as const).map(e => (
             <button key={e} className={choice(eye === e)} onClick={() => setEye(e)} aria-pressed={eye === e}>
-              <div className="font-medium">{EYE_LABEL[e]}</div>
-              <div className="text-sm text-slate-400">{e === 'left' ? 'Patch on the right eye' : e === 'right' ? 'Patch on the left eye' : 'No patch'}</div>
+              <div className="font-medium">{t(EYE_LABEL[e])}</div>
+              <div className="text-sm text-slate-400">{t(e === 'left' ? 'Patch on the right eye' : e === 'right' ? 'Patch on the left eye' : 'No patch')}</div>
             </button>
           ))}
         </div>
       </section>
 
       <section className="space-y-2">
-        <div className="text-sm font-semibold uppercase tracking-wider text-slate-400">Distance</div>
+        <div className="text-sm font-semibold uppercase tracking-wider text-slate-400">{t('Distance')}</div>
         <div className="grid gap-2 sm:grid-cols-2">
           <button className={choice(distanceCm === 100)} onClick={() => setDistanceCm(100)} aria-pressed={distanceCm === 100}>
-            <div className="font-medium">1 metre (recommended)</div>
-            <div className="text-sm text-slate-400">Tablet on a table or stand; your child names or points, you tap.</div>
+            <div className="font-medium">{t('1 metre (recommended)')}</div>
+            <div className="text-sm text-slate-400">{t('Tablet on a table or stand; your child names or points, you tap.')}</div>
           </button>
           <button className={choice(distanceCm === 40)} onClick={() => setDistanceCm(40)} aria-pressed={distanceCm === 40}>
-            <div className="font-medium">40 cm (near)</div>
-            <div className="text-sm text-slate-400">Your child holds the tablet and taps. Smallest lines may not fit the screen.</div>
+            <div className="font-medium">{t('40 cm (near)')}</div>
+            <div className="text-sm text-slate-400">{t('Your child holds the tablet and taps. Smallest lines may not fit the screen.')}</div>
           </button>
         </div>
       </section>
 
       <section className="flex flex-wrap gap-3">
         <Button variant={glasses ? 'default' : 'outline'} onClick={() => setGlasses(g => !g)}>
-          <Glasses className="mr-2 h-4 w-4" /> {glasses ? 'With glasses' : 'Without glasses'}
+          <Glasses className="mr-2 h-4 w-4" /> {t(glasses ? 'With glasses' : 'Without glasses')}
         </Button>
         <Button variant={crowded ? 'default' : 'outline'} onClick={() => setCrowded(c => !c)}>
-          {crowded ? 'Crowding box on' : 'Crowding box off'}
+          {t(crowded ? 'Crowding box on' : 'Crowding box off')}
         </Button>
-        <Button variant="ghost" onClick={() => setStep('calibrate')}>Screen size…</Button>
+        <Button variant="ghost" onClick={() => setStep('calibrate')}>{t('Screen size…')}</Button>
       </section>
 
       <div className="flex flex-wrap items-center gap-3">
-        <Button size="lg" onClick={start} className="px-8">Start check</Button>
-        <Button size="lg" variant="outline" onClick={() => setStep('history')} disabled={checks.length === 0}>History ({checks.length})</Button>
+        <Button size="lg" onClick={start} className="px-8">{t('Start check')}</Button>
+        <Button size="lg" variant="outline" onClick={() => setStep('history')} disabled={checks.length === 0}>{t('History ({n})', { n: checks.length })}</Button>
       </div>
       {lastCheck && (
         <p className="text-sm text-slate-500">
-          Last check: {new Date(lastCheck.date).toLocaleDateString()}, {EYE_LABEL[lastCheck.eye].toLowerCase()} {toDecimal(lastCheck.logMAR)}.
+          {t('Last check: {date}, {eye} {value}.', { date: new Date(lastCheck.date).toLocaleDateString(locale()), eye: t(EYE_LABEL[lastCheck.eye]).toLowerCase(), value: toDecimal(lastCheck.logMAR) })}
         </p>
       )}
     </div>
@@ -367,26 +366,26 @@ export const HistoryChart = ({ checks }: { checks: VisionCheck[] }) => {
   return (
     <figure className="rounded-xl border border-slate-800 bg-slate-900 p-4">
       <figcaption className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <span className="font-semibold text-slate-50">Vision over time</span>
+        <span className="font-semibold text-slate-50">{t('Vision over time')}</span>
         {/* Legend: always shown for two or more eyes; colour is never the only cue (direct labels too). */}
         <span className="flex gap-4 text-sm text-slate-300">
           {eyes.map(e => (
             <span key={e} className="flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: SERIES[e] }} /> {EYE_LABEL[e]}
+              <span className="inline-block h-2.5 w-2.5 rounded-full" style={{ backgroundColor: SERIES[e] }} /> {t(EYE_LABEL[e])}
             </span>
           ))}
         </span>
       </figcaption>
       <div className="relative w-full overflow-x-auto">
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px]" role="img" aria-label="Picture check results over time">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full min-w-[480px]" role="img" aria-label={t('Picture check results over time')}>
           {TICKS.map(([label, v]) => (
             <g key={label}>
               <line x1={L} x2={W - R} y1={y(v)} y2={y(v)} stroke="#1e293b" strokeWidth={1} />
               <text x={L - 8} y={y(v)} textAnchor="end" dominantBaseline="middle" fontSize="11" fill="#94a3b8">{label}</text>
             </g>
           ))}
-          <text x={L} y={H - 8} fontSize="11" fill="#94a3b8">{new Date(t0).toLocaleDateString()}</text>
-          {t1 !== t0 && <text x={W - R} y={H - 8} textAnchor="end" fontSize="11" fill="#94a3b8">{new Date(t1).toLocaleDateString()}</text>}
+          <text x={L} y={H - 8} fontSize="11" fill="#94a3b8">{new Date(t0).toLocaleDateString(locale())}</text>
+          {t1 !== t0 && <text x={W - R} y={H - 8} textAnchor="end" fontSize="11" fill="#94a3b8">{new Date(t1).toLocaleDateString(locale())}</text>}
           {eyes.map(e => {
             const series = points.filter(p => p.c.eye === e);
             const last = series[series.length - 1];
@@ -400,7 +399,7 @@ export const HistoryChart = ({ checks }: { checks: VisionCheck[] }) => {
                 ))}
                 {/* Direct label on the latest point. */}
                 <text x={last.px + 10} y={last.py} dominantBaseline="middle" fontSize="12" fill="#e2e8f0">
-                  {e === 'both' ? 'Both' : e === 'left' ? 'Left' : 'Right'} {toDecimal(last.c.logMAR)}
+                  {t(e === 'both' ? 'Both' : e === 'left' ? 'Left' : 'Right')} {toDecimal(last.c.logMAR)}
                 </text>
               </g>
             );
@@ -418,7 +417,7 @@ export const HistoryChart = ({ checks }: { checks: VisionCheck[] }) => {
             className="pointer-events-none absolute rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-xs text-slate-200 shadow-lg"
             style={{ left: `${(hovered.px / W) * 100}%`, top: `${(hovered.py / H) * 100}%`, transform: 'translate(-50%, -130%)' }}
           >
-            {new Date(hovered.c.date).toLocaleDateString()} · {EYE_LABEL[hovered.c.eye]} · <strong>{toDecimal(hovered.c.logMAR)}</strong> · {hovered.c.distanceCm} cm
+            {new Date(hovered.c.date).toLocaleDateString(locale())} · {t(EYE_LABEL[hovered.c.eye])} · <strong>{toDecimal(hovered.c.logMAR)}</strong> · {t('{n} cm', { n: hovered.c.distanceCm })}
           </div>
         )}
       </div>
@@ -431,21 +430,21 @@ export const HistoryTable = ({ checks }: { checks: VisionCheck[] }) => (
     <table className="w-full text-left text-sm">
       <thead className="bg-slate-900 text-slate-400">
         <tr>
-          <th className="px-3 py-2 font-medium">Date</th>
-          <th className="px-3 py-2 font-medium">Eye</th>
-          <th className="px-3 py-2 text-right font-medium">Vision</th>
+          <th className="px-3 py-2 font-medium">{t('Date')}</th>
+          <th className="px-3 py-2 font-medium">{t('Eye')}</th>
+          <th className="px-3 py-2 text-right font-medium">{t('Vision')}</th>
           <th className="px-3 py-2 text-right font-medium">logMAR</th>
-          <th className="px-3 py-2 font-medium">How</th>
+          <th className="px-3 py-2 font-medium">{t('How')}</th>
         </tr>
       </thead>
       <tbody className="tabular-nums">
         {[...checks].reverse().map((c, i) => (
           <tr key={i} className="border-t border-slate-800">
-            <td className="px-3 py-2">{new Date(c.date).toLocaleDateString()}</td>
-            <td className="px-3 py-2">{EYE_LABEL[c.eye]}</td>
+            <td className="px-3 py-2">{new Date(c.date).toLocaleDateString(locale())}</td>
+            <td className="px-3 py-2">{t(EYE_LABEL[c.eye])}</td>
             <td className="px-3 py-2 text-right font-semibold">{c.belowChart ? `< ${toDecimal(LARGEST)}` : `${c.atLimit ? '≥ ' : ''}${toDecimal(c.logMAR)}`}</td>
             <td className="px-3 py-2 text-right">{c.logMAR.toFixed(1)}</td>
-            <td className="px-3 py-2 text-slate-400">{c.distanceCm} cm · {c.glasses ? 'glasses' : 'no glasses'} · {c.crowded ? 'crowded' : 'single'}</td>
+            <td className="px-3 py-2 text-slate-400">{t('{n} cm', { n: c.distanceCm })} · {t(c.glasses ? 'glasses' : 'no glasses')} · {t(c.crowded ? 'crowded' : 'single')}</td>
           </tr>
         ))}
       </tbody>

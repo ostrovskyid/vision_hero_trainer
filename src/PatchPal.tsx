@@ -3,6 +3,7 @@ import { ChevronLeft, Glasses, Minus, Play, Plus, Square } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PatchRecord } from './types';
 import { dayKey, formatMinutes, runningMinutes } from './therapy';
+import { t, locale } from './i18n';
 
 /**
  * Patch Pal: a patch-time companion. Wearing the patch for the prescribed time
@@ -65,9 +66,9 @@ export const PatchPalBar = ({ patch, goal, now, onOpen }: {
       <Pirate size={40} patched={running} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 text-base font-bold text-slate-50">
-          Patch Pal
-          {running && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-300">Patch on</span>}
-          {done && <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-semibold text-yellow-300">Goal done!</span>}
+          {t('Patch Pal')}
+          {running && <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-xs font-semibold text-emerald-300">{t('Patch on')}</span>}
+          {done && <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs font-semibold text-yellow-300">{t('Goal done!')}</span>}
         </div>
         <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-800">
           <div className="h-full rounded-full bg-emerald-400 transition-all" style={{ width: `${Math.min(100, (minutes / goal) * 100)}%` }} />
@@ -75,7 +76,7 @@ export const PatchPalBar = ({ patch, goal, now, onOpen }: {
       </div>
       <div className="shrink-0 text-right text-sm tabular-nums text-slate-300">
         {formatMinutes(minutes)}
-        <div className="text-xs text-slate-500">of {formatMinutes(goal)}</div>
+        <div className="text-xs text-slate-500">{t('of {total}', { total: formatMinutes(goal) })}</div>
       </div>
     </button>
   );
@@ -99,7 +100,7 @@ export const PatchPalScreen = ({ patch, goal, now, onStart, onStop, onAdjust, on
     const time = now - (6 - i) * 86400000;
     const key = dayKey(time);
     const value = key === dayKey(now) ? minutes : (patch.log[key] ?? 0);
-    return { key, label: new Date(time).toLocaleDateString(undefined, { weekday: 'short' }), value };
+    return { key, label: new Date(time).toLocaleDateString(locale(), { weekday: 'short' }), value };
   });
 
   return (
@@ -110,8 +111,8 @@ export const PatchPalScreen = ({ patch, goal, now, onStart, onStop, onAdjust, on
       className="mx-auto flex w-full max-w-xl flex-col items-center gap-6 py-4"
     >
       <div className="flex w-full items-center justify-between">
-        <Button variant="ghost" onClick={onClose}><ChevronLeft className="mr-2 h-4 w-4" /> Back</Button>
-        <h2 className="text-2xl font-bold">Patch Pal</h2>
+        <Button variant="ghost" onClick={onClose}><ChevronLeft className="mr-2 h-4 w-4" /> {t('Back')}</Button>
+        <h2 className="text-2xl font-bold">{t('Patch Pal')}</h2>
         <div className="w-20" />
       </div>
 
@@ -131,28 +132,28 @@ export const PatchPalScreen = ({ patch, goal, now, onStart, onStop, onAdjust, on
 
       <div className="text-center">
         <div className="text-4xl font-bold tabular-nums">{formatMinutes(minutes)}</div>
-        <div className="text-slate-400">today · goal {formatMinutes(goal)}</div>
-        {running && <div className="mt-1 text-sm text-emerald-300">This patch: {formatMinutes(session)}</div>}
+        <div className="text-slate-400">{t('today · goal {goal}', { goal: formatMinutes(goal) })}</div>
+        {running && <div className="mt-1 text-sm text-emerald-300">{t('This patch: {time}', { time: formatMinutes(session) })}</div>}
       </div>
 
       {running ? (
         <Button size="lg" variant="outline" onClick={onStop} className="px-10 py-6 text-xl">
-          <Square className="mr-2 h-5 w-5" /> Patch off
+          <Square className="mr-2 h-5 w-5" /> {t('Patch off')}
         </Button>
       ) : (
         <Button size="lg" onClick={onStart} className="px-10 py-6 text-xl">
-          <Play className="mr-2 h-6 w-6" /> Patch on!
+          <Play className="mr-2 h-6 w-6" /> {t('Patch on!')}
         </Button>
       )}
 
       <div className="flex items-center gap-2 text-slate-400">
         <Glasses className="h-5 w-5" />
-        <span className="text-sm">Glasses on too!</span>
+        <span className="text-sm">{t('Glasses on too!')}</span>
       </div>
 
       {/* The last seven days, so a parent can see the habit at a glance. */}
       <div className="w-full rounded-xl border border-slate-800 bg-slate-900 p-4">
-        <div className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">This week</div>
+        <div className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-400">{t('This week')}</div>
         <div className="flex h-28 items-end justify-between gap-2">
           {week.map(day => (
             <div key={day.key} className="flex flex-1 flex-col items-center gap-1">
@@ -168,10 +169,10 @@ export const PatchPalScreen = ({ patch, goal, now, onStart, onStop, onAdjust, on
           ))}
         </div>
         <div className="mt-4 flex items-center justify-between gap-3 border-t border-slate-800 pt-3">
-          <span className="text-sm text-slate-400">Forgot the timer? Fix today:</span>
+          <span className="text-sm text-slate-400">{t('Forgot the timer? Fix today:')}</span>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => onAdjust(-15)} aria-label="Remove 15 minutes"><Minus className="h-4 w-4" /> 15</Button>
-            <Button variant="outline" size="sm" onClick={() => onAdjust(15)} aria-label="Add 15 minutes"><Plus className="h-4 w-4" /> 15</Button>
+            <Button variant="outline" size="sm" onClick={() => onAdjust(-15)} aria-label={t('Remove 15 minutes')}><Minus className="h-4 w-4" /> 15</Button>
+            <Button variant="outline" size="sm" onClick={() => onAdjust(15)} aria-label={t('Add 15 minutes')}><Plus className="h-4 w-4" /> 15</Button>
           </div>
         </div>
       </div>
@@ -194,13 +195,13 @@ export const PatchPrompt = ({ onPatchOn, onSkip, onCancel }: {
     >
       <Pirate size={120} patched />
       <div>
-        <h2 className="text-2xl font-bold">Patch on, glasses on!</h2>
-        <p className="mt-1 text-slate-400">Ready, captain?</p>
+        <h2 className="text-2xl font-bold">{t('Patch on, glasses on!')}</h2>
+        <p className="mt-1 text-slate-400">{t('Ready, captain?')}</p>
       </div>
       <Button size="lg" onClick={onPatchOn} className="w-full py-6 text-xl">
-        <Play className="mr-2 h-6 w-6" /> Patch is on!
+        <Play className="mr-2 h-6 w-6" /> {t('Patch is on!')}
       </Button>
-      <Button variant="ghost" onClick={onSkip} className="text-slate-400">Play without the patch</Button>
+      <Button variant="ghost" onClick={onSkip} className="text-slate-400">{t('Play without the patch')}</Button>
     </motion.div>
   </div>
 );

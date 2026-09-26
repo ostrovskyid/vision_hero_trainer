@@ -5,6 +5,7 @@ import { playSound, speak } from '../feedback';
 import {
   GameProps, StartOverlay, finishSession, useSessionTimer, useElementSize, useLater, targetColor, sceneColor, tintStyle,
 } from './common';
+import { t } from '../i18n';
 
 /**
  * Localisation: the tablet version of the "poke the dot" pleoptic exercise.
@@ -51,7 +52,7 @@ export const RocketDocking = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newPort();
-    speak('Tap right in the middle of the docking ring!', config.voiceEnabled);
+    speak(t('Tap right in the middle of the docking ring!'), config.voiceEnabled);
   };
 
   const tap = (e: PointerEvent<HTMLDivElement>) => {
@@ -82,7 +83,7 @@ export const RocketDocking = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-xl border-4 border-slate-800 bg-slate-950">
       {!started && (
-        <StartOverlay label="Launch" hint="Tap right in the middle of the docking ring!" onStart={start}>
+        <StartOverlay label={t('Launch')} hint={t('Tap right in the middle of the docking ring!')} onStart={start}>
           <div className="text-6xl" style={tintStyle(config, 'target')}>🚀</div>
         </StartOverlay>
       )}

@@ -7,6 +7,7 @@ import {
   GameProps, StartOverlay, useSessionTimer, useElementSize, useLater, compensationPx, pxPerPrismDioptre,
 } from './common';
 import confetti from 'canvas-confetti';
+import { t } from '../i18n';
 
 /**
  * Simultaneous perception, the first step of the orthoptist's synoptophore
@@ -89,7 +90,7 @@ export const LionCage = ({ config, onComplete }: GameProps) => {
     setHomeY((Math.random() - 0.5) * 80);
     setLocked(false);
     setRound(r => r + 1);
-    speak(`Put the ${next.name} in the ${next.homeName}!`, config.voiceEnabled);
+    speak(t(`Put the ${next.name} in the ${next.homeName}!`), config.voiceEnabled);
   };
 
   const start = () => {
@@ -124,7 +125,7 @@ export const LionCage = ({ config, onComplete }: GameProps) => {
     setScore(s => s + 1);
     setLocked(true);
     playSound('hit', config.soundEnabled);
-    speak(`The ${pair.name} is home!`, config.voiceEnabled);
+    speak(t(`The ${pair.name} is home!`), config.voiceEnabled);
     later(newRound, 1400);
   };
 
@@ -134,7 +135,7 @@ export const LionCage = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-xl border-4 border-slate-800 bg-black">
       {!started && (
-        <StartOverlay label="Open the Zoo Gate" hint="Glasses on! Drag the cage so the lion is inside it." onStart={start}>
+        <StartOverlay label={t('Open the Zoo Gate')} hint={t('Glasses on! Drag the cage so the lion is inside it.')} onStart={start}>
           <div className="text-6xl">🦁</div>
         </StartOverlay>
       )}
@@ -176,7 +177,7 @@ export const LionCage = ({ config, onComplete }: GameProps) => {
 
       {started && (
         <div className="absolute bottom-10 left-1/2 z-20 -translate-x-1/2">
-          <Button size="lg" onClick={gotIt} disabled={locked} className="px-10 py-6 text-xl">Got it!</Button>
+          <Button size="lg" onClick={gotIt} disabled={locked} className="px-10 py-6 text-xl">{t('Got it!')}</Button>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { GameConfig, UserProfile } from './types';
+import { t } from './i18n';
 
 /**
  * Backup and restore to a file. Everything the app remembers lives in this
@@ -42,7 +43,7 @@ export const saveBackupFile = async (backup: BackupFile): Promise<boolean> => {
   const nav = navigator as Navigator & { canShare?: (data: { files: File[] }) => boolean };
   if (nav.share && nav.canShare?.({ files: [file] })) {
     try {
-      await nav.share({ files: [file], title: 'Vision Hero backup' });
+      await nav.share({ files: [file], title: t('Vision Hero backup') });
       return true;
     } catch (err) {
       // Closing the share sheet is a choice, not a failure; anything else
@@ -71,16 +72,16 @@ export const parseBackup = (text: string): ParsedBackup => {
   try {
     data = JSON.parse(text);
   } catch {
-    return { ok: false, error: "This file isn't a Vision Hero backup (it isn't readable JSON)." };
+    return { ok: false, error: t("This file isn't a Vision Hero backup (it isn't readable JSON).") };
   }
   if (!data || data.format !== BACKUP_FORMAT) {
-    return { ok: false, error: "This file isn't a Vision Hero backup. Choose a file named vision-hero-backup-….json." };
+    return { ok: false, error: t("This file isn't a Vision Hero backup. Choose a file named vision-hero-backup-….json.") };
   }
   if (typeof data.version !== 'number' || data.version > BACKUP_VERSION) {
-    return { ok: false, error: 'This backup was made by a newer version of the app. Reload the app to update it, then try again.' };
+    return { ok: false, error: t('This backup was made by a newer version of the app. Reload the app to update it, then try again.') };
   }
   if (!data.user || typeof data.user !== 'object' || !data.config || typeof data.config !== 'object') {
-    return { ok: false, error: 'This backup is incomplete: the progress or settings part is missing.' };
+    return { ok: false, error: t('This backup is incomplete: the progress or settings part is missing.') };
   }
   return { ok: true, backup: data as BackupFile };
 };
