@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship,
@@ -1284,6 +1284,16 @@ export default function App() {
   });
 
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // The home grid unmounts while a game is open, so its scroll position is
+  // kept here and put back when the child returns to the home screen.
+  const homeScroll = useRef(0);
+  // Leaving home changes the page layout, which scrolls the grid to the top
+  // as it animates out; only scrolls made while home is showing are kept.
+  const screenRef = useRef(screen);
+  screenRef.current = screen;
+  const homeGridRef = useCallback((el: HTMLDivElement | null) => {
+    if (el) el.scrollTop = homeScroll.current;
+  }, []);
   const [calibrationTest, setCalibrationTest] = useState(false);
   // The daily mission in progress, if any: three games played back to back.
   const [mission, setMission] = useState<{ modes: GameMode[]; index: number } | null>(null);
@@ -1761,7 +1771,11 @@ export default function App() {
                   count steps up with width so rows stay a sensible shape, and
                   the rows split the height evenly but never shrink below 9rem. Very short
                   windows fall back to scrolling rather than crushing the tiles. */}
-              <div className="grid flex-1 min-h-0 auto-rows-[minmax(9rem,1fr)] grid-cols-2 gap-2.5 overflow-y-auto md:grid-cols-3 md:gap-3 xl:grid-cols-4">
+              <div
+                ref={homeGridRef}
+                onScroll={e => { if (screenRef.current === 'home') homeScroll.current = e.currentTarget.scrollTop; }}
+                className="grid flex-1 min-h-0 auto-rows-[minmax(9rem,1fr)] grid-cols-2 gap-2.5 overflow-y-auto md:grid-cols-3 md:gap-3 xl:grid-cols-4"
+              >
                 {visibleTiles.map(tile => (
                   <Card
                     key={tile.mode}
