@@ -8,7 +8,7 @@ import {
   Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
   Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch,
   Waves, Orbit, Waypoints, Paintbrush, Layers, Cat, Sparkles, Flashlight, Flame,
-  Construction, Recycle, Snowflake, Fish
+  Construction, Recycle, Snowflake, Fish, Footprints, Signpost, Bone
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -55,6 +55,9 @@ import { CraneTower } from './games/CraneTower';
 import { RecyclingSort } from './games/RecyclingSort';
 import { SnowflakeMatch } from './games/SnowflakeMatch';
 import { BubbleRescue } from './games/BubbleRescue';
+import { JungleTrail } from './games/JungleTrail';
+import { ScooterSigns } from './games/ScooterSigns';
+import { MistyDinos } from './games/MistyDinos';
 import { PupRole, PUP_ROLES, pupName, pupTitle, withPupNames, RescuePup, DEFAULT_PUP_NAMES } from './pups';
 import { newVersionAvailable } from './update';
 import { t, setLang, locale, plural, LANGUAGES } from './i18n';
@@ -99,6 +102,9 @@ const GAME_TILES: {
   { mode: 'recycle', title: 'Recycling Sort', description: 'Put each thing in the right bin.', Icon: Recycle, iconClass: 'text-emerald-300', chipClass: 'bg-emerald-500/10', hoverClass: 'hover:border-emerald-400/60', barClass: 'bg-emerald-400', pup: 'recycle' },
   { mode: 'snowflakes', title: 'Snowflake Match', description: 'Find the snowflake twin.', Icon: Snowflake, iconClass: 'text-violet-300', chipClass: 'bg-violet-500/10', hoverClass: 'hover:border-violet-400/60', barClass: 'bg-violet-400', pup: 'snow' },
   { mode: 'bubbles', title: 'Bubble Rescue', description: 'Pop the bubbles with a turtle.', Icon: Fish, iconClass: 'text-cyan-300', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-400/60', barClass: 'bg-cyan-400', pup: 'water' },
+  { mode: 'jungle', title: 'Jungle Trail', description: 'Follow the paw prints to the end.', Icon: Footprints, iconClass: 'text-lime-300', chipClass: 'bg-lime-500/10', hoverClass: 'hover:border-lime-400/60', barClass: 'bg-lime-400', pup: 'jungle' },
+  { mode: 'scooter', title: 'Scooter Signs', description: 'Which way does the arrow point?', Icon: Signpost, iconClass: 'text-violet-300', chipClass: 'bg-violet-500/10', hoverClass: 'hover:border-violet-400/60', barClass: 'bg-violet-400', pup: 'city' },
+  { mode: 'dinos', title: 'Misty Dinos', description: 'Find the dinosaur in the mist.', Icon: Bone, iconClass: 'text-slate-300', chipClass: 'bg-slate-500/10', hoverClass: 'hover:border-slate-400/60', barClass: 'bg-slate-400', pup: 'dino' },
   { mode: 'shapes', title: 'Shape Garage', description: 'Find the wheel with the same shape.', Icon: Shapes, iconClass: 'text-amber-400', chipClass: 'bg-amber-500/10', hoverClass: 'hover:border-amber-500/60', barClass: 'bg-amber-500' },
   { mode: 'popout', title: 'Pop-Out Pups', description: 'Tap the pup that floats out.', Icon: Dog, iconClass: 'text-pink-400', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-500/60', barClass: 'bg-pink-500', requiresAnaglyph: true },
   { mode: 'cinema', title: 'Cartoon Cinema', description: 'Watch the show, tap the stars.', Icon: Clapperboard, iconClass: 'text-teal-400', chipClass: 'bg-teal-500/10', hoverClass: 'hover:border-teal-500/60', barClass: 'bg-teal-500' },
@@ -168,6 +174,9 @@ const SKILL_LABELS: Record<GameMode, string> = {
   recycle: 'Eye-Hand Coordination',
   snowflakes: 'Fine Detail',
   bubbles: 'Pursuit & Discrimination',
+  jungle: 'Saccades & Scanning',
+  scooter: 'Visual Acuity',
+  dinos: 'Contrast Sensitivity',
 };
 
 /**
@@ -212,6 +221,9 @@ const GAME_INSTRUCTIONS: Record<GameMode, string> = {
   recycle: 'Help {recycle} sort the rubbish! Drag each thing into the right bin.',
   snowflakes: '{snow} found a snowflake. Find its twin in the sky!',
   bubbles: 'Baby turtles are lost in the bubbles! Help {water} and pop only the turtle bubbles!',
+  jungle: '{jungle} found some paw prints! Tap them one by one to follow the trail!',
+  scooter: '{city} is riding the scooter! Which way does the arrow point?',
+  dinos: '{dino} is looking for dinosaurs in the mist!',
 };
 
 const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as const;
@@ -1852,6 +1864,9 @@ export default function App() {
               {selectedMode === 'recycle' && <RecyclingSort config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'snowflakes' && <SnowflakeMatch config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'bubbles' && <BubbleRescue config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'jungle' && <JungleTrail config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'scooter' && <ScooterSigns config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'dinos' && <MistyDinos config={gameConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}

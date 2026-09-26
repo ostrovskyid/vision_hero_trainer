@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Thirty-four short exercises themed around vehicles, metro maps, rockets, rescue pups and
+Thirty-seven short exercises themed around vehicles, metro maps, rockets, rescue pups and
 the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,11 +34,11 @@ points, and every round finishes with confetti.
 
 ## Highlights
 
-- **Thirty-four exercises**, each training a different visual skill — including a 3D depth game
+- **Thirty-seven exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
   sticker for the season's album
-- **Rescue pups** — eight games starring seven original rescue pups that a parent
+- **Rescue pups** — eleven games starring ten original rescue pups that a parent
   can name after the child's favourites (stored on the device only)
 - **Treatment stages and Patch Pal** — the app follows the stage the eye doctor has set
   (weaker-eye training, recovery, two eyes together, keeping the gains),
@@ -455,6 +455,40 @@ sea creature. Pop only the ones with a lost baby turtle and let the others float
 Harder levels send more, smaller bubbles with more sway.
 
 </td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/jungle-trail.png" alt="Jungle Trail" width="100%">
+
+### 🐾 Jungle Trail
+**Saccades and scanning** — paw prints lead through the jungle from the jungle pup to a
+hiding animal; tap them one by one, in order. Each tap is a small, accurate eye jump to the
+next print. Harder levels scatter bird tracks in between, with smaller prints and longer
+trails.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/scooter-signs.png" alt="Scooter Signs" width="100%">
+
+### 🛴 Scooter Signs
+**Visual acuity** — at every corner a road sign shows an arrow; tap the big button pointing
+the same way. The arrow is drawn on a five-by-five grid like the direction charts
+(tumbling E, Landolt C) used to measure children's sight. It shrinks after each right
+answer and grows after a wrong one, settling at the smallest arrow the child can read.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/misty-dinos.png" alt="Misty Dinos" width="100%">
+
+### 🦕 Misty Dinos
+**Contrast sensitivity** — grey dinosaurs stand in a grey, misty valley and the dino pup
+asks for one. The mist thickens after each find and clears a little after a wrong tap,
+settling at the faintest shapes the child can find.
+
+</td>
 </tr>
 </table>
 
@@ -477,9 +511,10 @@ Harder levels send more, smaller bubbles with more sway.
 
 ## Rescue pups
 
-Eight games star original rescue pups: a police pup (Night Search, Lookout), a pilot pup
+Eleven games star original rescue pups: a police pup (Night Search, Lookout), a pilot pup
 (Sky Catch), a fire pup (Fire Rescue), a builder pup (Crane Tower), a recycling pup
-(Recycling Sort), a snow pup (Snowflake Match) and a water pup (Bubble Rescue). In **Parent's Corner → Rescue Pups** a parent can
+(Recycling Sort), a snow pup (Snowflake Match), a water pup (Bubble Rescue), a jungle pup
+(Jungle Trail), a city pup (Scooter Signs) and a dino pup (Misty Dinos). In **Parent's Corner → Rescue Pups** a parent can
 give them the names the child uses. The names appear in the game titles and spoken
 instructions, and are stored only on that device, so the public app carries no one else's
 characters or trademarks.
@@ -586,7 +621,7 @@ rather than to the game:
 | Setting | What it does |
 |---------|--------------|
 | **Treatment plan** | Stage and daily patch goal (see above) |
-| **Rescue Pups** | Names for the seven rescue pups, stored on this device only |
+| **Rescue Pups** | Names for the ten rescue pups, stored on this device only |
 | **Reading games** | Show games that need letters (Station Hunt); off by default |
 | **Picture check / Backup / Report** | Monthly picture check, backup file and progress report (see above) |
 | **Difficulty** | `easy` / `medium` / `hard` presets for speed, target size and grid density |
