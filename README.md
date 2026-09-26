@@ -452,6 +452,21 @@ its settings once; everything stays adjustable, and the app never changes stage 
     another screen.
   - Parent's Corner recommends a new backup after 30 days.
 
+## Seasonal sticker albums
+
+Treatment runs for years, so rewards change with the seasons. Each season (by the local
+calendar) has an album of **two pages of 12 stickers**: Autumn Forest and Harvest Farm,
+Snowy Days and North Pole Express, Spring Garden and Windy Skies, Beach Holiday and Summer
+Road Trip. The page order swaps every year, so the same season looks different next time.
+Winter runs December to February and counts as one album.
+
+- **Today's Mission** stickers fill the current album in order. Finishing a page gets a
+  trophy and a spoken cheer. Once both pages are full, extra stickers come from the
+  vehicle set.
+- **Patch Pal's** daily-goal stickers are pirates, kept in the album's Pirate Chest.
+- **Viewing:** tap the sticker shelf on the home screen to open the album. Stickers still
+  to win show as faint shadows, and earlier seasons stay as tabs.
+
 ## Progress report
 
 **Progress Report** (Parent's Corner) puts everything the app recorded over a chosen period

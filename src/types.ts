@@ -59,6 +59,8 @@ export interface UserProfile {
   lastMissionDate?: string;
   patch: PatchRecord;
   checks: VisionCheck[];
+  /** Seasonal album stickers, by album key (e.g. "2026-autumn"). */
+  albums: Record<string, string[]>;
   /** ISO timestamp of the last backup file saved from this device. */
   lastBackupAt?: string;
 }

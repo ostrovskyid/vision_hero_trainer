@@ -28,7 +28,8 @@ export const DEFAULT_CONFIG: GameConfig = {
 };
 
 /** One sticker per day the patch-time goal is reached. */
-export const PATCH_STICKERS = ['🦜', '⚓', '🗺️', '🧭', '🐙', '🦈', '🏝️', '💰', '🚢', '🐚', '🦀', '🐬'];
+// Kept apart from every seasonal album's stickers, so the Pirate Chest can pick them out.
+export const PATCH_STICKERS = ['🦜', '⚓', '🐙', '🦈', '🏝️', '💰', '🚢', '🏴‍☠️', '💎', '🔭', '🪙', '⚔️'];
 
 /** Earned in order, one per finished daily mission. */
 export const STICKERS = [
