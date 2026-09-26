@@ -42,7 +42,7 @@ points, and every round finishes with confetti.
   can name after the child's favourites (stored on the device only)
 - **Treatment stages and Patch Pal** — the app follows the stage the eye doctor has set
   (before surgery, recovery, weaker-eye training, two eyes together, keeping the gains),
-  with a patch timer, daily goal and a comfort zone for limited eye movement
+  with a patch timer and daily goal
 - **Monthly picture check, backup and progress report** — a home vision trend check, a
   backup file for years of records, and a one-page report to bring to checkups
 - **Spoken instructions** — every game says what to do out loud, so a child who cannot read
@@ -457,9 +457,9 @@ its settings once; everything stays adjustable, and the app never changes stage 
 | Stage | What the app does |
 |-------|-------------------|
 | **Free play** | No restrictions (the default) |
-| **Before surgery** | One eye with the patch on: red/cyan mode off, comfort zone on, patch check before playing |
+| **Before surgery** | One eye with the patch on: red/cyan mode off, patch check before playing |
 | **Recovery** | Games and missions are paused behind a get-well screen; Patch Pal stays available |
-| **Weaker-eye training** | Like *Before surgery*; the comfort zone can be turned off if eye movement allows |
+| **Weaker-eye training** | Like *Before surgery* |
 | **Two eyes together** | Red/cyan mode on: Lion in the Cage, then Fusion Stars, then Pop-Out Pups. Start only when the eye doctor or orthoptist agrees |
 | **Keeping the gains** | Shorter (1-minute) mission games after patching is reduced or stopped |
 
@@ -470,9 +470,6 @@ its settings once; everything stays adjustable, and the app never changes stage 
   is capped at 8 hours.
 - **Patch check.** In the one-eye stages, tapping a game or the daily mission while the
   timer is off asks "Patch on, glasses on?" first. One tap starts the timer and the game.
-- **Comfort zone** keeps the left 22% of the play area empty, so targets never ask an eye
-  with limited outward movement (as in a sixth-nerve palsy or Duane syndrome) to look far
-  to the left. Ask the eye doctor whether it applies.
 
 ## Monthly picture check and backup
 
@@ -549,7 +546,7 @@ rather than to the game:
 
 | Setting | What it does |
 |---------|--------------|
-| **Treatment plan** | Stage, comfort zone and daily patch goal (see above) |
+| **Treatment plan** | Stage and daily patch goal (see above) |
 | **Rescue Pups** | Names for the police, pilot and fire pups, stored on this device only |
 | **Reading games** | Show games that need letters (Station Hunt); off by default |
 | **Picture check / Backup / Report** | Monthly picture check, backup file and progress report (see above) |

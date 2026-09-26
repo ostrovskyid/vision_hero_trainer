@@ -30,8 +30,8 @@ export const PHASES: PhaseInfo[] = [
     id: 'preop',
     label: 'Before surgery',
     short: 'One eye',
-    description: 'One eye at a time with the patch on. Red/cyan mode off, targets kept away from the left edge.',
-    apply: { anaglyphMode: false, comfortZone: true },
+    description: 'One eye at a time with the patch on. Red/cyan mode off.',
+    apply: { anaglyphMode: false },
   },
   {
     id: 'recovery',
@@ -45,8 +45,8 @@ export const PHASES: PhaseInfo[] = [
     id: 'pleoptic',
     label: 'Weaker-eye training',
     short: 'One eye',
-    description: 'Training the weaker eye with the patch on. Red/cyan mode off; the comfort zone can be turned off if eye movement allows.',
-    apply: { anaglyphMode: false, comfortZone: true },
+    description: 'Training the weaker eye with the patch on. Red/cyan mode off.',
+    apply: { anaglyphMode: false },
   },
   {
     id: 'binocular',
@@ -68,9 +68,6 @@ export const phaseInfo = (id: TherapyPhase) => PHASES.find(p => p.id === id) ?? 
 
 /** Phases in which play should normally happen with the patch on. */
 export const PATCH_PHASES: TherapyPhase[] = ['preop', 'pleoptic'];
-
-/** Share of the play area kept empty on the left while the comfort zone is on. */
-export const COMFORT_ZONE_GUTTER = '22%';
 
 /** Local calendar day, so logs roll over at the child's midnight. */
 export const dayKey = (time = Date.now()) => {

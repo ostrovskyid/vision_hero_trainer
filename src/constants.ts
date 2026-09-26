@@ -23,7 +23,6 @@ export const DEFAULT_CONFIG: GameConfig = {
   cinemaMinutes: 3,
   cinemaFellowLevel: 50,
   therapyPhase: 'free',
-  comfortZone: false,
   patchGoalMinutes: 120,
   pxPerMm: 0,
   deviationPD: 0,
