@@ -565,6 +565,47 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
 
+    case 'cage':
+      return (
+        <Frame className="flex items-center justify-center bg-black">
+          <div className="relative h-16 w-16" style={{ isolation: 'isolate' }}>
+            <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full" style={{ mixBlendMode: 'screen' }} aria-hidden="true">
+              <g fill="none" stroke="#00ffff" strokeWidth="5">
+                <rect x="8" y="12" width="84" height="80" rx="6" />
+                {[24, 40, 56, 72].map(x => <line key={x} x1={x} y1="12" x2={x} y2="92" />)}
+              </g>
+            </svg>
+            <motion.span
+              className="absolute top-1/2 -mt-4 text-3xl leading-none"
+              style={{ filter: 'grayscale(1) sepia(1) saturate(8) hue-rotate(-50deg)', mixBlendMode: 'screen' }}
+              animate={move({ left: ['-70%', '22%', '22%', '-70%'] }, { left: '22%' })}
+              transition={{ duration: 4, repeat: Infinity, times: [0, 0.4, 0.8, 1] }}
+            >
+              🦁
+            </motion.span>
+          </div>
+        </Frame>
+      );
+
+    case 'fusion':
+      return (
+        <Frame className="flex items-center justify-center bg-black">
+          <div className="relative h-16 w-28 rounded-lg border-2 border-slate-300">
+            {[[18, 30, '#ff3b3b'], [55, 60, '#00ffff'], [80, 25, '#f8fafc']].map(([x, y, c], i) => (
+              <motion.span
+                key={i}
+                className="absolute -ml-2 -mt-2 text-base leading-none"
+                style={{ left: `${x}%`, top: `${y}%`, color: c as string }}
+                animate={move({ opacity: [0.4, 1, 0.4] }, { opacity: 1 })}
+                transition={loop(2, i * 0.5)}
+              >
+                ★
+              </motion.span>
+            ))}
+          </div>
+        </Frame>
+      );
+
     default:
       return <Frame />;
   }

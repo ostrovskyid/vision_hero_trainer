@@ -1,6 +1,7 @@
 export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'peripheral' | 'spotter' | 'checkpoint' | 'metro' | 'station' | 'navigator' | 'crossing' | 'memory' | 'shapes' | 'popout' | 'cinema'
   | 'carriages' | 'dots' | 'zoo' | 'bus' | 'hangar' | 'carwash' | 'differences'
-  | 'stripes' | 'docking' | 'maze' | 'paint' | 'pexeso';
+  | 'stripes' | 'docking' | 'maze' | 'paint' | 'pexeso'
+  | 'cage' | 'fusion';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 
 /**
@@ -42,6 +43,8 @@ export interface GameStats {
   accuracy: number;
   date: string;
   difficulty?: Difficulty;
+  /** Lion in the Cage: where the child lined the pictures up, in prism dioptres (+ = eyes turned in). */
+  alignedPD?: number;
 }
 
 export interface UserProfile {
@@ -94,6 +97,12 @@ export interface GameConfig {
   patchGoalMinutes: number;
   /** CSS pixels per millimetre on this screen, from the card calibration; 0 = not calibrated. */
   pxPerMm: number;
+  /**
+   * Eye angle to compensate in the two-eye games, in prism dioptres as the
+   * orthoptist measures it. Positive = eyes turn in (esotropia), negative =
+   * out (exotropia). The two eyes' pictures are shifted apart by this much.
+   */
+  deviationPD: number;
 }
 
 export interface AnaglyphPreset {

@@ -51,7 +51,7 @@ export const PHASES: PhaseInfo[] = [
     id: 'binocular',
     label: 'Two eyes together',
     short: 'Both eyes',
-    description: 'Red/cyan glasses, both eyes open. Only start this when the eye doctor or orthoptist agrees.',
+    description: 'Red/cyan glasses, both eyes open: Lion in the Cage, then Fusion Stars, then Pop-Out Pups. Only start this when the eye doctor or orthoptist agrees.',
     apply: { anaglyphMode: true },
   },
   {

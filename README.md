@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Twenty-seven short exercises themed around vehicles, metro maps, rockets, rescue pups and
+Twenty-nine short exercises themed around vehicles, metro maps, rockets, rescue pups and
 the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,7 +34,7 @@ point rather than ending the game, and every round finishes with confetti.
 
 ## Highlights
 
-- **Twenty-seven exercises**, each training a different visual skill — including a 3D depth game
+- **Twenty-nine exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
   vehicle sticker for the day
@@ -354,6 +354,30 @@ cards and look-alike vehicles (car / taxi / SUV, bus / trolleybus / minibus).
 </td>
 <td width="50%" valign="top">
 
+<img src="docs/screenshots/lion-in-the-cage.png" alt="Lion in the Cage" width="100%">
+
+### 🦁 Lion in the Cage
+**Simultaneous perception** — the first step of the orthoptist's synoptophore sequence.
+Through red/cyan glasses one eye sees only the lion and the other only the cage; drag the
+cage until the lion is inside and tap *Got it!*. Where the child lines them up is saved as a
+rough home reading in prism dioptres (a game, not a measurement). **Glasses only.**
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/fusion-stars.png" alt="Fusion Stars" width="100%">
+
+### ⭐ Fusion Stars
+**Fusion, with a built-in check** — a night sky drawn for both eyes, with the stars split:
+some only one eye sees, some only the other, some both. Only both eyes together see and count
+them all. Counting one eye's stars only is a sign of suppression, and the game says "look with
+both eyes" instead of marking it wrong. **Glasses only.**
+
+</td>
+<td width="50%" valign="top">
+
 </td>
 </tr>
 </table>
@@ -388,7 +412,7 @@ its settings once; everything stays adjustable, and the app never changes stage 
 | **Before surgery** | One eye with the patch on: red/cyan mode off, comfort zone on, patch check before playing |
 | **Recovery** | Games and missions are paused behind a get-well screen; Patch Pal stays available |
 | **Weaker-eye training** | Like *Before surgery*; the comfort zone can be turned off if eye movement allows |
-| **Two eyes together** | Red/cyan mode on. Start only when the eye doctor or orthoptist agrees |
+| **Two eyes together** | Red/cyan mode on: Lion in the Cage, then Fusion Stars, then Pop-Out Pups. Start only when the eye doctor or orthoptist agrees |
 | **Keeping the gains** | Shorter (1-minute) mission games after patching is reduced or stopped |
 
 - **Patch Pal** is a patch-time companion. A pirate timer runs on the wall clock, so it keeps
@@ -448,6 +472,7 @@ rather than to the game:
 | **Daily mission game length** | 60–240 seconds per game in Today's Mission |
 | **Cartoon Cinema length** | 1–10 minutes for a free-play show |
 | **Spoken instructions** | Read instructions aloud on and off |
+| **Eye angle compensation** | −30 to +30 prism dioptres (+ = eyes turn in). Draws the two eyes' pictures that far apart in Lion in the Cage, Fusion Stars and Pop-Out Pups, so an eye with a residual angle can still line them up. Set it to the orthoptist's near measurement, or leave 0 |
 | **Anaglyph mode** | Red/cyan dichoptic rendering, **on by default**, with per-device colour calibration (see below). Pop-Out Pups is only shown while it is on |
 | **Cartoon Cinema: strong-eye picture** | 0–100% brightness of the scenery eye's copy of the cartoon (anaglyph mode only) |
 
@@ -579,7 +604,7 @@ updating that value.
 
 Components follow the [shadcn/ui](https://ui.shadcn.com) conventions and live in
 [`components/ui`](components/ui). Screens and the original twelve games are in
-[`src/App.tsx`](src/App.tsx); the fifteen newer games live in [`src/games`](src/games),
+[`src/App.tsx`](src/App.tsx); the seventeen newer games live in [`src/games`](src/games),
 together with their shared timer, start screen and anaglyph tint helpers
 ([`src/games/common.tsx`](src/games/common.tsx)). Sound, speech and colour helpers are in
 [`src/feedback.ts`](src/feedback.ts), the in-game progress bar in

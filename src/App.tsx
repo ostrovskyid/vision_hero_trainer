@@ -7,7 +7,7 @@ import {
   TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw,
   Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
   Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch,
-  Waves, Orbit, Waypoints, Paintbrush, Layers
+  Waves, Orbit, Waypoints, Paintbrush, Layers, Cat, Sparkles
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -41,6 +41,8 @@ import { RocketDocking } from './games/RocketDocking';
 import { RailMaze } from './games/RailMaze';
 import { PaintVehicle } from './games/PaintVehicle';
 import { VehiclePexeso } from './games/VehiclePexeso';
+import { LionCage } from './games/LionCage';
+import { FusionStars } from './games/FusionStars';
 import { AnaglyphFilters } from './games/common';
 import { scaleColor, withAlpha, playSound, speak, stopSpeaking } from './feedback';
 
@@ -87,6 +89,8 @@ const GAME_TILES: {
   { mode: 'docking', title: 'Rocket Docking', description: 'Tap right inside the ring.', Icon: Orbit, iconClass: 'text-cyan-300', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-400/60', barClass: 'bg-cyan-400' },
   { mode: 'maze', title: 'Rail Maze', description: 'Drive the train to the station.', Icon: Waypoints, iconClass: 'text-amber-300', chipClass: 'bg-amber-500/10', hoverClass: 'hover:border-amber-400/60', barClass: 'bg-amber-400' },
   { mode: 'paint', title: 'Paint the Fire Truck', description: 'Colour every part.', Icon: Paintbrush, iconClass: 'text-red-300', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-400/60', barClass: 'bg-red-400' },
+  { mode: 'cage', title: 'Lion in the Cage', description: 'Put the lion in its cage.', Icon: Cat, iconClass: 'text-orange-300', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-400/60', barClass: 'bg-orange-400', requiresAnaglyph: true },
+  { mode: 'fusion', title: 'Fusion Stars', description: 'Count every star with both eyes.', Icon: Sparkles, iconClass: 'text-yellow-200', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-300/60', barClass: 'bg-yellow-300', requiresAnaglyph: true },
   { mode: 'pexeso', title: 'Vehicle Pexeso', description: 'Find the matching pairs.', Icon: Layers, iconClass: 'text-indigo-300', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-400/60', barClass: 'bg-indigo-400' },
 ];
 
@@ -121,6 +125,8 @@ const SKILL_LABELS: Record<GameMode, string> = {
   maze: 'Visual Tracing',
   paint: 'Fine Eye-Hand Control',
   pexeso: 'Visual Memory & Detail',
+  cage: 'Simultaneous Perception',
+  fusion: 'Fusion',
 };
 
 /**
@@ -155,6 +161,8 @@ const GAME_INSTRUCTIONS: Record<GameMode, string> = {
   maze: 'Drive the train to the station. Stay on the tracks!',
   paint: 'Pick a colour, then tap a part to paint it!',
   pexeso: 'Turn two cards. Can you find the pairs?',
+  cage: 'Glasses on! Drag the cage so the lion is inside it.',
+  fusion: 'Glasses on! How many stars can you see?',
 };
 
 /** Local calendar day, so the daily mission resets at the child's midnight. */
@@ -2119,6 +2127,8 @@ export default function App() {
               {selectedMode === 'maze' && <RailMaze config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'paint' && <PaintVehicle config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'pexeso' && <VehiclePexeso config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'cage' && <LionCage config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'fusion' && <FusionStars config={gameConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}
@@ -2153,6 +2163,14 @@ export default function App() {
                 </Badge>
               </div>
               <p className="text-slate-400 mb-8">You're getting stronger every day, Hero.</p>
+              {typeof user.stats[selectedMode].slice(-1)[0]?.alignedPD === 'number' && (
+                // For the parent: where the child lined the pictures up this time.
+                <p className="-mt-6 mb-8 text-sm text-slate-500">
+                  Pictures lined up at {user.stats[selectedMode].slice(-1)[0].alignedPD} prism dioptres
+                  {user.stats[selectedMode].slice(-1)[0].alignedPD! >= 2 ? ' (eyes turned in)' : user.stats[selectedMode].slice(-1)[0].alignedPD! <= -2 ? ' (eyes turned out)' : ''}.
+                  A home game, not a measurement.
+                </p>
+              )}
               
               <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto mb-8">
                 <div className="bg-slate-900 p-4 rounded-xl border border-slate-800">
@@ -2526,6 +2544,29 @@ export default function App() {
                       onValueChange={(vals) => {
                         const val = Array.isArray(vals) ? vals[0] : vals;
                         setConfig(c => ({ ...c, cinemaFellowLevel: val }));
+                      }}
+                    />
+                  </div>
+                  <div className="space-y-4 pt-6">
+                    <div className="flex justify-between gap-4">
+                      <div className="space-y-0.5">
+                        <label className="text-base font-medium">Eye Angle Compensation</label>
+                        <p className="text-sm text-slate-400">
+                          For Lion in the Cage, Fusion Stars and Pop-Out Pups. Set it to the angle the orthoptist measured
+                          (prism dioptres, near), or leave it at 0. Positive: eyes turn in (esotropia); negative: out.
+                          The two eyes' pictures are drawn that far apart so they can line up. Assumes red lens on the left eye.
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-sm text-blue-400">
+                        {config.deviationPD > 0 ? `${config.deviationPD} PD in` : config.deviationPD < 0 ? `${-config.deviationPD} PD out` : '0'}
+                      </span>
+                    </div>
+                    <Slider
+                      value={[config.deviationPD]}
+                      min={-30} max={30} step={1}
+                      onValueChange={(vals) => {
+                        const val = Array.isArray(vals) ? vals[0] : vals;
+                        setConfig(c => ({ ...c, deviationPD: val }));
                       }}
                     />
                   </div>

@@ -24,6 +24,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   comfortZone: false,
   patchGoalMinutes: 120,
   pxPerMm: 0,
+  deviationPD: 0,
 };
 
 /** One sticker per day the patch-time goal is reached. */
