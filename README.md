@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Thirty-one short exercises themed around vehicles, metro maps, rockets, rescue pups and
+Thirty short exercises themed around vehicles, metro maps, rockets, rescue pups and
 the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,7 +34,7 @@ points, and every round finishes with confetti.
 
 ## Highlights
 
-- **Thirty-one exercises**, each training a different visual skill — including a 3D depth game
+- **Thirty exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
   sticker for the season's album
@@ -211,17 +211,6 @@ Tap only the trains and let the cars pass: a go/no-go task that adds impulse con
 </td>
 <td width="50%" valign="top">
 
-<img src="docs/screenshots/metro-memory.png" alt="Metro Memory" width="100%">
-
-### 🧠 Metro Memory
-**Visual memory** — stations light up in sequence on a mini metro map; repeat the route in
-order. The route grows by one station after every success.
-
-</td>
-</tr>
-<tr>
-<td width="50%" valign="top">
-
 <img src="docs/screenshots/shape-garage.png" alt="Shape Garage" width="100%">
 
 ### 🔺 Shape Garage
@@ -231,6 +220,8 @@ Symbols chart (circle, apple, heart, square, house, triangle) instead of letters
 look-alikes as distractors. Shapes shrink after each find and grow back after a miss.
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/pop-out-pups.png" alt="Pop-Out Pups" width="100%">
@@ -243,8 +234,6 @@ more after a miss). On hard, every other round is a random-dot stereogram. **Nee
 glasses, so it only appears while anaglyph mode is on.**
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/cartoon-cinema.png" alt="Cartoon Cinema" width="100%">
@@ -257,6 +246,8 @@ the weaker eye. Stars pop up now and then; tapping one shows the child is still 
 Without anaglyph mode it plays as an ordinary full-colour cartoon.
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/count-the-carriages.png" alt="Count the Carriages" width="100%">
@@ -268,8 +259,6 @@ are seen at a glance rather than counted, so this trains taking in a whole pictu
 look. A wrong answer just sends the same train past again.
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/rocket-dot-to-dot.png" alt="Rocket Dot-to-Dot" width="100%">
@@ -280,6 +269,8 @@ kite, bus, car, rocket, star or plane, which then takes off. Each number is read
 is reached. Harder levels use more dots, and hard adds unnumbered decoy dots.
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/zoo-hide-and-seek.png" alt="Zoo Hide & Seek" width="100%">
@@ -290,8 +281,6 @@ a back or a tail showing. Find the animal that is named. Less of each animal sho
 harder levels.
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/bus-driver.png" alt="Bus Driver" width="100%">
@@ -303,6 +292,8 @@ With the glasses on, the road is drawn for one eye and the bus for the other, so
 needs both eyes' pictures combined.
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/hangar-match.png" alt="Hangar Match" width="100%">
@@ -313,8 +304,6 @@ tap the hangar). On hard the shadows are turned at an angle, so the outline has 
 recognised whichever way it faces.
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/car-wash.png" alt="Car Wash" width="100%">
@@ -325,6 +314,8 @@ sparkling. Spots get smaller, more numerous and fainter on harder levels, so the
 has to be searched. With the glasses on, the mud is visible only to the target eye.
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/spot-the-difference.png" alt="Spot the Difference" width="100%">
@@ -335,8 +326,6 @@ that are different (missing, swapped or, on hard, resized). There's no time pres
 a sparkle hints at a difference after 15 seconds without a find.
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/zebra-stripes.png" alt="Zebra Stripes" width="100%">
@@ -349,6 +338,8 @@ Stripe size is set in cycles per degree for a tablet at 40 cm, using the picture
 calibration.
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/rocket-docking.png" alt="Rocket Docking" width="100%">
@@ -359,8 +350,6 @@ ring shrinks after each docking and grows after a miss, training *where* things 
 amblyopic eyes are unsure of. The tablet version of the "poke the dot" pleoptic exercise.
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/rail-maze.png" alt="Rail Maze" width="100%">
@@ -371,6 +360,8 @@ The train won't cross a fence; it stops until the finger comes back to it. Bigge
 thinner fences on harder levels.
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/paint-the-fire-truck.png" alt="Paint the Fire Truck" width="100%">
@@ -381,8 +372,6 @@ bus to colour it. Harder pictures have more, smaller parts (lights, hubcaps, win
 thinner outlines. Calm, so it suits long patching sessions.
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/vehicle-pexeso.png" alt="Vehicle Pexeso" width="100%">
@@ -392,6 +381,8 @@ thinner outlines. Calm, so it suits long patching sessions.
 cards and look-alike vehicles (car / taxi / SUV, bus / trolleybus / minibus).
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/lion-in-the-cage.png" alt="Lion in the Cage" width="100%">
@@ -403,8 +394,6 @@ cage until the lion is inside and tap *Got it!*. Where the child lines them up i
 rough home reading in prism dioptres (a game, not a measurement). **Glasses only.**
 
 </td>
-</tr>
-<tr>
 <td width="50%" valign="top">
 
 <img src="docs/screenshots/fusion-stars.png" alt="Fusion Stars" width="100%">
@@ -416,6 +405,8 @@ them all. Counting one eye's stars only is a sign of suppression, and the game s
 both eyes" instead of marking it wrong. **Glasses only.**
 
 </td>
+</tr>
+<tr>
 <td width="50%" valign="top">
 
 </td>

@@ -215,32 +215,6 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
 
-    case 'memory': {
-      const dots = [
-        { x: 22, y: 30 }, { x: 50, y: 18 }, { x: 78, y: 30 },
-        { x: 78, y: 70 }, { x: 50, y: 82 }, { x: 22, y: 70 },
-      ];
-      return (
-        <Frame>
-          <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-            <polygon points={dots.map(d => `${d.x},${d.y}`).join(' ')} fill="none" stroke="#334155" strokeWidth="2.5" />
-          </svg>
-          {dots.map((d, i) => (
-            <motion.div
-              key={i}
-              className="absolute h-6 w-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-fuchsia-400"
-              style={{ left: `${d.x}%`, top: `${d.y}%` }}
-              animate={move(
-                { backgroundColor: ['#020617', '#e879f9', '#020617'] },
-                { backgroundColor: i === 0 ? '#e879f9' : '#020617' },
-              )}
-              transition={{ duration: 3.6, repeat: Infinity, delay: i * 0.6, times: [0, 0.15, 0.3] }}
-            />
-          ))}
-        </Frame>
-      );
-    }
-
     case 'shapes':
       return (
         <Frame className="flex items-center justify-center gap-2.5">
