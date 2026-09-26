@@ -803,6 +803,15 @@ const LETTER_GROUPS = [
   ['B', 'R', 'P', 'S', 'E'],
 ];
 
+// The same idea with Cyrillic look-alikes, for children learning to read Russian.
+const LETTER_GROUPS_RU = [
+  ['Ш', 'Щ', 'Ц', 'Ч', 'П'],
+  ['О', 'С', 'Э', 'З', 'Ю'],
+  ['Р', 'В', 'Ь', 'Ъ', 'Б', 'Я'],
+  ['Н', 'И', 'П', 'Л', 'Д', 'Й'],
+  ['Г', 'Т', 'Е', 'Ё', 'Ж', 'К'],
+];
+
 const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(config.duration);
@@ -812,7 +821,8 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
   const [shake, setShake] = useState(false);
 
   const generateGrid = () => {
-    const group = LETTER_GROUPS[Math.floor(Math.random() * LETTER_GROUPS.length)];
+    const groups = config.language === 'ru' ? LETTER_GROUPS_RU : LETTER_GROUPS;
+    const group = groups[Math.floor(Math.random() * groups.length)];
     const target = group[Math.floor(Math.random() * group.length)];
     const distractors = group.filter(l => l !== target);
     const size = config.difficulty === 'hard' ? 25 : 16;
@@ -909,6 +919,7 @@ interface NavigatorPuzzle {
 }
 
 const TERMINAL_LABELS = ['A', 'B', 'C', 'D'];
+const TERMINAL_LABELS_RU = ['А', 'Б', 'В', 'Г'];
 
 const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
   const [score, setScore] = useState(0);
@@ -933,7 +944,7 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
       const c2y = 10 + Math.random() * 80;
       return {
         color: METRO_COLORS[i],
-        label: `M${i + 1}`,
+        label: `${config.language === 'ru' ? 'М' : 'M'}${i + 1}`,
         path: `M 8 ${sy} C 35 ${c1y}, 65 ${c2y}, 90 ${ey}`
       };
     });
@@ -942,7 +953,7 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
       lines,
       endOrder: order,
       targetLine: Math.floor(Math.random() * numLines),
-      terminals: endYs.map((y, i) => ({ x: 90, y, label: TERMINAL_LABELS[i] }))
+      terminals: endYs.map((y, i) => ({ x: 90, y, label: (config.language === 'ru' ? TERMINAL_LABELS_RU : TERMINAL_LABELS)[i] }))
     });
   };
 

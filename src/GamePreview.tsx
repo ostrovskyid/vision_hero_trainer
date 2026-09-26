@@ -6,6 +6,7 @@ import {
 import { GameMode } from './types';
 import { ShapeIcon, ShapeKind } from './shapes';
 import { RescuePup } from './pups';
+import { getLang } from './i18n';
 
 /**
  * Miniature, animated illustrations of each exercise, shown on the home tiles.
@@ -158,7 +159,7 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
     case 'station':
       return (
         <Frame className="flex items-center justify-center gap-2.5">
-          {['E', 'F', 'E', 'H'].map((letter, i) => (
+          {(getLang() === 'ru' ? ['Ш', 'Щ', 'Ш', 'Ц'] : ['E', 'F', 'E', 'H']).map((letter, i) => (
             <motion.div
               key={i}
               className="flex h-10 w-10 items-center justify-center rounded-full border-[3px] bg-slate-50 text-base font-bold text-slate-900"
