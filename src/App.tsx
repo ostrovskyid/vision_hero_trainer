@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   Car, Plane, Rocket, Train, Bus, Truck, Bike, Ship,
-  Trophy, Play, Settings, ChevronLeft, Zap, Volume2, VolumeX, Eye, Maximize, Minimize,
+  Trophy, Play, Settings, ChevronLeft, Volume2, VolumeX, Eye, Maximize, Minimize,
   Radar, CloudFog, ShieldAlert, Crosshair, Target,
-  TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw
+  TrainFront, MapPin, Route, TramFront, Brain, Palette, ArrowLeftRight, RotateCcw,
+  Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
+  Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -14,10 +16,23 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { GameMode, GameConfig, UserProfile, GameStats } from './types';
 import {
-  DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS,
+  DEFAULT_CONFIG, AVATARS, DIFFICULTY_PRESETS, STICKERS,
   ANAGLYPH_PRESETS, ANAGLYPH_TARGET_DEFAULT, ANAGLYPH_SCENE_DEFAULT,
 } from './constants';
 import { GamePreview } from './GamePreview';
+import { GameHud } from './GameHud';
+import { ShapeGarage } from './games/ShapeGarage';
+import { PopOutPups } from './games/PopOutPups';
+import { CartoonCinema } from './games/CartoonCinema';
+import { CountCarriages } from './games/CountCarriages';
+import { RocketDots } from './games/RocketDots';
+import { ZooHideSeek } from './games/ZooHideSeek';
+import { BusDriver } from './games/BusDriver';
+import { HangarMatch } from './games/HangarMatch';
+import { CarWash } from './games/CarWash';
+import { SpotDifference } from './games/SpotDifference';
+import { AnaglyphFilters } from './games/common';
+import { scaleColor, withAlpha, playSound, speak, stopSpeaking } from './feedback';
 
 /**
  * The home screen tiles. Colour classes are spelled out in full because
@@ -33,6 +48,8 @@ const GAME_TILES: {
   chipClass: string;
   hoverClass: string;
   barClass: string;
+  /** Only makes sense with red/cyan glasses, so hidden when anaglyph mode is off. */
+  requiresAnaglyph?: boolean;
 }[] = [
   { mode: 'tracking', title: 'Rocket Tracker', description: 'Follow the flying rocket.', Icon: Rocket, iconClass: 'text-blue-400', chipClass: 'bg-blue-500/10', hoverClass: 'hover:border-blue-500/60', barClass: 'bg-blue-500' },
   { mode: 'contrast', title: 'Foggy Flight', description: 'Find planes in the fog.', Icon: Plane, iconClass: 'text-purple-400', chipClass: 'bg-purple-500/10', hoverClass: 'hover:border-purple-500/60', barClass: 'bg-purple-500' },
@@ -46,91 +63,100 @@ const GAME_TILES: {
   { mode: 'navigator', title: 'Line Navigator', description: 'Trace the line to its stop.', Icon: Route, iconClass: 'text-indigo-400', chipClass: 'bg-indigo-500/10', hoverClass: 'hover:border-indigo-500/60', barClass: 'bg-indigo-500' },
   { mode: 'crossing', title: 'Railway Crossing', description: 'Tap trains, skip the cars.', Icon: TramFront, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
   { mode: 'memory', title: 'Metro Memory', description: 'Repeat the lit-up route.', Icon: Brain, iconClass: 'text-fuchsia-400', chipClass: 'bg-fuchsia-500/10', hoverClass: 'hover:border-fuchsia-500/60', barClass: 'bg-fuchsia-500' },
+  { mode: 'shapes', title: 'Shape Garage', description: 'Find the wheel with the same shape.', Icon: Shapes, iconClass: 'text-amber-400', chipClass: 'bg-amber-500/10', hoverClass: 'hover:border-amber-500/60', barClass: 'bg-amber-500' },
+  { mode: 'popout', title: 'Pop-Out Pups', description: 'Tap the pup that floats out.', Icon: Dog, iconClass: 'text-pink-400', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-500/60', barClass: 'bg-pink-500', requiresAnaglyph: true },
+  { mode: 'cinema', title: 'Cartoon Cinema', description: 'Watch the show, tap the stars.', Icon: Clapperboard, iconClass: 'text-teal-400', chipClass: 'bg-teal-500/10', hoverClass: 'hover:border-teal-500/60', barClass: 'bg-teal-500' },
+  { mode: 'carriages', title: 'Count the Carriages', description: 'How many carriages went by?', Icon: Hash, iconClass: 'text-red-400', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-500/60', barClass: 'bg-red-500' },
+  { mode: 'dots', title: 'Rocket Dot-to-Dot', description: 'Join 1, 2, 3… and blast off.', Icon: PenLine, iconClass: 'text-sky-400', chipClass: 'bg-sky-500/10', hoverClass: 'hover:border-sky-500/60', barClass: 'bg-sky-500' },
+  { mode: 'zoo', title: 'Zoo Hide & Seek', description: 'Find the hiding animal.', Icon: TreePalm, iconClass: 'text-lime-400', chipClass: 'bg-lime-500/10', hoverClass: 'hover:border-lime-500/60', barClass: 'bg-lime-500' },
+  { mode: 'bus', title: 'Bus Driver', description: 'Drive the bus, pick everyone up.', Icon: Bus, iconClass: 'text-yellow-400', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-500/60', barClass: 'bg-yellow-500' },
+  { mode: 'hangar', title: 'Hangar Match', description: 'Park each plane by its shadow.', Icon: Warehouse, iconClass: 'text-violet-400', chipClass: 'bg-violet-500/10', hoverClass: 'hover:border-violet-500/60', barClass: 'bg-violet-500' },
+  { mode: 'carwash', title: 'Car Wash', description: 'Rub off every mud spot.', Icon: Droplets, iconClass: 'text-cyan-400', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-500/60', barClass: 'bg-cyan-500' },
+  { mode: 'differences', title: 'Spot the Difference', description: 'What changed in the zoo?', Icon: ScanSearch, iconClass: 'text-orange-400', chipClass: 'bg-orange-500/10', hoverClass: 'hover:border-orange-500/60', barClass: 'bg-orange-500' },
 ];
+
+const ALL_MODES = GAME_TILES.map(t => t.mode);
+
+/** The skill badge shown above each exercise. */
+const SKILL_LABELS: Record<GameMode, string> = {
+  tracking: 'Tracking Exercise',
+  contrast: 'Contrast Training',
+  detail: 'Detail Focus',
+  saccades: 'Saccadic Movement',
+  peripheral: 'Peripheral Awareness',
+  spotter: 'Contrast Sensitivity',
+  checkpoint: 'Visual Discrimination',
+  metro: 'Smooth Pursuit',
+  station: 'Acuity & Crowding',
+  navigator: 'Visual Tracing',
+  crossing: 'Pursuit & Attention',
+  memory: 'Visual Memory',
+  shapes: 'Acuity & Crowding',
+  popout: '3D Depth',
+  cinema: 'Dichoptic Viewing',
+  carriages: 'Visual Span & Counting',
+  dots: 'Eye-Hand Coordination',
+  zoo: 'Visual Closure',
+  bus: 'Eye-Hand Pursuit',
+  hangar: 'Shape Discrimination',
+  carwash: 'Visual Scanning',
+  differences: 'Visual Comparison',
+};
+
+/**
+ * Read aloud when an exercise opens, so a child who cannot read yet still
+ * knows what to do. Kept short and concrete.
+ */
+const GAME_INSTRUCTIONS: Record<GameMode, string> = {
+  tracking: 'Follow the rocket and tap it!',
+  contrast: 'Find the planes hiding in the fog!',
+  detail: 'One vehicle is different. Can you find it?',
+  saccades: 'Catch the car when it jumps!',
+  peripheral: 'Look at the middle. Tap the things at the edges!',
+  spotter: 'Find the cloud that is lighter!',
+  checkpoint: 'Tap only the vehicle that matches!',
+  metro: 'Follow the metro train and tap it!',
+  station: 'Find the station letter!',
+  navigator: 'Follow the line with your eyes!',
+  crossing: 'Tap the trains. Let the cars go by!',
+  memory: 'Watch the stations light up, then tap them in order!',
+  shapes: 'Find the wheel with the same shape!',
+  popout: 'Put on your 3D glasses. Tap the pup that floats out!',
+  cinema: 'Watch the cartoon and tap the stars!',
+  carriages: 'Watch the train and count the carriages!',
+  dots: 'Slide your finger from one to two to three!',
+  zoo: 'The animals are hiding. Can you find them?',
+  bus: 'Put your finger on the bus and drive it along the road!',
+  hangar: 'Drag each plane into the hangar with its shadow!',
+  carwash: 'Rub off all the mud!',
+  differences: 'The two pictures are nearly the same. Find what is different!',
+};
+
+/** Local calendar day, so the daily mission resets at the child's midnight. */
+const todayKey = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+/**
+ * Today's mission: two active games the child has played least recently,
+ * then Cartoon Cinema to wind down. Ties are broken by a seed from the date,
+ * so the choice stays the same all day and rotates from one day to the next.
+ */
+const pickMission = (user: UserProfile, anaglyph: boolean): GameMode[] => {
+  const day = todayKey();
+  let seed = 0;
+  for (const ch of day) seed = (seed * 31 + ch.charCodeAt(0)) >>> 0;
+  const lastPlayed = (mode: GameMode) => user.stats[mode].slice(-1)[0]?.date ?? '';
+  const candidates = GAME_TILES
+    .filter(t => t.mode !== 'cinema' && (anaglyph || !t.requiresAnaglyph))
+    .map((t, i) => ({ mode: t.mode, last: lastPlayed(t.mode), tie: ((seed + i * 2654435761) >>> 0) % 997 }))
+    .sort((a, b) => (a.last < b.last ? -1 : a.last > b.last ? 1 : a.tie - b.tie));
+  return [candidates[0].mode, candidates[1].mode, 'cinema'];
+};
 
 const CONFIG_STORAGE_KEY = 'eyequest_config';
 const DISPLAY_STORAGE_KEY = 'eyequest_display';
-
-/**
- * Scales a colour's brightness. Cheap cyan filters never block red completely,
- * so a full-intensity red still ghosts through as a grey outline; dimming the
- * target is the most effective lever the software has against that.
- */
-const scaleColor = (hex: string, factor: number) => {
-  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
-  if (!match) return hex;
-  const value = parseInt(match[1], 16);
-  const scale = (channel: number) => Math.round(Math.min(255, Math.max(0, channel * factor)));
-  const r = scale((value >> 16) & 255);
-  const g = scale((value >> 8) & 255);
-  const b = scale(value & 255);
-  return `#${((r << 16) | (g << 8) | b).toString(16).padStart(6, '0').toUpperCase()}`;
-};
-
-/** Expands a #rrggbb colour to an rgba() string, for the translucent tints. */
-const withAlpha = (hex: string, alpha: number) => {
-  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
-  if (!match) return hex;
-  const value = parseInt(match[1], 16);
-  return `rgba(${(value >> 16) & 255}, ${(value >> 8) & 255}, ${value & 255}, ${alpha})`;
-};
-
-let audioCtx: AudioContext | null = null;
-
-const getAudioContext = () => {
-  if (!audioCtx) {
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-    if (AudioContextClass) {
-      audioCtx = new AudioContextClass();
-    }
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-  return audioCtx;
-};
-
-const playSound = (type: 'hit' | 'miss' | 'complete', enabled: boolean) => {
-  if (!enabled) return;
-  try {
-    const ctx = getAudioContext();
-    if (!ctx) return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    if (type === 'hit') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(1760, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.1);
-    } else if (type === 'miss') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(150, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.2);
-    } else if (type === 'complete') {
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(440, ctx.currentTime);
-      osc.frequency.setValueAtTime(554.37, ctx.currentTime + 0.1);
-      osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.2);
-      osc.frequency.setValueAtTime(880, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.1, ctx.currentTime);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5);
-      osc.start();
-      osc.stop(ctx.currentTime + 0.5);
-    }
-  } catch (e) {
-    console.error("Audio playback failed", e);
-  }
-};
 
 const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete: (stats: GameStats) => void }) => {
   const [score, setScore] = useState(0);
@@ -204,10 +230,7 @@ const RocketTracker = ({ config, onComplete }: { config: GameConfig; onComplete:
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       <AnimatePresence>
         {isPlaying && (
@@ -301,10 +324,7 @@ const FoggyFlight = ({ config, onComplete }: { config: GameConfig; onComplete: (
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       <div className={`absolute inset-0 ${config.anaglyphMode ? 'bg-[var(--ag-scene-30)]' : 'bg-slate-300/50 backdrop-blur-sm'}`} />
 
@@ -380,10 +400,7 @@ const TrafficJam = ({ config, onComplete }: { config: GameConfig; onComplete: (s
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       <motion.div 
         className={`grid ${config.difficulty === 'hard' ? 'grid-cols-5' : 'grid-cols-4'} gap-8 p-8`}
@@ -461,10 +478,7 @@ const SpeedwaySaccades = ({ config, onComplete }: { config: GameConfig; onComple
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       {isPlaying && (
         <motion.div
@@ -543,10 +557,7 @@ const PeripheralPatrol = ({ config, onComplete }: { config: GameConfig; onComple
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-50">
         <Crosshair className="w-16 h-16 text-blue-500 animate-pulse" />
@@ -619,10 +630,7 @@ const FoggySpotter = ({ config, onComplete }: { config: GameConfig; onComplete: 
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       <motion.div 
         className={`grid ${cols} gap-8 p-8`}
@@ -748,10 +756,7 @@ const Checkpoint = ({ config, onComplete }: { config: GameConfig; onComplete: (s
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       {isPlaying && targetIcon && currentIcon && (
         <div className="flex flex-col items-center gap-12">
@@ -874,10 +879,7 @@ const MetroTracker = ({ config, onComplete }: { config: GameConfig; onComplete: 
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
         <path ref={pathRef} d={METRO_PATH} fill="none" stroke={lineColor} strokeOpacity={0.35} strokeWidth={1.6} strokeLinejoin="round" strokeLinecap="round" />
@@ -985,10 +987,7 @@ const StationHunt = ({ config, onComplete }: { config: GameConfig; onComplete: (
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       {isPlaying && (
         <div className="flex items-center gap-3 mb-6 bg-slate-800 px-6 py-3 rounded-full border border-slate-700">
@@ -1112,10 +1111,7 @@ const LineNavigator = ({ config, onComplete }: { config: GameConfig; onComplete:
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       {isPlaying && puzzle && target && (
         <>
@@ -1266,10 +1262,7 @@ const RailwayCrossing = ({ config, onComplete }: { config: GameConfig; onComplet
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       {CROSSING_LANES.map(y => (
         <div key={y} className="absolute left-0 right-0 border-t-2 border-dashed border-slate-800 pointer-events-none" style={{ top: `${y}%` }} />
@@ -1401,10 +1394,7 @@ const MetroMemory = ({ config, onComplete }: { config: GameConfig; onComplete: (
         </div>
       )}
 
-      <div className="absolute top-4 left-4 flex gap-4 z-20">
-        <Badge variant="secondary" className="text-lg px-3 py-1"><Trophy className="mr-2 h-4 w-4 text-yellow-500" /> {score}</Badge>
-        <Badge variant="outline" className="text-lg px-3 py-1 bg-black/40 text-white border-slate-700"><Zap className="mr-2 h-4 w-4 text-blue-500" /> {Math.ceil(timeLeft)}s</Badge>
-      </div>
+      <GameHud score={score} timeLeft={timeLeft} duration={config.duration} />
 
       {isPlaying && (
         <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20 bg-slate-800 px-6 py-2 rounded-full border border-slate-700">
@@ -1514,32 +1504,37 @@ export default function App() {
     }
   });
   const [user, setUser] = useState<UserProfile>(() => {
-    const saved = localStorage.getItem('eyequest_user');
-    const parsed = saved ? JSON.parse(saved) : null;
+    // Storage can be blocked (private mode, embedded frames); start fresh then.
+    let parsed: any = null;
+    try {
+      const saved = localStorage.getItem('eyequest_user');
+      parsed = saved ? JSON.parse(saved) : null;
+    } catch {
+      parsed = null;
+    }
     return {
       name: parsed?.name || 'Hero',
       avatar: parsed?.avatar || '🚀',
       level: parsed?.level || 1,
       experience: parsed?.experience || 0,
-      stats: {
-        tracking: parsed?.stats?.tracking || [],
-        contrast: parsed?.stats?.contrast || [],
-        detail: parsed?.stats?.detail || [],
-        saccades: parsed?.stats?.saccades || [],
-        peripheral: parsed?.stats?.peripheral || [],
-        spotter: parsed?.stats?.spotter || [],
-        checkpoint: parsed?.stats?.checkpoint || [],
-        metro: parsed?.stats?.metro || [],
-        station: parsed?.stats?.station || [],
-        navigator: parsed?.stats?.navigator || [],
-        crossing: parsed?.stats?.crossing || [],
-        memory: parsed?.stats?.memory || []
-      }
+      stats: Object.fromEntries(
+        ALL_MODES.map(mode => [mode, parsed?.stats?.[mode] || []])
+      ) as Record<GameMode, GameStats[]>,
+      stickers: Array.isArray(parsed?.stickers) ? parsed.stickers : [],
+      lastMissionDate: parsed?.lastMissionDate,
     };
   });
 
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [calibrationTest, setCalibrationTest] = useState(false);
+  // The daily mission in progress, if any: three games played back to back.
+  const [mission, setMission] = useState<{ modes: GameMode[]; index: number } | null>(null);
+  // Set when the last mission game ends: the sticker just earned, or null if
+  // today's sticker was already collected.
+  const [missionReward, setMissionReward] = useState<string | null | undefined>(undefined);
+
+  const visibleTiles = GAME_TILES.filter(t => config.anaglyphMode || !t.requiresAnaglyph);
+  const missionDoneToday = user.lastMissionDate === todayKey();
 
   // Home and game both lay themselves out inside one viewport height; settings
   // and stats stay ordinary scrolling pages.
@@ -1554,7 +1549,11 @@ export default function App() {
   }), [config]);
 
   useEffect(() => {
-    localStorage.setItem('eyequest_user', JSON.stringify(user));
+    try {
+      localStorage.setItem('eyequest_user', JSON.stringify(user));
+    } catch {
+      // Progress just won't persist.
+    }
   }, [user]);
 
   useEffect(() => {
@@ -1587,12 +1586,34 @@ export default function App() {
   const startGame = (mode: GameMode) => {
     setSelectedMode(mode);
     setScreen('game');
+    setMissionReward(undefined);
+    // Spoken from the tap itself: iOS only lets a page start speech from a gesture.
+    speak(GAME_INSTRUCTIONS[mode], config.voiceEnabled);
     if (config.autoFullscreen && !document.fullscreenElement) {
       document.documentElement.requestFullscreen?.().catch(() => {
         // Refused (unsupported, or iPhone Safari): the in-app layout still
         // fills the viewport, so this is only a nicety.
       });
     }
+  };
+
+  const startMission = () => {
+    const modes = pickMission(user, config.anaglyphMode);
+    setMission({ modes, index: 0 });
+    startGame(modes[0]);
+  };
+
+  const nextMissionGame = () => {
+    if (!mission) return;
+    const index = mission.index + 1;
+    setMission({ ...mission, index });
+    startGame(mission.modes[index]);
+  };
+
+  const leaveGame = () => {
+    stopSpeaking();
+    setMission(null);
+    setScreen('home');
   };
 
   const toggleFullscreen = () => {
@@ -1639,6 +1660,10 @@ export default function App() {
 
   const handleGameComplete = (stats: GameStats) => {
     const statsWithDifficulty = { ...stats, difficulty: config.difficulty };
+    const finishesMission = !!mission && mission.index === mission.modes.length - 1;
+    const day = todayKey();
+    const earnsSticker = finishesMission && user.lastMissionDate !== day;
+    const sticker = STICKERS[user.stickers.length % STICKERS.length];
     setUser(prev => ({
       ...prev,
       experience: prev.experience + stats.score * 10,
@@ -1646,10 +1671,28 @@ export default function App() {
       stats: {
         ...prev.stats,
         [selectedMode]: [...prev.stats[selectedMode], statsWithDifficulty]
-      }
+      },
+      ...(earnsSticker ? { stickers: [...prev.stickers, sticker], lastMissionDate: day } : {}),
     }));
+    if (finishesMission) {
+      setMissionReward(earnsSticker ? sticker : null);
+      setMission(null);
+      speak(earnsSticker ? 'Mission complete! You won a new sticker!' : 'Mission complete! Great job!', config.voiceEnabled);
+    } else if (mission) {
+      speak('Great job! Ready for the next game?', config.voiceEnabled);
+    } else {
+      speak('Great job!', config.voiceEnabled);
+    }
     setScreen('stats');
   };
+
+  // Mission games all run for the same short length; a free-play cinema show
+  // uses its own, longer setting.
+  const gameConfig = useMemo<GameConfig>(() => {
+    if (mission) return { ...renderConfig, duration: config.missionSeconds };
+    if (selectedMode === 'cinema') return { ...renderConfig, duration: config.cinemaMinutes * 60 };
+    return renderConfig;
+  }, [renderConfig, mission, selectedMode, config.missionSeconds, config.cinemaMinutes]);
 
   return (
     <div
@@ -1666,6 +1709,7 @@ export default function App() {
         '--ag-glow': withAlpha(renderConfig.anaglyphTarget, 0.75),
       } as React.CSSProperties}
     >
+      <AnaglyphFilters target={renderConfig.anaglyphTarget} scene={renderConfig.anaglyphScene} />
       {/* Calibration has to be judged on a dark field like the games use — the lit
           settings page around the inline preview reaches both eyes and masks the
           ghosting the parent is trying to see. */}
@@ -1755,12 +1799,38 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               className="flex flex-1 min-h-0 flex-col gap-3"
             >
-              {/* The twelve tiles share the leftover viewport height: the column
+              {/* One big button runs today's mission: three short games, then a sticker. */}
+              <button
+                onClick={startMission}
+                className="flex shrink-0 items-center gap-3 rounded-xl border-2 border-yellow-400/60 bg-gradient-to-r from-yellow-500/20 to-orange-500/10 px-4 py-2.5 text-left transition-transform active:scale-[0.99] hover:border-yellow-300"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-slate-950 shadow-[0_0_20px_rgba(250,204,21,0.45)]">
+                  <Play className="h-6 w-6 fill-slate-950" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-lg font-bold leading-tight text-yellow-100 md:text-xl">Today's Mission</div>
+                  <div className="text-sm text-slate-300">
+                    {missionDoneToday ? 'Sticker collected! Play again for fun.' : '3 games, then a new sticker!'}
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-1.5">
+                  {pickMission(user, config.anaglyphMode).map((mode, i) => {
+                    const tile = GAME_TILES.find(t => t.mode === mode)!;
+                    return (
+                      <div key={i} className={`flex h-10 w-10 items-center justify-center rounded-lg ${tile.chipClass}`}>
+                        <tile.Icon className={`h-6 w-6 ${tile.iconClass}`} />
+                      </div>
+                    );
+                  })}
+                </div>
+              </button>
+
+              {/* The tiles share the leftover viewport height: the column
                   count steps up with width so rows stay a sensible shape, and
-                  auto-rows-fr splits the height evenly between them. Very short
+                  the rows split the height evenly but never shrink below 9rem. Very short
                   windows fall back to scrolling rather than crushing the tiles. */}
-              <div className="grid flex-1 min-h-0 auto-rows-fr grid-cols-2 gap-2.5 overflow-y-auto md:grid-cols-3 md:gap-3 xl:grid-cols-4">
-                {GAME_TILES.map(tile => (
+              <div className="grid flex-1 min-h-0 auto-rows-[minmax(9rem,1fr)] grid-cols-2 gap-2.5 overflow-y-auto md:grid-cols-3 md:gap-3 xl:grid-cols-4">
+                {visibleTiles.map(tile => (
                   <Card
                     key={tile.mode}
                     className={`relative flex min-h-[9rem] flex-col gap-0 overflow-hidden border-slate-800 bg-slate-900 p-2.5 ${tile.hoverClass} group cursor-pointer transition-all md:p-3`}
@@ -1784,10 +1854,21 @@ export default function App() {
               </div>
 
               <div className="flex shrink-0 items-center gap-3 rounded-xl border border-blue-500/20 bg-blue-500/10 px-4 py-2.5">
-                <Eye className="h-5 w-5 shrink-0 text-blue-400" />
-                <p className="text-sm text-slate-300 md:text-base">
-                  <span className="font-semibold text-blue-400">Pro tip:</span> wear the patch on the
-                  strong eye as your doctor directed.
+                <Sticker className="h-5 w-5 shrink-0 text-blue-400" />
+                {user.stickers.length > 0 ? (
+                  <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden" aria-label={`${user.stickers.length} stickers collected`}>
+                    {/* Newest first, so a fresh sticker is always in view. */}
+                    {[...user.stickers].reverse().slice(0, 24).map((sticker, i) => (
+                      <span key={i} className="text-2xl leading-none">{sticker}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="min-w-0 flex-1 text-sm text-slate-300 md:text-base">
+                    Finish today's mission to win your first sticker!
+                  </p>
+                )}
+                <p className="hidden shrink-0 items-center gap-2 text-sm text-slate-400 lg:flex">
+                  <Eye className="h-4 w-4 text-blue-400" /> Wear the patch as your doctor directed.
                 </p>
               </div>
 
@@ -1803,23 +1884,13 @@ export default function App() {
               className="h-full min-h-0 flex flex-col"
             >
               <div className="mb-2 flex items-center justify-between shrink-0">
-                <Button variant="ghost" size="sm" onClick={() => setScreen('home')}>
+                <Button variant="ghost" size="sm" onClick={leaveGame}>
                   <ChevronLeft className="mr-2 h-4 w-4" /> Back to Base
                 </Button>
                 <div className="flex items-center gap-1">
                 <Badge className="bg-blue-600">
-                  {selectedMode === 'tracking' && 'Tracking Exercise'}
-                  {selectedMode === 'contrast' && 'Contrast Training'}
-                  {selectedMode === 'detail' && 'Detail Focus'}
-                  {selectedMode === 'saccades' && 'Saccadic Movement'}
-                  {selectedMode === 'peripheral' && 'Peripheral Awareness'}
-                  {selectedMode === 'spotter' && 'Contrast Sensitivity'}
-                  {selectedMode === 'checkpoint' && 'Visual Discrimination'}
-                  {selectedMode === 'metro' && 'Smooth Pursuit'}
-                  {selectedMode === 'station' && 'Acuity & Crowding'}
-                  {selectedMode === 'navigator' && 'Visual Tracing'}
-                  {selectedMode === 'crossing' && 'Pursuit & Attention'}
-                  {selectedMode === 'memory' && 'Visual Memory'}
+                  {mission && `Mission ${mission.index + 1}/${mission.modes.length} · `}
+                  {SKILL_LABELS[selectedMode]}
                 </Badge>
                 <Button variant="ghost" size="icon" onClick={toggleFullscreen} title="Toggle Fullscreen">
                   {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
@@ -1828,18 +1899,28 @@ export default function App() {
               </div>
 
               <div className="flex-1 min-h-0 overflow-y-auto">
-              {selectedMode === 'tracking' && <RocketTracker config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'contrast' && <FoggyFlight config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'detail' && <TrafficJam config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'saccades' && <SpeedwaySaccades config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'peripheral' && <PeripheralPatrol config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'spotter' && <FoggySpotter config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'checkpoint' && <Checkpoint config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'metro' && <MetroTracker config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'station' && <StationHunt config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'navigator' && <LineNavigator config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'crossing' && <RailwayCrossing config={renderConfig} onComplete={handleGameComplete} />}
-              {selectedMode === 'memory' && <MetroMemory config={renderConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'tracking' && <RocketTracker config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'contrast' && <FoggyFlight config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'detail' && <TrafficJam config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'saccades' && <SpeedwaySaccades config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'peripheral' && <PeripheralPatrol config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'spotter' && <FoggySpotter config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'checkpoint' && <Checkpoint config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'metro' && <MetroTracker config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'station' && <StationHunt config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'navigator' && <LineNavigator config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'crossing' && <RailwayCrossing config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'memory' && <MetroMemory config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'shapes' && <ShapeGarage config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'popout' && <PopOutPups config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'cinema' && <CartoonCinema config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'carriages' && <CountCarriages config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'dots' && <RocketDots config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'zoo' && <ZooHideSeek config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'bus' && <BusDriver config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'hangar' && <HangarMatch config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'carwash' && <CarWash config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'differences' && <SpotDifference config={gameConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}
@@ -1851,10 +1932,23 @@ export default function App() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-12"
             >
-              <div className="w-24 h-24 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Trophy className="h-12 w-12 text-yellow-500" />
-              </div>
-              <h2 className="text-3xl font-bold mb-2">Mission Accomplished!</h2>
+              {typeof missionReward === 'string' ? (
+                <motion.div
+                  initial={{ scale: 0, rotate: -30 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ type: 'spring', stiffness: 180, damping: 12, delay: 0.2 }}
+                  className="w-32 h-32 bg-yellow-400/20 border-4 border-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6 text-7xl"
+                >
+                  {missionReward}
+                </motion.div>
+              ) : (
+                <div className="w-24 h-24 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Trophy className="h-12 w-12 text-yellow-500" />
+                </div>
+              )}
+              <h2 className="text-3xl font-bold mb-2">
+                {typeof missionReward === 'string' ? 'New Sticker!' : 'Mission Accomplished!'}
+              </h2>
               <div className="flex justify-center mb-4">
                 <Badge variant="outline" className="capitalize px-4 py-1 border-slate-700">
                   {user.stats[selectedMode].slice(-1)[0]?.difficulty || 'medium'} Mode
@@ -1873,9 +1967,31 @@ export default function App() {
                 </div>
               </div>
 
-              <Button size="lg" onClick={() => setScreen('home')} className="px-8">
-                Continue Journey
-              </Button>
+              {mission && mission.index < mission.modes.length - 1 ? (
+                <div className="flex flex-col items-center gap-4">
+                  <div className="flex gap-2" aria-label={`Game ${mission.index + 1} of ${mission.modes.length} done`}>
+                    {mission.modes.map((mode, i) => {
+                      const tile = GAME_TILES.find(t => t.mode === mode)!;
+                      return (
+                        <div
+                          key={i}
+                          className={`flex h-12 w-12 items-center justify-center rounded-xl border-2 ${i <= mission.index ? 'border-green-500 bg-green-500/15' : 'border-slate-700 bg-slate-900'}`}
+                        >
+                          <tile.Icon className={`h-6 w-6 ${tile.iconClass}`} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <Button size="lg" onClick={nextMissionGame} className="px-10 py-6 text-xl">
+                    <Play className="mr-2 h-6 w-6" /> Next Game
+                  </Button>
+                  <Button variant="ghost" onClick={leaveGame}>Stop for today</Button>
+                </div>
+              ) : (
+                <Button size="lg" onClick={() => setScreen('home')} className="px-8">
+                  Continue Journey
+                </Button>
+              )}
             </motion.div>
           )}
 
@@ -1975,6 +2091,56 @@ export default function App() {
                     </Button>
                   </div>
 
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <div className="space-y-0.5">
+                        <label className="text-base font-medium">Daily Mission Game Length</label>
+                        <p className="text-sm text-slate-400">Each of the three mission games runs this long.</p>
+                      </div>
+                      <span className="text-sm text-blue-400">{config.missionSeconds}s</span>
+                    </div>
+                    <Slider
+                      value={[config.missionSeconds]}
+                      min={60} max={240} step={30}
+                      onValueChange={(vals) => {
+                        const val = Array.isArray(vals) ? vals[0] : vals;
+                        setConfig(c => ({ ...c, missionSeconds: val }));
+                      }}
+                    />
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <div className="space-y-0.5">
+                        <label className="text-base font-medium">Cartoon Cinema Length</label>
+                        <p className="text-sm text-slate-400">How long a Cartoon Cinema show runs in free play.</p>
+                      </div>
+                      <span className="text-sm text-blue-400">{config.cinemaMinutes} min</span>
+                    </div>
+                    <Slider
+                      value={[config.cinemaMinutes]}
+                      min={1} max={10} step={1}
+                      onValueChange={(vals) => {
+                        const val = Array.isArray(vals) ? vals[0] : vals;
+                        setConfig(c => ({ ...c, cinemaMinutes: val }));
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-800">
+                    <div className="space-y-0.5">
+                      <label className="text-base font-medium">Spoken Instructions</label>
+                      <p className="text-sm text-slate-400">Read each game's instructions aloud, for children who can't read yet.</p>
+                    </div>
+                    <Button
+                      variant={config.voiceEnabled ? "default" : "outline"}
+                      onClick={() => setConfig(c => ({ ...c, voiceEnabled: !c.voiceEnabled }))}
+                    >
+                      {config.voiceEnabled ? <Mic className="h-4 w-4 mr-2" /> : <MicOff className="h-4 w-4 mr-2" />}
+                      {config.voiceEnabled ? "On" : "Off"}
+                    </Button>
+                  </div>
+
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
                       <label className="text-base font-medium">Full Screen Exercises</label>
@@ -1992,7 +2158,7 @@ export default function App() {
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800">
                     <div className="space-y-0.5">
                       <label className="text-base font-medium">Anaglyph Mode (Red/Cyan)</label>
-                      <p className="text-sm text-slate-400">Enable if you have Red/Cyan glasses for dichoptic training.</p>
+                      <p className="text-sm text-slate-400">Enable if you have Red/Cyan glasses for dichoptic training. Pop-Out Pups needs the glasses, so it only appears while this is on.</p>
                     </div>
                     <Button
                       variant={config.anaglyphMode ? "default" : "outline"}
@@ -2001,6 +2167,27 @@ export default function App() {
                       {config.anaglyphMode ? "Enabled" : "Disabled"}
                     </Button>
                   </div>
+                  {config.anaglyphMode && (
+                    <div className="pt-4 border-t border-slate-800">
+                  <div className="space-y-4">
+                    <div className="flex justify-between">
+                      <div className="space-y-0.5">
+                        <label className="text-base font-medium">Cartoon Cinema: Strong-Eye Picture</label>
+                        <p className="text-sm text-slate-400">How bright the scenery-colour eye's copy of the cartoon is. Lower pushes more of the work onto the weaker eye.</p>
+                      </div>
+                      <span className="text-sm text-blue-400">{config.cinemaFellowLevel}%</span>
+                    </div>
+                    <Slider
+                      value={[config.cinemaFellowLevel]}
+                      min={0} max={100} step={5}
+                      onValueChange={(vals) => {
+                        const val = Array.isArray(vals) ? vals[0] : vals;
+                        setConfig(c => ({ ...c, cinemaFellowLevel: val }));
+                      }}
+                    />
+                  </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 

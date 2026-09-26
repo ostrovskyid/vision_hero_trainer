@@ -4,8 +4,8 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Twelve short exercises themed around vehicles, metro maps and trains — built to make
-daily eye training something a child asks for rather than resists.
+Twenty-two short exercises themed around vehicles, metro maps, rockets, rescue pups and
+the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![React](https://img.shields.io/badge/React-19-61dafb.svg)](https://react.dev)
@@ -34,7 +34,13 @@ point rather than ending the game, and every round finishes with confetti.
 
 ## Highlights
 
-- **Twelve exercises**, each training a different visual skill
+- **Twenty-two exercises**, each training a different visual skill — including a 3D depth game
+  and a passive cartoon for tired days
+- **Today's Mission** — one big button plays three short games back to back and awards a
+  vehicle sticker for the day
+- **Spoken instructions** — every game says what to do out loud, so a child who cannot read
+  yet can play on their own
+- **No countdown numbers** — time is a little car driving towards a finish flag
 - **Three difficulty presets** plus manual control over speed, target size and session length
 - **Red/cyan anaglyph mode** for dichoptic training with 3D glasses, on by default
 - **Animated previews** on every home tile, so a child picks a game by recognising the
@@ -173,7 +179,141 @@ order. The route grows by one station after every success.
 
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/shape-garage.png" alt="Shape Garage" width="100%">
+
+### 🔺 Shape Garage
+**Acuity under crowding, for pre-readers** — a car rolls in missing a wheel with a shape on
+it; find that wheel on a crowded tyre rack. Uses picture symbols in the spirit of the LEA
+Symbols chart (circle, apple, heart, square, house, triangle) instead of letters, with
+look-alikes as distractors. Shapes shrink after each find and grow back after a miss.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/pop-out-pups.png" alt="Pop-Out Pups" width="100%">
+
+### 🐶 Pop-Out Pups
+**Stereopsis (3D depth)** — every pup is drawn once per eye; one floats out of the screen,
+the rest sink behind it. All pups carry the same amount of offset, so only the two eyes
+working together can find the odd one. The depth adapts to the child (less after a find,
+more after a miss). On hard, every other round is a random-dot stereogram. **Needs red/cyan
+glasses, so it only appears while anaglyph mode is on.**
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/cartoon-cinema.png" alt="Cartoon Cinema" width="100%">
+
+### 🎬 Cartoon Cinema
+**Passive dichoptic viewing** — a looping cartoon (rocket launch, metro ride, night flight).
+With the glasses on, the weaker eye sees the full picture while the stronger eye gets a
+dimmer copy with soft patches drifting over it, so parts of the story are only visible to
+the weaker eye. Stars pop up now and then; tapping one shows the child is still watching.
+Without anaglyph mode it plays as an ordinary full-colour cartoon.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/count-the-carriages.png" alt="Count the Carriages" width="100%">
+
+### 🚇 Count the Carriages
+**Visual span and counting** — a metro train rushes past a window for a second or two;
+how many carriages did it have? Answer cards show dots as well as the digit. Small numbers
+are seen at a glance rather than counted, so this trains taking in a whole picture in one
+look. A wrong answer just sends the same train past again.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/rocket-dot-to-dot.png" alt="Rocket Dot-to-Dot" width="100%">
+
+### 🚀 Rocket Dot-to-Dot
+**Eye-hand coordination and saccades** — slide a finger from 1 to 2 to 3… to draw a
+kite, bus, car, rocket, star or plane, which then takes off. Each number is read aloud as it
+is reached. Harder levels use more dots, and hard adds unnumbered decoy dots.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/zoo-hide-and-seek.png" alt="Zoo Hide & Seek" width="100%">
+
+### 🦁 Zoo Hide & Seek
+**Visual closure** — zoo animals hide behind bushes, crates and rocks with only an ear,
+a back or a tail showing. Find the animal that is named. Less of each animal shows on
+harder levels.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/bus-driver.png" alt="Bus Driver" width="100%">
+
+### 🚌 Bus Driver
+**Eye-hand pursuit** — drive the bus along a winding road with a finger and pick up the
+passengers at each stop. The bus only moves while the finger stays on the road near it.
+With the glasses on, the road is drawn for one eye and the bus for the other, so steering
+needs both eyes' pictures combined.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/hangar-match.png" alt="Hangar Match" width="100%">
+
+### ✈️ Hangar Match
+**Shape discrimination** — drag each aircraft into the hangar that shows its shadow (or
+tap the hangar). On hard the shadows are turned at an angle, so the outline has to be
+recognised whichever way it faces.
+
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/car-wash.png" alt="Car Wash" width="100%">
+
+### 🧽 Car Wash
+**Systematic scanning** — rub every mud spot off a muddy car, then watch it drive off
+sparkling. Spots get smaller, more numerous and fainter on harder levels, so the whole car
+has to be searched. With the glasses on, the mud is visible only to the target eye.
+
+</td>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/spot-the-difference.png" alt="Spot the Difference" width="100%">
+
+### 🐧 Spot the Difference
+**Visual comparison** — two small zoo pictures side by side; find the two or three things
+that are different (missing, swapped or, on hard, resized). There's no time pressure, and
+a sparkle hints at a difference after 15 seconds without a find.
+
+</td>
+</tr>
 </table>
+
+## Made for five-year-olds
+
+- **Today's Mission.** The big yellow button picks two games the child has played least
+  recently, then finishes with Cartoon Cinema. Each game runs for the *Daily Mission Game
+  Length* (2 minutes by default). Finishing the mission earns one vehicle sticker per day,
+  shown on the sticker shelf at the bottom of the home screen.
+- **Spoken instructions.** Each exercise reads its instruction aloud when it opens, and the
+  new games also speak each round's prompt ("Find the heart wheel!"). This uses the
+  browser's built-in voices, so it works offline.
+- **No countdown numbers.** The seconds counter is replaced by a little car driving along a
+  road to a finish flag. The new games never take points away for a wrong tap.
+- **Picture-first home screen.** Every tile, including the new ones, has an animated preview.
+- **Works with the glasses.** Every game supports red/cyan mode. Picture-based games recolour
+  their emoji into the calibrated target or scenery colour with an SVG filter, and targets
+  drawn over scenery (the mud on the car, the bus on the road) are added on top of it, so
+  the scenery eye never sees a target-shaped hole.
 
 ## Parent's Corner
 
@@ -190,7 +330,11 @@ rather than to the game:
 | **Session duration** | 10–300 seconds per round |
 | **Sound effects** | Feedback tones on and off |
 | **Full screen exercises** | Fill the whole screen when an exercise starts |
-| **Anaglyph mode** | Red/cyan dichoptic rendering, **on by default**, with per-device colour calibration (see below) |
+| **Daily mission game length** | 60–240 seconds per game in Today's Mission |
+| **Cartoon Cinema length** | 1–10 minutes for a free-play show |
+| **Spoken instructions** | Read instructions aloud on and off |
+| **Anaglyph mode** | Red/cyan dichoptic rendering, **on by default**, with per-device colour calibration (see below). Pop-Out Pups is only shown while it is on |
+| **Cartoon Cinema: strong-eye picture** | 0–100% brightness of the scenery eye's copy of the cartoon (anaglyph mode only) |
 
 Progress, level and per-exercise history are stored in the browser's `localStorage` under
 `eyequest_user`; exercise settings under `eyequest_config` and the display calibration under
@@ -238,6 +382,10 @@ colours and brightness levels across.
 
 Ask your ophthalmologist or orthoptist whether dichoptic training is appropriate, and which
 eye should be behind the red filter.
+
+Pop-Out Pups assumes standard red-left glasses, with the target-colour filter over the left
+eye. If the lenses are the other way round, the odd pup sinks into the screen instead of
+floating out. It is still the only one that looks different, so the game still works.
 
 ## Running it full screen
 
@@ -311,12 +459,16 @@ updating that value.
 | **Build** | Vite 6 |
 | **Animation** | Motion, canvas-confetti |
 | **Icons** | lucide-react |
-| **Audio** | Web Audio API (generated tones, no audio files) |
+| **Audio** | Web Audio API (generated tones, no audio files) and the Web Speech API for spoken instructions |
 | **Storage** | Browser `localStorage` |
 
 Components follow the [shadcn/ui](https://ui.shadcn.com) conventions and live in
-[`components/ui`](components/ui). Game logic and screens are in
-[`src/App.tsx`](src/App.tsx), with shared types and presets in
+[`components/ui`](components/ui). Screens and the original twelve games are in
+[`src/App.tsx`](src/App.tsx); the ten newer games live in [`src/games`](src/games),
+together with their shared timer, start screen and anaglyph tint helpers
+([`src/games/common.tsx`](src/games/common.tsx)). Sound, speech and colour helpers are in
+[`src/feedback.ts`](src/feedback.ts), the in-game progress bar in
+[`src/GameHud.tsx`](src/GameHud.tsx), and shared types and presets in
 [`src/types.ts`](src/types.ts) and [`src/constants.ts`](src/constants.ts).
 
 ## Disclaimer

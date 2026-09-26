@@ -16,7 +16,18 @@ export const DEFAULT_CONFIG: GameConfig = {
   soundEnabled: true,
   autoFullscreen: true,
   difficulty: 'medium',
+  voiceEnabled: true,
+  missionSeconds: 120,
+  cinemaMinutes: 3,
+  cinemaFellowLevel: 50,
 };
+
+/** Earned in order, one per finished daily mission. */
+export const STICKERS = [
+  '🚗', '🚌', '🚀', '✈️', '🚇', '🚒', '🚓', '🚑', '🚂', '🚁',
+  '🏎️', '🚕', '🚜', '🚚', '🚊', '🛸', '⛵', '🚲', '🛵', '🚠',
+  '🚙', '🚎', '🚝', '🛩️', '🚤', '🛻', '🚐', '🛺', '🚞', '🛳️',
+];
 
 /**
  * Screens differ in how saturated their red and cyan primaries are, and cheap
