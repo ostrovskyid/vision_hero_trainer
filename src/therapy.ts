@@ -27,13 +27,6 @@ export const PHASES: PhaseInfo[] = [
     apply: {},
   },
   {
-    id: 'preop',
-    label: 'Before surgery',
-    short: 'One eye',
-    description: 'One eye at a time with the patch on. Red/cyan mode off.',
-    apply: { anaglyphMode: false },
-  },
-  {
     id: 'recovery',
     label: 'Recovery',
     short: 'Resting',
@@ -45,7 +38,7 @@ export const PHASES: PhaseInfo[] = [
     id: 'pleoptic',
     label: 'Weaker-eye training',
     short: 'One eye',
-    description: 'Training the weaker eye with the patch on. Red/cyan mode off.',
+    description: 'Training the weaker eye with the patch on, before or after surgery. Red/cyan mode off.',
     apply: { anaglyphMode: false },
   },
   {
@@ -67,7 +60,7 @@ export const PHASES: PhaseInfo[] = [
 export const phaseInfo = (id: TherapyPhase) => PHASES.find(p => p.id === id) ?? PHASES[0];
 
 /** Phases in which play should normally happen with the patch on. */
-export const PATCH_PHASES: TherapyPhase[] = ['preop', 'pleoptic'];
+export const PATCH_PHASES: TherapyPhase[] = ['pleoptic'];
 
 /** Local calendar day, so logs roll over at the child's midnight. */
 export const dayKey = (time = Date.now()) => {

@@ -41,7 +41,7 @@ points, and every round finishes with confetti.
 - **Rescue pups** — four games starring original police, pilot and fire pups that a parent
   can name after the child's favourites (stored on the device only)
 - **Treatment stages and Patch Pal** — the app follows the stage the eye doctor has set
-  (before surgery, recovery, weaker-eye training, two eyes together, keeping the gains),
+  (weaker-eye training, recovery, two eyes together, keeping the gains),
   with a patch timer and daily goal
 - **Monthly picture check, backup and progress report** — a home vision trend check, a
   backup file for years of records, and a one-page report to bring to checkups
@@ -60,6 +60,9 @@ points, and every round finishes with confetti.
   viewport height, so nothing scrolls out of a child's reach
 - **Installable and offline** — add it to a tablet's home screen and it launches full
   screen, with no browser chrome, and keeps working without a connection
+- **Updates itself** — a new version loads on the next launch or reload; if the app is left
+  open, it switches to the new version on its own when it is back on the home screen, never
+  in the middle of a game
 - **Progress tracking** — XP, levels and per-exercise history saved locally in the browser
 - **Sound and haptic-style feedback**: rising tones for hits, a gentle buzz and shake for
   misses; no game ever takes points away
@@ -457,9 +460,8 @@ its settings once; everything stays adjustable, and the app never changes stage 
 | Stage | What the app does |
 |-------|-------------------|
 | **Free play** | No restrictions (the default) |
-| **Before surgery** | One eye with the patch on: red/cyan mode off, patch check before playing |
 | **Recovery** | Games and missions are paused behind a get-well screen; Patch Pal stays available |
-| **Weaker-eye training** | Like *Before surgery* |
+| **Weaker-eye training** | One eye with the patch on, before or after surgery: red/cyan mode off, patch check before playing |
 | **Two eyes together** | Red/cyan mode on: Lion in the Cage, then Fusion Stars, then Pop-Out Pups. Start only when the eye doctor or orthoptist agrees |
 | **Keeping the gains** | Shorter (1-minute) mission games after patching is reduced or stopped |
 

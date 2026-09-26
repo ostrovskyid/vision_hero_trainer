@@ -51,6 +51,7 @@ import { SkyCatch } from './games/SkyCatch';
 import { FireRescue } from './games/FireRescue';
 import { LookoutAlert } from './games/LookoutAlert';
 import { PupRole, pupName, pupTitle, withPupNames, RescuePup, DEFAULT_PUP_NAMES } from './pups';
+import { newVersionAvailable } from './update';
 import { t, setLang, locale, plural, LANGUAGES } from './i18n';
 import { AnaglyphFilters } from './games/common';
 import { scaleColor, withAlpha, playSound, speak, stopSpeaking } from './feedback';
@@ -1348,6 +1349,13 @@ const normalizeUser = (parsed: any): UserProfile => {
   };
 };
 
+/**
+ * Settings saved by older versions. The "Before surgery" stage was the same
+ * as weaker-eye training once the comfort zone went, so it continues there.
+ */
+const migrateConfig = (config: GameConfig): GameConfig =>
+  (config.therapyPhase as string) === 'preop' ? { ...config, therapyPhase: 'pleoptic' } : config;
+
 // --- Main App ---
 
 export default function App() {
@@ -1360,11 +1368,11 @@ export default function App() {
     try {
       const savedConfig = localStorage.getItem(CONFIG_STORAGE_KEY);
       const savedDisplay = localStorage.getItem(DISPLAY_STORAGE_KEY);
-      return {
+      return migrateConfig({
         ...DEFAULT_CONFIG,
         ...(savedConfig ? JSON.parse(savedConfig) : {}),
         ...(savedDisplay ? JSON.parse(savedDisplay) : {}),
-      };
+      });
     } catch {
       return DEFAULT_CONFIG;
     }
@@ -1491,7 +1499,7 @@ export default function App() {
     if (!pendingRestore) return;
     setUser(normalizeUser(pendingRestore.user));
     // Keep this screen's own calibration: the backup's came from another screen.
-    setConfig(c => ({
+    setConfig(c => migrateConfig({
       ...DEFAULT_CONFIG,
       ...pendingRestore.config,
       anaglyphTarget: c.anaglyphTarget,
@@ -1546,6 +1554,26 @@ export default function App() {
       // Storage can be unavailable (private mode); settings just won't persist.
     }
   }, [config]);
+
+  // A new version is picked up by reloading, but only on the home screen, so
+  // a game is never cut short. Checked on arriving home, when the app comes
+  // back to the front, and every half hour while it sits on the home screen.
+  useEffect(() => {
+    if (screen !== 'home') return;
+    let cancelled = false;
+    const check = () => {
+      newVersionAvailable().then(found => { if (found && !cancelled) window.location.reload(); });
+    };
+    const onVisible = () => { if (document.visibilityState === 'visible') check(); };
+    check();
+    const id = setInterval(check, 30 * 60 * 1000);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [screen]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
