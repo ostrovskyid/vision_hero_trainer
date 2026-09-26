@@ -29,7 +29,7 @@ const MIN_SYMBOL_PX = 8;
 /** A standard bank card is 85.6 mm wide (ISO/IEC 7810 ID-1). */
 const CARD_MM = 85.6;
 
-const EYE_LABEL: Record<VisionCheck['eye'], string> = {
+export const EYE_LABEL: Record<VisionCheck['eye'], string> = {
   left: 'Left eye',
   right: 'Right eye',
   both: 'Both eyes',
@@ -351,7 +351,7 @@ const SERIES: Record<VisionCheck['eye'], string> = { left: '#3987e5', right: '#d
 // Decimal acuity ticks and their logMAR.
 const TICKS: [string, number][] = [['1.0', 0], ['0.63', 0.2], ['0.5', 0.3], ['0.32', 0.5], ['0.2', 0.7], ['0.1', 1.0], ['0.05', 1.3]];
 
-const HistoryChart = ({ checks }: { checks: VisionCheck[] }) => {
+export const HistoryChart = ({ checks }: { checks: VisionCheck[] }) => {
   const [hover, setHover] = useState<number | null>(null);
   if (checks.length === 0) return null;
   const W = 640, H = 260, L = 48, R = 72, T = 16, B = 32;
@@ -426,7 +426,7 @@ const HistoryChart = ({ checks }: { checks: VisionCheck[] }) => {
   );
 };
 
-const HistoryTable = ({ checks }: { checks: VisionCheck[] }) => (
+export const HistoryTable = ({ checks }: { checks: VisionCheck[] }) => (
   <div className="overflow-x-auto rounded-xl border border-slate-800">
     <table className="w-full text-left text-sm">
       <thead className="bg-slate-900 text-slate-400">

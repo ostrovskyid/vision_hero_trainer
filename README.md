@@ -452,6 +452,20 @@ its settings once; everything stays adjustable, and the app never changes stage 
     another screen.
   - Parent's Corner recommends a new backup after 30 days.
 
+## Progress report
+
+**Progress Report** (Parent's Corner) puts everything the app recorded over a chosen period
+(4 weeks, 3 or 6 months, everything, or since a date) on one page to bring to checkups.
+- **Patch time:** total, daily average, days the goal was met and days worn, with a weekly
+  (or 30-day) chart against the goal.
+- **Picture checks:** the home results in the period, as the chart and table.
+- **Game practice:** sessions, days and minutes by skill, plus the Lion in the Cage readings.
+
+The period never starts before the first record, so averages aren't diluted by days before
+tracking began. **Print / PDF** prints a clean white page (or saves a PDF from the print
+dialog), and **Copy as text** puts a plain summary on the clipboard for an email or
+message. The report says clearly that it is home data, not clinical measurements.
+
 ## Parent's Corner
 
 <img src="docs/screenshots/parents-corner.png" alt="The Parent's Corner settings screen" width="800">
@@ -462,7 +476,7 @@ rather than to the game:
 | Setting | What it does |
 |---------|--------------|
 | **Treatment plan** | Stage, comfort zone and daily patch goal (see above) |
-| **Picture check / Backup** | Monthly picture check and backup file (see above) |
+| **Picture check / Backup / Report** | Monthly picture check, backup file and progress report (see above) |
 | **Difficulty** | `easy` / `medium` / `hard` presets for speed, target size and grid density |
 | **Movement speed** | How fast targets travel — lower it for younger children |
 | **Target size** | 20–100px; larger targets suit deeper amblyopia |

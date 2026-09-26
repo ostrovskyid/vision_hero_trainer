@@ -152,3 +152,24 @@
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
 }
+/* The progress report prints as a plain white page: the cards and tables
+   drop their dark fills and take dark ink, while chart marks keep their
+   own colours. */
+@media print {
+  @page { margin: 14mm; }
+  .progress-report section,
+  .progress-report figure,
+  .progress-report table,
+  .progress-report thead,
+  .progress-report .rounded-xl {
+    background: #fff !important;
+    border-color: #cbd5e1 !important;
+  }
+  .progress-report,
+  .progress-report * {
+    color: #0f172a !important;
+  }
+  /* Chart text is drawn light for the dark screen; ink it for paper. */
+  .progress-report svg text { fill: #334155 !important; }
+  .progress-report section { break-inside: avoid; }
+}
