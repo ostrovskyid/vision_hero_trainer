@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
-import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater } from './common';
+import { GameProps, StartOverlay, finishSession, useSessionTimer, useLater, compensationPx } from './common';
 
 /**
  * Stereopsis with red/cyan glasses. Every pup is drawn twice, once in each
@@ -158,6 +158,7 @@ export const PopOutPups = ({ config, onComplete }: GameProps) => {
 
   const left = config.anaglyphTarget;
   const right = config.anaglyphScene;
+  const comp = compensationPx(config);
   const pupSize = Math.max(64, config.size * 2);
   // RDS disparity in grid cells; each cell is a few screen pixels.
   const tileSize = Math.max(120, config.size * 3.2);
@@ -199,8 +200,9 @@ export const PopOutPups = ({ config, onComplete }: GameProps) => {
                   <StereoTile shift={rdsShift} disc={near} left={left} right={right} size={tileSize} />
                 ) : (
                   <div className="relative" style={{ width: pupSize + disparity, height: pupSize, isolation: 'isolate' }}>
-                    <div className="absolute top-0" style={{ left: disparity / 2 + half }}><Pup color={left} size={pupSize} /></div>
-                    <div className="absolute top-0" style={{ left: disparity / 2 - half }}><Pup color={right} size={pupSize} /></div>
+                    {/* The angle compensation moves each eye's copy apart by half, on top of the depth offset. */}
+                    <div className="absolute top-0" style={{ left: disparity / 2 + half + comp / 2 }}><Pup color={left} size={pupSize} /></div>
+                    <div className="absolute top-0" style={{ left: disparity / 2 - half - comp / 2 }}><Pup color={right} size={pupSize} /></div>
                   </div>
                 )}
               </motion.button>

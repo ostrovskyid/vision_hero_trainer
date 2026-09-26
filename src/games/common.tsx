@@ -159,3 +159,20 @@ export const shuffle = <T,>(items: readonly T[]) => {
   }
   return out;
 };
+
+/** Screen distance the two-eye games assume: a tablet held in the hands. */
+export const VIEWING_CM = 40;
+
+/** CSS pixels for one prism dioptre at the viewing distance (1 PD = 1 cm at 1 m). */
+export const pxPerPrismDioptre = (config: GameConfig) =>
+  (VIEWING_CM / 100) * 10 * (config.pxPerMm > 0 ? config.pxPerMm : 96 / 25.4);
+
+/**
+ * How far apart to draw the two eyes' pictures so an eye turned by
+ * `deviationPD` still sees its picture straight ahead. The target colour is
+ * seen by the LEFT eye (red-left glasses). For eyes turned in, the left
+ * eye's picture goes to the right of the right eye's, so a positive value
+ * moves target-colour pictures right and scenery-colour pictures left, by
+ * half each.
+ */
+export const compensationPx = (config: GameConfig) => config.deviationPD * pxPerPrismDioptre(config);
