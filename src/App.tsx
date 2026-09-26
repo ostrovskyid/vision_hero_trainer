@@ -7,7 +7,8 @@ import {
   TrainFront, MapPin, Route, TramFront, Palette, ArrowLeftRight, RotateCcw,
   Shapes, Dog, Clapperboard, Mic, MicOff, Sticker,
   Hash, PenLine, TreePalm, Warehouse, Droplets, ScanSearch,
-  Waves, Orbit, Waypoints, Paintbrush, Layers, Cat, Sparkles, Flashlight, Flame
+  Waves, Orbit, Waypoints, Paintbrush, Layers, Cat, Sparkles, Flashlight, Flame,
+  Construction, Recycle, Snowflake, Fish
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { Button } from '@/components/ui/button';
@@ -50,7 +51,11 @@ import { NightSearch } from './games/NightSearch';
 import { SkyCatch } from './games/SkyCatch';
 import { FireRescue } from './games/FireRescue';
 import { LookoutAlert } from './games/LookoutAlert';
-import { PupRole, pupName, pupTitle, withPupNames, RescuePup, DEFAULT_PUP_NAMES } from './pups';
+import { CraneTower } from './games/CraneTower';
+import { RecyclingSort } from './games/RecyclingSort';
+import { SnowflakeMatch } from './games/SnowflakeMatch';
+import { BubbleRescue } from './games/BubbleRescue';
+import { PupRole, PUP_ROLES, pupName, pupTitle, withPupNames, RescuePup, DEFAULT_PUP_NAMES } from './pups';
 import { newVersionAvailable } from './update';
 import { t, setLang, locale, plural, LANGUAGES } from './i18n';
 import { AnaglyphFilters } from './games/common';
@@ -90,6 +95,10 @@ const GAME_TILES: {
   { mode: 'skycatch', title: 'Sky Catch', description: 'Fly under the falling treats.', Icon: Plane, iconClass: 'text-pink-300', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-400/60', barClass: 'bg-pink-400', pup: 'pilot' },
   { mode: 'firerescue', title: 'Fire Rescue', description: 'Spot every fire and spray it out.', Icon: Flame, iconClass: 'text-red-300', chipClass: 'bg-red-500/10', hoverClass: 'hover:border-red-400/60', barClass: 'bg-red-400', pup: 'fire' },
   { mode: 'lookout', title: 'Lookout', description: 'Eyes on the pup, spot the side lights.', Icon: Radar, iconClass: 'text-green-400', chipClass: 'bg-green-500/10', hoverClass: 'hover:border-green-500/60', barClass: 'bg-green-500', pup: 'police' },
+  { mode: 'crane', title: 'Crane Tower', description: 'Drop the swinging block on the tower.', Icon: Construction, iconClass: 'text-yellow-300', chipClass: 'bg-yellow-500/10', hoverClass: 'hover:border-yellow-400/60', barClass: 'bg-yellow-400', pup: 'builder' },
+  { mode: 'recycle', title: 'Recycling Sort', description: 'Put each thing in the right bin.', Icon: Recycle, iconClass: 'text-emerald-300', chipClass: 'bg-emerald-500/10', hoverClass: 'hover:border-emerald-400/60', barClass: 'bg-emerald-400', pup: 'recycle' },
+  { mode: 'snowflakes', title: 'Snowflake Match', description: 'Find the snowflake twin.', Icon: Snowflake, iconClass: 'text-violet-300', chipClass: 'bg-violet-500/10', hoverClass: 'hover:border-violet-400/60', barClass: 'bg-violet-400', pup: 'snow' },
+  { mode: 'bubbles', title: 'Bubble Rescue', description: 'Pop the bubbles with a turtle.', Icon: Fish, iconClass: 'text-cyan-300', chipClass: 'bg-cyan-500/10', hoverClass: 'hover:border-cyan-400/60', barClass: 'bg-cyan-400', pup: 'water' },
   { mode: 'shapes', title: 'Shape Garage', description: 'Find the wheel with the same shape.', Icon: Shapes, iconClass: 'text-amber-400', chipClass: 'bg-amber-500/10', hoverClass: 'hover:border-amber-500/60', barClass: 'bg-amber-500' },
   { mode: 'popout', title: 'Pop-Out Pups', description: 'Tap the pup that floats out.', Icon: Dog, iconClass: 'text-pink-400', chipClass: 'bg-pink-500/10', hoverClass: 'hover:border-pink-500/60', barClass: 'bg-pink-500', requiresAnaglyph: true },
   { mode: 'cinema', title: 'Cartoon Cinema', description: 'Watch the show, tap the stars.', Icon: Clapperboard, iconClass: 'text-teal-400', chipClass: 'bg-teal-500/10', hoverClass: 'hover:border-teal-500/60', barClass: 'bg-teal-500' },
@@ -155,6 +164,10 @@ const SKILL_LABELS: Record<GameMode, string> = {
   skycatch: 'Pursuit & Eye-Hand',
   firerescue: 'Visual Discrimination',
   lookout: 'Peripheral Awareness',
+  crane: 'Pursuit & Timing',
+  recycle: 'Eye-Hand Coordination',
+  snowflakes: 'Fine Detail',
+  bubbles: 'Pursuit & Discrimination',
 };
 
 /**
@@ -195,6 +208,10 @@ const GAME_INSTRUCTIONS: Record<GameMode, string> = {
   skycatch: 'Fly with {pilot}! Catch the treats!',
   firerescue: '{fire} needs help! Tap every fire!',
   lookout: 'Look at {police}! When a light flashes at the side, tap {police}!',
+  crane: '{builder} is building a tower! Tap to drop each block on top!',
+  recycle: 'Help {recycle} sort the rubbish! Drag each thing into the right bin.',
+  snowflakes: '{snow} found a snowflake. Find its twin in the sky!',
+  bubbles: 'Baby turtles are lost in the bubbles! Help {water} and pop only the turtle bubbles!',
 };
 
 const DIFFICULTY_LABELS = { easy: 'Easy', medium: 'Medium', hard: 'Hard' } as const;
@@ -1831,6 +1848,10 @@ export default function App() {
               {selectedMode === 'skycatch' && <SkyCatch config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'firerescue' && <FireRescue config={gameConfig} onComplete={handleGameComplete} />}
               {selectedMode === 'lookout' && <LookoutAlert config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'crane' && <CraneTower config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'recycle' && <RecyclingSort config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'snowflakes' && <SnowflakeMatch config={gameConfig} onComplete={handleGameComplete} />}
+              {selectedMode === 'bubbles' && <BubbleRescue config={gameConfig} onComplete={handleGameComplete} />}
               </div>
             </motion.div>
           )}
@@ -2034,7 +2055,7 @@ export default function App() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-3">
-                  {(['police', 'pilot', 'fire'] as PupRole[]).map(role => (
+                  {PUP_ROLES.map(role => (
                     <label key={role} htmlFor={`pup-${role}`} className="flex items-center gap-3">
                       <RescuePup role={role} size={52} />
                       <span className="flex min-w-0 flex-1 flex-col gap-1">

@@ -26,7 +26,7 @@ export const DEFAULT_CONFIG: GameConfig = {
   patchGoalMinutes: 120,
   pxPerMm: 0,
   deviationPD: 0,
-  pupNames: { police: '', pilot: '', fire: '' },
+  pupNames: { police: '', pilot: '', fire: '', builder: '', recycle: '', snow: '', water: '' },
   readingGames: false,
   // The device language on a first start; changed in Parent's Corner.
   language: detectLang(),

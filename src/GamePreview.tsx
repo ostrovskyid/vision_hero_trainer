@@ -609,6 +609,85 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
         </Frame>
       );
 
+    case 'crane':
+      return (
+        <Frame className="bg-gradient-to-b from-sky-950 to-slate-950">
+          <div className="absolute left-[6%] right-[6%] top-2 h-1.5 rounded bg-yellow-400" />
+          <motion.div
+            className="absolute top-3.5 flex flex-col items-center"
+            animate={move({ left: ['18%', '62%', '18%'] }, { left: '40%' })}
+            transition={loop(2.6)}
+          >
+            <div className="h-3 w-0.5 bg-yellow-400" />
+            <div className="h-3 w-10 rounded-sm bg-orange-500" />
+          </motion.div>
+          <div className="absolute bottom-2 left-1/2 flex -translate-x-1/2 flex-col-reverse items-center gap-0.5">
+            {['#3b82f6', '#22c55e'].map((c, i) => (
+              <div key={i} className="h-3 w-10 rounded-sm" style={{ backgroundColor: c, marginLeft: i % 2 ? 4 : -2 }} />
+            ))}
+          </div>
+          <div className="absolute bottom-1 right-2"><RescuePup role="builder" size={34} /></div>
+        </Frame>
+      );
+
+    case 'recycle':
+      return (
+        <Frame className="flex flex-col items-center justify-between py-2">
+          <motion.span
+            className="text-2xl leading-none"
+            animate={move({ x: [-40, 0, 0, 30], y: [0, 0, 0, 34], opacity: [0, 1, 1, 0] }, { x: 0, y: 0, opacity: 1 })}
+            transition={{ duration: 3, repeat: Infinity, times: [0, 0.25, 0.6, 1] }}
+          >
+            🧴
+          </motion.span>
+          <div className="flex items-end gap-2">
+            {['#16a34a', '#2563eb', '#eab308'].map(c => (
+              <div key={c} className="h-9 w-8 rounded-b-md rounded-t-sm" style={{ backgroundColor: c }} />
+            ))}
+          </div>
+          <div className="absolute bottom-1 left-2"><RescuePup role="recycle" size={30} /></div>
+        </Frame>
+      );
+
+    case 'snowflakes':
+      return (
+        <Frame className="bg-gradient-to-b from-indigo-950 to-slate-900">
+          {[{ left: '12%', top: '12%' }, { left: '42%', top: '30%' }, { left: '72%', top: '10%' }].map((pos, i) => (
+            <motion.span
+              key={i}
+              className="absolute text-2xl leading-none text-sky-100"
+              style={pos}
+              animate={move({ y: [0, 10, 0], rotate: [0, 20, 0] }, { y: 0, rotate: 0 })}
+              transition={loop(3 + i, i * 0.4)}
+            >
+              ❄
+            </motion.span>
+          ))}
+          <div className="absolute bottom-1 left-1/2 flex -translate-x-1/2 items-end gap-1">
+            <RescuePup role="snow" size={32} />
+            <span className="rounded-md border border-sky-300/50 px-1 text-lg leading-none text-sky-100">❄</span>
+          </div>
+        </Frame>
+      );
+
+    case 'bubbles':
+      return (
+        <Frame className="bg-gradient-to-b from-cyan-950 to-blue-950">
+          {[{ left: '15%', e: '🐢', d: 0 }, { left: '45%', e: '🐟', d: 1.2 }, { left: '72%', e: '🐢', d: 2.1 }].map((b, i) => (
+            <motion.div
+              key={i}
+              className="absolute flex h-9 w-9 items-center justify-center rounded-full border-2 border-sky-300 text-lg leading-none"
+              style={{ left: b.left }}
+              animate={move({ top: ['105%', '-30%'] }, { top: `${30 + i * 15}%` })}
+              transition={{ duration: 3.4, repeat: Infinity, delay: b.d, ease: 'linear' }}
+            >
+              {b.e}
+            </motion.div>
+          ))}
+          <div className="absolute right-1 top-1"><RescuePup role="water" size={30} /></div>
+        </Frame>
+      );
+
     default:
       return <Frame />;
   }
