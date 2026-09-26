@@ -10,7 +10,7 @@ export type Lang = 'en' | 'ru';
  * Where the child is in their treatment plan, as set by a parent to match
  * what the eye doctor has asked for. 'free' applies no restrictions.
  */
-export type TherapyPhase = 'free' | 'preop' | 'recovery' | 'pleoptic' | 'binocular' | 'maintenance';
+export type TherapyPhase = 'free' | 'recovery' | 'pleoptic' | 'binocular' | 'maintenance';
 
 /** One result of the monthly picture check (a home trend, not a clinical test). */
 export interface VisionCheck {

@@ -2,7 +2,7 @@
 // the manifest's display: fullscreen) when the site has a service worker with a
 // fetch handler. Without one, "Add to Home Screen" makes a plain shortcut that
 // reopens the browser. Caching also lets a training session run offline.
-const CACHE = 'vision-hero-v1';
+const CACHE = 'vision-hero-v2';
 
 // The very first page load happens before this worker controls the page, so
 // the shell is fetched here explicitly; without it the first offline launch
@@ -28,12 +28,33 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Stale-while-revalidate: paint from cache immediately, refresh in the
-// background so the next launch has the newest build.
+// The page itself (index.html) is network-first, so one reload or launch
+// brings a new version; the cached copy is only for offline use. Everything
+// else has a content hash in its name, so it is served from the cache
+// straight away (stale-while-revalidate).
+const isPage = (request, url) =>
+  request.mode === 'navigate' || url.pathname.endsWith('/') || url.pathname.endsWith('/index.html');
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
-  if (new URL(request.url).origin !== self.location.origin) return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
+
+  if (isPage(request, url)) {
+    event.respondWith(
+      fetch(request, { cache: 'no-store' })
+        .then((response) => {
+          if (response && response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE).then((cache) => cache.put('./index.html', copy));
+          }
+          return response;
+        })
+        .catch(() => caches.match('./index.html').then((cached) => cached || caches.match(request)))
+    );
+    return;
+  }
 
   event.respondWith(
     caches.match(request).then((cached) => {
