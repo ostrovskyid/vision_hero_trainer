@@ -4,7 +4,8 @@ export type GameMode = 'tracking' | 'contrast' | 'detail' | 'saccades' | 'periph
   | 'cage' | 'fusion'
   | 'nightsearch' | 'skycatch' | 'firerescue' | 'lookout'
   | 'crane' | 'recycle' | 'snowflakes' | 'bubbles'
-  | 'jungle' | 'scooter' | 'dinos';
+  | 'jungle' | 'scooter' | 'dinos'
+  | 'fetch';
 export type Difficulty = 'easy' | 'medium' | 'hard';
 export type Lang = 'en' | 'ru';
 
@@ -111,6 +112,10 @@ export interface GameConfig {
   pupNames: { police: string; pilot: string; fire: string; builder: string; recycle: string; snow: string; water: string; jungle: string; city: string; dino: string };
   /** Show games that need reading letters (for when the child starts reading). */
   readingGames: boolean;
+  /** The child's name, for the family game's spoken lines; empty = not set. */
+  childName: string;
+  /** The family dog's name in Fetch; empty = the default. */
+  dogName: string;
   /** Interface and speech language. */
   language: Lang;
 }

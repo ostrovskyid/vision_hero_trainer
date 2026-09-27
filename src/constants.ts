@@ -28,6 +28,8 @@ export const DEFAULT_CONFIG: GameConfig = {
   deviationPD: 0,
   pupNames: { police: '', pilot: '', fire: '', builder: '', recycle: '', snow: '', water: '', jungle: '', city: '', dino: '' },
   readingGames: false,
+  childName: '',
+  dogName: '',
   // The device language on a first start; changed in Parent's Corner.
   language: detectLang(),
 };

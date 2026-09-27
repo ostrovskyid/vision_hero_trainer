@@ -7,6 +7,7 @@ import { GameMode } from './types';
 import { ShapeIcon, ShapeKind } from './shapes';
 import { RescuePup } from './pups';
 import { getLang } from './i18n';
+import { Boy, FacetBall, Spaniel } from './family';
 
 /**
  * Miniature, animated illustrations of each exercise, shown on the home tiles.
@@ -745,6 +746,22 @@ export const GamePreview = ({ mode }: { mode: GameMode }) => {
             </motion.span>
           ))}
           <div className="absolute left-1 top-1"><RescuePup role="dino" size={30} /></div>
+        </Frame>
+      );
+
+    case 'fetch':
+      return (
+        <Frame className="bg-gradient-to-b from-sky-300 via-sky-200 to-green-600">
+          <motion.div
+            className="absolute"
+            animate={move({ left: ['12%', '45%', '62%', '66%'], top: ['70%', '8%', '48%', '42%'], scale: [1, 0.8, 0.6, 0.55] }, { left: '45%', top: '15%', scale: 0.8 })}
+            transition={{ duration: 2.4, repeat: Infinity, repeatDelay: 0.8, ease: 'easeOut' }}
+          >
+            <FacetBall size={20} />
+          </motion.div>
+          <div className="absolute right-[14%] top-[38%] h-9 w-14 rounded-t-full bg-green-700" />
+          <div className="absolute right-[42%] top-[50%] h-10 w-16 rounded-t-full bg-green-700" />
+          <div className="absolute bottom-1 left-1 flex items-end"><Boy size={34} /><Spaniel size={34} /></div>
         </Frame>
       );
 
