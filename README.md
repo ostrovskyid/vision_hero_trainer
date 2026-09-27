@@ -496,8 +496,9 @@ settling at the faintest shapes the child can find.
 <img src="docs/screenshots/ball-fetch.png" alt="Ball Fetch" width="100%">
 
 ### 🎾 Ball Fetch
-**Tracking in depth** — throw the ball for the family dog; it flies in an arc, shrinks as it
-goes further away, bounces and rolls behind a bush. Tap the bush it hid behind and the dog
+**Tracking in depth** — swipe the ball out of the child's hand towards the park (a dotted
+line shows the aim; the swipe's direction and length choose where it lands); it flies in an
+arc, shrinks as it goes further away, bounces and rolls behind a bush. Tap the bush it hid behind and the dog
 runs to fetch it. Following a target that moves in depth, then holding its place in mind
 once it is hidden. On harder levels the ball rolls behind one bush, comes out, and hides
 behind another (tracking through a gap).

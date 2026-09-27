@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState, type PointerEvent } from 'react';
 import { motion } from 'motion/react';
 import { GameHud } from '../GameHud';
 import { playSound, speak } from '../feedback';
@@ -7,7 +7,8 @@ import { Boy, FacetBall, Spaniel, childName, dogName } from '../family';
 import { t } from '../i18n';
 
 /**
- * Fetch: the child throws the family dog's ball into the park; it flies in an
+ * Fetch: the child swipes the family dog's ball into the park (the swipe's
+ * direction and length choose where it lands); it flies in an
  * arc, shrinks as it goes further away, bounces and rolls behind a bush. The
  * child taps the bush it hid behind, and the dog runs to fetch it.
  *
@@ -47,6 +48,9 @@ export const BallFetch = ({ config, onComplete }: GameProps) => {
   const [target, setTarget] = useState(0);
   const [path, setPath] = useState<{ left: number[]; top: number[]; scale: number[]; rotate: number[]; times: number[] } | null>(null);
   const [wrong, setWrong] = useState<number | null>(null);
+  // The ball in the child's hand while it is being swiped, and where the swipe started.
+  const [aim, setAim] = useState<{ x: number; y: number } | null>(null);
+  const dragFrom = useRef<{ x: number; y: number } | null>(null);
 
   const timeLeft = useSessionTimer(config.duration, isPlaying, () => {
     setIsPlaying(false);
@@ -76,11 +80,11 @@ export const BallFetch = ({ config, onComplete }: GameProps) => {
     setStarted(true);
     setIsPlaying(true);
     newPark();
-    speak(child ? t('{child}, throw the ball for {dog}! Watch where it goes!', { child, dog }) : t('Throw the ball for {dog}! Watch where it goes!', { dog }), config.voiceEnabled);
+    speak(child ? t('{child}, throw the ball for {dog}! Swipe it with your finger and watch where it goes!', { child, dog }) : t('Throw the ball for {dog}! Swipe it with your finger and watch where it goes!', { dog }), config.voiceEnabled);
   };
 
   /** Samples the flight: an arc to the first landing, bounces, then rolls behind bushes. */
-  const buildPath = (stops: number[]) => {
+  const buildPath = (stops: number[], from: { x: number; y: number }) => {
     const pts: { x: number; y: number; s: number }[] = [];
     const add = (x: number, y: number, s: number) => pts.push({ x, y, s });
     const first = bushes[stops[0]];
@@ -90,7 +94,7 @@ export const BallFetch = ({ config, onComplete }: GameProps) => {
     // The throw: a high arc from the child's hand.
     for (let i = 0; i <= 24; i++) {
       const k = i / 24;
-      add(home.x + (land.x - home.x) * k, home.y + (land.y - home.y) * k - Math.sin(Math.PI * k) * size.height * 0.45, 1 + (land.s - 1) * k);
+      add(from.x + (land.x - from.x) * k, from.y + (land.y - from.y) * k - Math.sin(Math.PI * k) * size.height * 0.45, 1 + (land.s - 1) * k);
     }
     // Two small bounces.
     let at = land;
@@ -122,14 +126,56 @@ export const BallFetch = ({ config, onComplete }: GameProps) => {
     };
   };
 
-  const throwBall = () => {
+  /** Where a swipe from the hand to `p` would send the ball: the swipe, stretched out into the park. */
+  const aimPoint = (p: { x: number; y: number }) => ({
+    x: Math.min(size.width * 0.97, Math.max(size.width * 0.03, home.x + (p.x - home.x) * 2.6)),
+    y: Math.min(size.height * 0.9, Math.max(groundY(1), home.y + (p.y - home.y) * 2.6)),
+  });
+
+  /** The bush nearest to where the swipe points. */
+  const aimedBush = (p: { x: number; y: number }) => {
+    const a = aimPoint(p);
+    let best = 0, bestD = Infinity;
+    bushes.forEach((b, i) => {
+      const d = Math.hypot(b.x * size.width - a.x, groundY(b.depth) - a.y);
+      if (d < bestD) { bestD = d; best = i; }
+    });
+    return best;
+  };
+
+  const throwBall = (release: { x: number; y: number }) => {
     if (!isPlaying || phase !== 'ready' || bushes.length === 0) return;
-    const order = shuffle<number>(Array.from({ length: bushes.length }, (_, i) => i));
-    const stops = order.slice(0, level.passes + 1);
+    // It lands by the bush the child aimed at; on harder levels it then rolls on behind others.
+    const first = aimedBush(release);
+    const others = shuffle<number>(Array.from({ length: bushes.length }, (_, i) => i).filter(i => i !== first));
+    const stops = [first, ...others].slice(0, level.passes + 1);
     setTarget(stops[stops.length - 1]);
-    setPath(buildPath(stops));
+    setPath(buildPath(stops, release));
     setPhase('flying');
     playSound('honk', config.soundEnabled);
+  };
+
+  const local = (e: PointerEvent<HTMLElement>) => {
+    const r = (e.currentTarget.parentElement as HTMLElement).getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+  const onGrab = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isPlaying || phase !== 'ready') return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    dragFrom.current = local(e);
+    setAim(local(e));
+  };
+  const onSwipe = (e: PointerEvent<HTMLDivElement>) => {
+    if (dragFrom.current) setAim(local(e));
+  };
+  const onRelease = (e: PointerEvent<HTMLDivElement>) => {
+    if (!dragFrom.current) return;
+    const p = local(e);
+    dragFrom.current = null;
+    setAim(null);
+    // A tap or a tiny wiggle is not a throw: the ball stays in the hand.
+    if (Math.hypot(p.x - home.x, p.y - home.y) < 40 || p.y > home.y + 20) return;
+    throwBall(p);
   };
 
   const landed = () => {
@@ -163,7 +209,7 @@ export const BallFetch = ({ config, onComplete }: GameProps) => {
   return (
     <div className="relative h-full min-h-[420px] w-full overflow-hidden rounded-xl border-4 border-slate-800" style={{ background: config.anaglyphMode ? '#000' : 'linear-gradient(#7dd3fc 0%, #bae6fd 30%, #86efac 31%, #16a34a 100%)' }}>
       {!started && (
-        <StartOverlay label={t('Play Fetch')} hint={t('Throw the ball, watch where it rolls, then tap that bush!')} onStart={start}>
+        <StartOverlay label={t('Play Fetch')} hint={t('Swipe the ball towards the bushes, watch where it rolls, then tap that bush!')} onStart={start}>
           <div className="flex items-end gap-2">
             <Boy size={96} style={tintStyle(config, 'target')} />
             <Spaniel size={96} style={tintStyle(config, 'target')} />
@@ -241,18 +287,52 @@ export const BallFetch = ({ config, onComplete }: GameProps) => {
               )}
             </motion.div>
 
-            {/* The big throw button while the ball is in the child's hand. */}
+            {/* The ball in the child's hand: swipe it towards the park to throw. */}
             {phase === 'ready' && (
-              <motion.button
-                onClick={throwBall}
-                className="absolute flex items-center gap-2 rounded-full bg-yellow-400 px-6 py-4 text-xl font-bold text-slate-950 shadow-lg"
-                style={{ left: home.x - 40, top: home.y + dogSize * 0.1 - 120 }}
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: [1, 1.08, 1], opacity: 1 }}
-                transition={{ duration: 1.2, repeat: Infinity }}
-              >
-                <FacetBall size={34} /> {t('Throw!')}
-              </motion.button>
+              <>
+                {aim && (
+                  // The aim: a dotted line from the hand to where the ball would go.
+                  <svg className="pointer-events-none absolute inset-0 h-full w-full" aria-hidden="true">
+                    <line
+                      x1={home.x} y1={home.y - ballBase / 2}
+                      x2={aimPoint(aim).x} y2={aimPoint(aim).y}
+                      stroke="#fff" strokeOpacity={0.8} strokeWidth={4} strokeDasharray="4 12" strokeLinecap="round"
+                    />
+                    <circle cx={aimPoint(aim).x} cy={aimPoint(aim).y} r={14} fill="none" stroke="#fff" strokeOpacity={0.8} strokeWidth={3} />
+                  </svg>
+                )}
+                <div
+                  role="button"
+                  aria-label={t('Ball: swipe it towards the bushes to throw')}
+                  className="absolute touch-none cursor-grab"
+                  style={{
+                    left: (aim ?? home).x - ballBase * 0.9,
+                    top: (aim ?? home).y - ballBase * 1.4,
+                    width: ballBase * 1.8,
+                    height: ballBase * 1.8,
+                    padding: ballBase * 0.4,
+                  }}
+                  onPointerDown={onGrab}
+                  onPointerMove={onSwipe}
+                  onPointerUp={onRelease}
+                  onPointerCancel={() => { dragFrom.current = null; setAim(null); }}
+                >
+                  <motion.div animate={aim ? { scale: 1.15 } : { scale: [1, 1.12, 1] }} transition={aim ? { duration: 0.1 } : { duration: 1.1, repeat: Infinity }}>
+                    <FacetBall size={ballBase} style={tintStyle(config, 'target')} />
+                  </motion.div>
+                </div>
+                {!aim && (
+                  // A little hand shows the swipe, for a child who cannot read the hint.
+                  <motion.span
+                    className="pointer-events-none absolute text-4xl leading-none"
+                    style={{ left: home.x, top: home.y - ballBase * 0.4 }}
+                    animate={{ x: [0, size.width * 0.18, size.width * 0.18], y: [0, -size.height * 0.22, -size.height * 0.22], opacity: [0, 1, 0] }}
+                    transition={{ duration: 1.6, repeat: Infinity, repeatDelay: 0.6 }}
+                  >
+                    👆
+                  </motion.span>
+                )}
+              </>
             )}
           </>
         )}
