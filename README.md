@@ -4,7 +4,7 @@
 
 **A gamified vision-training app for children with amblyopia and strabismus.**
 
-Thirty-seven short exercises themed around vehicles, metro maps, rockets, rescue pups and
+Thirty-eight short exercises themed around vehicles, metro maps, rockets, rescue pups and
 the zoo — built to make daily eye training something a child asks for rather than resists.
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
@@ -34,7 +34,7 @@ points, and every round finishes with confetti.
 
 ## Highlights
 
-- **Thirty-seven exercises**, each training a different visual skill — including a 3D depth game
+- **Thirty-eight exercises**, each training a different visual skill — including a 3D depth game
   and a passive cartoon for tired days
 - **Today's Mission** — one big button plays three short games back to back and awards a
   sticker for the season's album
@@ -490,6 +490,20 @@ settling at the faintest shapes the child can find.
 
 </td>
 </tr>
+<tr>
+<td width="50%" valign="top">
+
+<img src="docs/screenshots/ball-fetch.png" alt="Ball Fetch" width="100%">
+
+### 🎾 Ball Fetch
+**Tracking in depth** — throw the ball for the family dog; it flies in an arc, shrinks as it
+goes further away, bounces and rolls behind a bush. Tap the bush it hid behind and the dog
+runs to fetch it. Following a target that moves in depth, then holding its place in mind
+once it is hidden. On harder levels the ball rolls behind one bush, comes out, and hides
+behind another (tracking through a gap).
+
+</td>
+</tr>
 </table>
 
 ## Made for five-year-olds
@@ -514,7 +528,11 @@ settling at the faintest shapes the child can find.
 Eleven games star original rescue pups: a police pup (Night Search, Lookout), a pilot pup
 (Sky Catch), a fire pup (Fire Rescue), a builder pup (Crane Tower), a recycling pup
 (Recycling Sort), a snow pup (Snowflake Match), a water pup (Bubble Rescue), a jungle pup
-(Jungle Trail), a city pup (Scooter Signs) and a dino pup (Misty Dinos). In **Parent's Corner → Rescue Pups** a parent can
+(Jungle Trail), a city pup (Scooter Signs) and a dino pup (Misty Dinos).
+
+**Ball Fetch** stars the family instead: a boy in glasses and the family dog, a golden
+cocker spaniel, with her faceted two-colour ball. The child's and the dog's names are set
+in **Parent's Corner → Profile Settings** (the dog is called Sarabi until renamed). In **Parent's Corner → Rescue Pups** a parent can
 give them the names the child uses. The names appear in the game titles and spoken
 instructions, and are stored only on that device, so the public app carries no one else's
 characters or trademarks.
